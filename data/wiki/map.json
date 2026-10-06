@@ -76,6 +76,16 @@
       "count": 1
     },
     {
+      "id": "aggressive-terrorbird",
+      "label": "Aggressive Terrorbird",
+      "group": "monster",
+      "wikiPage": "Aggressive Terrorbird",
+      "sources": [
+        "Module:Map/Aggressive Terrorbird.json"
+      ],
+      "count": 2
+    },
+    {
       "id": "agility-course",
       "label": "Agility Course",
       "group": "location",
@@ -296,6 +306,16 @@
       "count": 3
     },
     {
+      "id": "black-knight-crusader",
+      "label": "Black Knight Crusader",
+      "group": "monster",
+      "wikiPage": "Black Knight Crusader",
+      "sources": [
+        "Module:Map/Black Knight Crusader.json"
+      ],
+      "count": 1
+    },
+    {
       "id": "black-knight-guardian",
       "label": "Black Knight Guardian",
       "group": "monster",
@@ -327,6 +347,16 @@
         "Module:Map/Black Knight Warrior.json"
       ],
       "count": 37
+    },
+    {
+      "id": "blazing-black-knight",
+      "label": "Blazing Black Knight",
+      "group": "monster",
+      "wikiPage": "Blazing Black Knight",
+      "sources": [
+        "Module:Map/Blazing Black Knight.json"
+      ],
+      "count": 6
     },
     {
       "id": "blightscale",
@@ -797,6 +827,17 @@
       "count": 1
     },
     {
+      "id": "doric",
+      "label": "Doric",
+      "group": "npc",
+      "icon": "Secondary_quest_NPC_icon.png",
+      "wikiPage": "Doric",
+      "sources": [
+        "Module:Map/Doric.json"
+      ],
+      "count": 4
+    },
+    {
       "id": "dragon-shrine",
       "label": "Dragon Shrine",
       "group": "location",
@@ -1099,6 +1140,16 @@
       "count": 25
     },
     {
+      "id": "garou-exile",
+      "label": "Garou Exile",
+      "group": "monster",
+      "wikiPage": "Garou Exile",
+      "sources": [
+        "Module:Map/Garou Exile.json"
+      ],
+      "count": 17
+    },
+    {
       "id": "garou-hunter",
       "label": "Garou Hunter",
       "group": "monster",
@@ -1124,6 +1175,8 @@
       "id": "garou-lightning-berserker",
       "label": "Garou Lightning Berserker",
       "group": "monster",
+      "icon": "Garou_Berserker.png",
+      "wikiPage": "Garou Lightning Berserker",
       "sources": [
         "Module:Map/Garou Lightning Berserker.json"
       ],
@@ -1258,6 +1311,16 @@
         "Module:Map/Goblin Runt.json"
       ],
       "count": 10
+    },
+    {
+      "id": "goblin-thug",
+      "label": "Goblin Thug",
+      "group": "monster",
+      "wikiPage": "Goblin Thug",
+      "sources": [
+        "Module:Map/Goblin Thug.json"
+      ],
+      "count": 1
     },
     {
       "id": "goblin-warrior",
@@ -1731,8 +1794,15 @@
       "icon": "Lore_Icon.png",
       "wikiPage": "Lore Scraps",
       "sources": [
+        "Module:Map/A New Pestilence.json",
+        "Module:Map/A Report on the Withering.json",
+        "Module:Map/A Transport Network.json",
+        "Module:Map/Alric's Journal.json",
+        "Module:Map/Alric's Plan (Part 1).json",
+        "Module:Map/Alric's Plan (Part 2).json",
         "Module:Map/Ancient Journal Page.json",
         "Module:Map/Ancient Text.json",
+        "Module:Map/Archmage's Note to Students.json",
         "Module:Map/Avisk's Experiment Log.json",
         "Module:Map/Badly Scrawled Note.json",
         "Module:Map/Battered Diary.json",
@@ -1785,6 +1855,7 @@
         "Module:Map/Priestly Journal.json",
         "Module:Map/Pungent Scribble.json",
         "Module:Map/Quartermaster's Journal.json",
+        "Module:Map/Rasmodel's Diary.json",
         "Module:Map/Ravanna's Fifth Journal.json",
         "Module:Map/Ravanna's First Journal.json",
         "Module:Map/Ravanna's Fourth Journal.json",
@@ -1805,6 +1876,7 @@
         "Module:Map/Soot-stained Ledger.json",
         "Module:Map/Sun-scorched Recipe Book.json",
         "Module:Map/Tear-Stained Journal.json",
+        "Module:Map/The Gospel of Zamorak.json",
         "Module:Map/The Tale of the Ghost Wolves.json",
         "Module:Map/The Wolf and the Goddess.json",
         "Module:Map/Torn Journal Page.json",
@@ -1860,6 +1932,17 @@
         "Module:Map/Mage of Zamorak.json"
       ],
       "count": 10
+    },
+    {
+      "id": "magic-tree",
+      "label": "Magic Tree",
+      "group": "resource",
+      "icon": "Magic_Tree.png",
+      "wikiPage": "Magic Tree",
+      "sources": [
+        "Module:Map/Magic Tree.json"
+      ],
+      "count": 3
     },
     {
       "id": "magical-raven",
@@ -2521,6 +2604,16 @@
       "count": 3
     },
     {
+      "id": "rotsworn-reanimator",
+      "label": "Rotsworn Reanimator",
+      "group": "monster",
+      "wikiPage": "Rotsworn Reanimator",
+      "sources": [
+        "Module:Map/Rotsworn Reanimator.json"
+      ],
+      "count": 1
+    },
+    {
       "id": "rotsworn-warrior",
       "label": "Rotsworn Warrior",
       "group": "monster",
@@ -2557,6 +2650,7 @@
       "id": "rune-essence-geyser",
       "label": "Rune Essence Geyser",
       "group": "resource",
+      "icon": "Rune_Essence_Geyser_(Journal).png",
       "wikiPage": "Rune Essence Geyser",
       "sources": [
         "Module:Map/Rune Essence Geyser.json"
@@ -2666,6 +2760,16 @@
       "count": 1
     },
     {
+      "id": "seeking-salvation",
+      "label": "Seeking Salvation",
+      "group": "quest",
+      "wikiPage": "Seeking Salvation",
+      "sources": [
+        "Module:Map/Seeking Salvation.json"
+      ],
+      "count": 2
+    },
+    {
       "id": "sergeant-blister",
       "label": "Sergeant Blister",
       "group": "monster",
@@ -2730,6 +2834,16 @@
         "Module:Map/Skeletal Archer.json"
       ],
       "count": 19
+    },
+    {
+      "id": "skeletal-blightshot",
+      "label": "Skeletal Blightshot",
+      "group": "monster",
+      "wikiPage": "Skeletal Blightshot",
+      "sources": [
+        "Module:Map/Skeletal Blightshot.json"
+      ],
+      "count": 4
     },
     {
       "id": "skeletal-hoplite",
@@ -3276,6 +3390,28 @@
         "Module:Map/Wild Lapulis Vine.json"
       ],
       "count": 45
+    },
+    {
+      "id": "wild-ruby-vine",
+      "label": "Wild Ruby Vine",
+      "group": "monster",
+      "icon": "Wild_Ruby_Vine.png",
+      "wikiPage": "Wild Ruby Vine",
+      "sources": [
+        "Module:Map/Wild Ruby Vine.json"
+      ],
+      "count": 73
+    },
+    {
+      "id": "wildcaller-druid",
+      "label": "Wildcaller Druid",
+      "group": "monster",
+      "icon": "Garou_Druid.png",
+      "wikiPage": "Wildcaller Druid",
+      "sources": [
+        "Module:Map/Wildcaller Druid.json"
+      ],
+      "count": 1
     },
     {
       "id": "willow-tree",
@@ -4385,6 +4521,22 @@
       "x": 223834.73,
       "y": -49899.598,
       "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "aggressive-terrorbird:143336:66307",
+      "categoryId": "aggressive-terrorbird",
+      "x": 143335.58,
+      "y": 66307.43,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "aggressive-terrorbird:143859:66521",
+      "categoryId": "aggressive-terrorbird",
+      "x": 143858.72,
+      "y": 66520.96,
+      "region": "Ghornfell",
       "regionGuessed": true
     },
     {
@@ -26817,6 +26969,14 @@
       "power": 9
     },
     {
+      "id": "black-knight-crusader:232570:50355",
+      "categoryId": "black-knight-crusader",
+      "x": 232570,
+      "y": 50355,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
       "id": "black-knight-guardian:193953:58434",
       "categoryId": "black-knight-guardian",
       "x": 193952.9,
@@ -27365,6 +27525,54 @@
       "categoryId": "black-knight-warrior",
       "x": 247730.03,
       "y": 47945.383,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:193913:58419",
+      "categoryId": "blazing-black-knight",
+      "x": 193912.78,
+      "y": 58418.812,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:214298:51523",
+      "categoryId": "blazing-black-knight",
+      "x": 214297.81,
+      "y": 51523.273,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:230692:22268",
+      "categoryId": "blazing-black-knight",
+      "x": 230691.72,
+      "y": 22267.637,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:230793:22411",
+      "categoryId": "blazing-black-knight",
+      "x": 230793,
+      "y": 22411,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:238368:21700",
+      "categoryId": "blazing-black-knight",
+      "x": 238368.11,
+      "y": 21699.596,
+      "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "blazing-black-knight:243313:26581",
+      "categoryId": "blazing-black-knight",
+      "x": 243313.42,
+      "y": 26581.273,
       "region": "Dowdun Reach",
       "regionGuessed": true
     },
@@ -28216,6 +28424,7 @@
       "categoryId": "buried-treasure",
       "x": 10785.545,
       "y": 169394.36,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28745,6 +28954,7 @@
       "categoryId": "buried-treasure",
       "x": 35564.68,
       "y": 154470.94,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28787,6 +28997,7 @@
       "categoryId": "buried-treasure",
       "x": 43605,
       "y": 139506.66,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28822,6 +29033,7 @@
       "categoryId": "buried-treasure",
       "x": 52502.05,
       "y": 172062.39,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28829,6 +29041,7 @@
       "categoryId": "buried-treasure",
       "x": 57100.227,
       "y": 142866.16,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28850,6 +29063,7 @@
       "categoryId": "buried-treasure",
       "x": 71717.99,
       "y": 180485.23,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28871,6 +29085,7 @@
       "categoryId": "buried-treasure",
       "x": 82202.266,
       "y": 158204.44,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -28892,6 +29107,7 @@
       "categoryId": "buried-treasure",
       "x": 89649.09,
       "y": 146733.72,
+      "link": "Buried Treasure (Brynmoor)",
       "region": "Brynmoor"
     },
     {
@@ -39569,6 +39785,39 @@
       "x": 248270.36,
       "y": 112444.56,
       "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "doric:10908:184632",
+      "categoryId": "doric",
+      "x": 10908.492,
+      "y": 184631.88,
+      "description": "Temple Woods",
+      "region": "Brynmoor"
+    },
+    {
+      "id": "doric:142219:92602",
+      "categoryId": "doric",
+      "x": 142219.22,
+      "y": 92602.2,
+      "description": "Fractured Plains",
+      "region": "Ghornfell"
+    },
+    {
+      "id": "doric:194041:-42347",
+      "categoryId": "doric",
+      "x": 194040.67,
+      "y": -42347.08,
+      "description": "Lake of Lost Souls",
+      "region": "Fellhollow"
+    },
+    {
+      "id": "doric:228062:54540",
+      "categoryId": "doric",
+      "x": 228062.33,
+      "y": 54539.5,
+      "description": "The Nexus",
+      "region": "Dowdun Reach",
       "regionGuessed": true
     },
     {
@@ -56466,6 +56715,142 @@
       "regionGuessed": true
     },
     {
+      "id": "garou-exile:113202:81888",
+      "categoryId": "garou-exile",
+      "x": 113202.43,
+      "y": 81887.74,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:119298:64973",
+      "categoryId": "garou-exile",
+      "x": 119297.72,
+      "y": 64973.21,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:128571:119664",
+      "categoryId": "garou-exile",
+      "x": 128570.63,
+      "y": 119664.4,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:128744:119732",
+      "categoryId": "garou-exile",
+      "x": 128744.38,
+      "y": 119731.625,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:132658:83158",
+      "categoryId": "garou-exile",
+      "x": 132657.61,
+      "y": 83157.93,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:135767:109389",
+      "categoryId": "garou-exile",
+      "x": 135766.92,
+      "y": 109389.25,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:139595:99209",
+      "categoryId": "garou-exile",
+      "x": 139594.97,
+      "y": 99208.84,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:39510:110879",
+      "categoryId": "garou-exile",
+      "x": 39509.88,
+      "y": 110878.8,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:46025:102501",
+      "categoryId": "garou-exile",
+      "x": 46024.574,
+      "y": 102500.984,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:52655:93013",
+      "categoryId": "garou-exile",
+      "x": 52655.016,
+      "y": 93012.55,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:52855:92855",
+      "categoryId": "garou-exile",
+      "x": 52855.473,
+      "y": 92854.94,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:53916:123789",
+      "categoryId": "garou-exile",
+      "x": 53916.37,
+      "y": 123789.26,
+      "region": "Brynmoor",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:54202:123752",
+      "categoryId": "garou-exile",
+      "x": 54202.27,
+      "y": 123751.625,
+      "region": "Brynmoor",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:71610:110042",
+      "categoryId": "garou-exile",
+      "x": 71609.99,
+      "y": 110041.92,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:72508:98012",
+      "categoryId": "garou-exile",
+      "x": 72508.13,
+      "y": 98012.07,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:81689:89958",
+      "categoryId": "garou-exile",
+      "x": 81689.16,
+      "y": 89958.33,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "garou-exile:87895:133071",
+      "categoryId": "garou-exile",
+      "x": 87895.414,
+      "y": 133070.8,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
       "id": "garou-hunter:111625:113683",
       "categoryId": "garou-hunter",
       "x": 111625,
@@ -58791,6 +59176,14 @@
       "categoryId": "goblin-runt",
       "x": 58695,
       "y": 163251,
+      "region": "Brynmoor",
+      "regionGuessed": true
+    },
+    {
+      "id": "goblin-thug:54866:126179",
+      "categoryId": "goblin-thug",
+      "x": 54866.04,
+      "y": 126178.88,
       "region": "Brynmoor",
       "regionGuessed": true
     },
@@ -78288,27 +78681,39 @@
       "categoryId": "lore-scraps",
       "x": 198569.62,
       "y": 43253.184,
-      "name": "Dowdun Lore Scrap 9/14",
+      "name": "Alric's Plan (Part 2)",
+      "link": "Alric's Plan (Part 2)",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "alrics-plan-part-2:198570:43253"
+      ]
     },
     {
       "id": "lore-scraps:199142:33929",
       "categoryId": "lore-scraps",
       "x": 199141.56,
       "y": 33929.273,
-      "name": "Dowdun Lore Scrap 10/14",
+      "name": "A New Pestilence",
+      "link": "A New Pestilence",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "a-new-pestilence:199142:33929"
+      ]
     },
     {
       "id": "lore-scraps:199977:42338",
       "categoryId": "lore-scraps",
       "x": 199977.16,
       "y": 42338.06,
-      "name": "Dowdun Lore Scrap 8/14",
+      "name": "Alric's Plan (Part 1)",
+      "link": "Alric's Plan (Part 1)",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "alrics-plan-part-1:199977:42338"
+      ]
     },
     {
       "id": "lore-scraps:201421:-75646",
@@ -78328,9 +78733,13 @@
       "categoryId": "lore-scraps",
       "x": 203437.42,
       "y": 49666.266,
-      "name": "Dowdun Lore Scrap 4/14",
+      "name": "Alric's Journal",
+      "link": "Alric's Journal",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "alrics-journal:203437:49666"
+      ]
     },
     {
       "id": "lore-scraps:206286:229493",
@@ -78350,27 +78759,39 @@
       "categoryId": "lore-scraps",
       "x": 206611.2,
       "y": 39507.76,
-      "name": "Dowdun Lore Scrap 2/14",
+      "name": "Archmage's Note to Students",
+      "link": "Archmage's Note to Students",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "archmages-note-to-students:206611:39508"
+      ]
     },
     {
       "id": "lore-scraps:210531:46368",
       "categoryId": "lore-scraps",
       "x": 210531.4,
       "y": 46368.492,
-      "name": "Dowdun Lore Scrap 13/14",
+      "name": "A Report on the Withering",
+      "link": "A Report on the Withering",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "a-report-on-the-withering:210531:46368"
+      ]
     },
     {
       "id": "lore-scraps:213887:57694",
       "categoryId": "lore-scraps",
       "x": 213886.97,
       "y": 57693.746,
-      "name": "Dowdun Lore Scrap 6/14",
+      "name": "The Gospel of Zamorak",
+      "link": "The Gospel of Zamorak",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "the-gospel-of-zamorak:213887:57694"
+      ]
     },
     {
       "id": "lore-scraps:216411:132836",
@@ -78424,18 +78845,26 @@
       "categoryId": "lore-scraps",
       "x": 227666.31,
       "y": 34595.73,
-      "name": "Dowdun Lore Scrap 12/14",
+      "name": "Rasmodel's Diary",
+      "link": "Rasmodel's Diary",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "rasmodels-diary:227666:34596"
+      ]
     },
     {
       "id": "lore-scraps:229763:53720",
       "categoryId": "lore-scraps",
       "x": 229763.34,
       "y": 53719.598,
-      "name": "Dowdun Lore Scrap 3/14",
+      "name": "A Transport Network",
+      "link": "A Transport Network",
       "region": "Dowdun Reach",
-      "regionGuessed": true
+      "regionGuessed": true,
+      "aliases": [
+        "a-transport-network:229763:53720"
+      ]
     },
     {
       "id": "lore-scraps:231130:69536",
@@ -80337,6 +80766,30 @@
       "x": 220508.22,
       "y": 59622.887,
       "region": "Dowdun Reach",
+      "regionGuessed": true
+    },
+    {
+      "id": "magic-tree:77979:18011",
+      "categoryId": "magic-tree",
+      "x": 77979,
+      "y": 18011,
+      "region": "Scorned Wilderness",
+      "regionGuessed": true
+    },
+    {
+      "id": "magic-tree:82601:2355",
+      "categoryId": "magic-tree",
+      "x": 82601,
+      "y": 2355,
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "magic-tree:84800:3910",
+      "categoryId": "magic-tree",
+      "x": 84800,
+      "y": 3910,
+      "region": "Fellhollow",
       "regionGuessed": true
     },
     {
@@ -99936,6 +100389,14 @@
       "regionGuessed": true
     },
     {
+      "id": "rotsworn-reanimator:185816:-19743",
+      "categoryId": "rotsworn-reanimator",
+      "x": 185816,
+      "y": -19743,
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
       "id": "rotsworn-warrior:121609:-56393",
       "categoryId": "rotsworn-warrior",
       "x": 121608.5,
@@ -111929,6 +112390,28 @@
       "regionGuessed": true
     },
     {
+      "id": "seeking-salvation:194041:-42347",
+      "categoryId": "seeking-salvation",
+      "x": 194040.67,
+      "y": -42347.08,
+      "name": "Doric",
+      "description": "Quest start point inside the cave ruin near the Skekven Kara vault entrance.",
+      "icon": "Secondary_quest_NPC_icon.png",
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "seeking-salvation:197429:-42244",
+      "categoryId": "seeking-salvation",
+      "x": 197428.88,
+      "y": -42244.168,
+      "name": "Skekven Kara",
+      "description": "Vault entrance located near Doric's cave.",
+      "icon": "Dungeon_entrance_icon.png",
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
       "id": "sergeant-blister:237298:22013",
       "categoryId": "sergeant-blister",
       "x": 237298.28,
@@ -112909,6 +113392,38 @@
       "y": 28572.69,
       "power": 6,
       "region": "Dowdun Reach"
+    },
+    {
+      "id": "skeletal-blightshot:190320:-22220",
+      "categoryId": "skeletal-blightshot",
+      "x": 190319.9,
+      "y": -22220.19,
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "skeletal-blightshot:212142:-21517",
+      "categoryId": "skeletal-blightshot",
+      "x": 212141.58,
+      "y": -21516.996,
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "skeletal-blightshot:218373:-8091",
+      "categoryId": "skeletal-blightshot",
+      "x": 218372.86,
+      "y": -8090.934,
+      "region": "Fellhollow",
+      "regionGuessed": true
+    },
+    {
+      "id": "skeletal-blightshot:93351:-61691",
+      "categoryId": "skeletal-blightshot",
+      "x": 93350.734,
+      "y": -61691.297,
+      "region": "Fellhollow",
+      "regionGuessed": true
     },
     {
       "id": "skeletal-hoplite:-478566:-457134",
@@ -122347,6 +122862,598 @@
       "categoryId": "wild-lapulis-vine",
       "x": 59938.215,
       "y": 80624.36,
+      "region": "Ghornfell",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:198110:208095",
+      "categoryId": "wild-ruby-vine",
+      "x": 198109.88,
+      "y": 208094.83,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:200062:212349",
+      "categoryId": "wild-ruby-vine",
+      "x": 200061.6,
+      "y": 212348.52,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:206434:151369",
+      "categoryId": "wild-ruby-vine",
+      "x": 206433.81,
+      "y": 151369.05,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:234463:246416",
+      "categoryId": "wild-ruby-vine",
+      "x": 234463.31,
+      "y": 246415.55,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:236273:249762",
+      "categoryId": "wild-ruby-vine",
+      "x": 236272.7,
+      "y": 249761.7,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:236467:200374",
+      "categoryId": "wild-ruby-vine",
+      "x": 236466.73,
+      "y": 200373.8,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:239146:183166",
+      "categoryId": "wild-ruby-vine",
+      "x": 239145.66,
+      "y": 183165.78,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:239435:198020",
+      "categoryId": "wild-ruby-vine",
+      "x": 239434.5,
+      "y": 198019.53,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:239786:200706",
+      "categoryId": "wild-ruby-vine",
+      "x": 239785.6,
+      "y": 200705.5,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:269367:215646",
+      "categoryId": "wild-ruby-vine",
+      "x": 269366.56,
+      "y": 215646.23,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:269572:198390",
+      "categoryId": "wild-ruby-vine",
+      "x": 269571.9,
+      "y": 198390,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:269914:133519",
+      "categoryId": "wild-ruby-vine",
+      "x": 269913.8,
+      "y": 133519.05,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:270527:194365",
+      "categoryId": "wild-ruby-vine",
+      "x": 270526.9,
+      "y": 194365.17,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:271092:211236",
+      "categoryId": "wild-ruby-vine",
+      "x": 271091.53,
+      "y": 211236.33,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:283723:244015",
+      "categoryId": "wild-ruby-vine",
+      "x": 283722.72,
+      "y": 244015.39,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:283898:242069",
+      "categoryId": "wild-ruby-vine",
+      "x": 283898,
+      "y": 242068.64,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:284562:244059",
+      "categoryId": "wild-ruby-vine",
+      "x": 284562.22,
+      "y": 244058.69,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:298825:65133",
+      "categoryId": "wild-ruby-vine",
+      "x": 298824.62,
+      "y": 65133.484,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:301972:63975",
+      "categoryId": "wild-ruby-vine",
+      "x": 301972.16,
+      "y": 63974.5,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:303563:64847",
+      "categoryId": "wild-ruby-vine",
+      "x": 303563.22,
+      "y": 64846.75,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:316022:175656",
+      "categoryId": "wild-ruby-vine",
+      "x": 316022.22,
+      "y": 175656.34,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:319330:187864",
+      "categoryId": "wild-ruby-vine",
+      "x": 319330.22,
+      "y": 187863.9,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:319935:61682",
+      "categoryId": "wild-ruby-vine",
+      "x": 319935.34,
+      "y": 61681.594,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:321827:63218",
+      "categoryId": "wild-ruby-vine",
+      "x": 321826.78,
+      "y": 63218.35,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:322532:66018",
+      "categoryId": "wild-ruby-vine",
+      "x": 322532.1,
+      "y": 66018.48,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:323098:65118",
+      "categoryId": "wild-ruby-vine",
+      "x": 323098.38,
+      "y": 65118.355,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:323251:64985",
+      "categoryId": "wild-ruby-vine",
+      "x": 323251.38,
+      "y": 64985.426,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:323914:65218",
+      "categoryId": "wild-ruby-vine",
+      "x": 323913.6,
+      "y": 65218.484,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:324017:60597",
+      "categoryId": "wild-ruby-vine",
+      "x": 324016.9,
+      "y": 60596.73,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:324467:66113",
+      "categoryId": "wild-ruby-vine",
+      "x": 324467.16,
+      "y": 66112.66,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:324844:64419",
+      "categoryId": "wild-ruby-vine",
+      "x": 324843.8,
+      "y": 64419.047,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:325680:182637",
+      "categoryId": "wild-ruby-vine",
+      "x": 325679.84,
+      "y": 182637.45,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:327520:77859",
+      "categoryId": "wild-ruby-vine",
+      "x": 327520.34,
+      "y": 77859.35,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:327707:110679",
+      "categoryId": "wild-ruby-vine",
+      "x": 327706.66,
+      "y": 110679.28,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:328896:108303",
+      "categoryId": "wild-ruby-vine",
+      "x": 328896.3,
+      "y": 108302.55,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:329091:110957",
+      "categoryId": "wild-ruby-vine",
+      "x": 329090.8,
+      "y": 110956.96,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:329305:169660",
+      "categoryId": "wild-ruby-vine",
+      "x": 329305.16,
+      "y": 169660.2,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:333243:37566",
+      "categoryId": "wild-ruby-vine",
+      "x": 333243.03,
+      "y": 37566.176,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:333373:131649",
+      "categoryId": "wild-ruby-vine",
+      "x": 333373.38,
+      "y": 131648.98,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:334742:129116",
+      "categoryId": "wild-ruby-vine",
+      "x": 334741.56,
+      "y": 129116.266,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:335188:165975",
+      "categoryId": "wild-ruby-vine",
+      "x": 335188.03,
+      "y": 165974.66,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:336467:55859",
+      "categoryId": "wild-ruby-vine",
+      "x": 336466.88,
+      "y": 55858.844,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:342852:44382",
+      "categoryId": "wild-ruby-vine",
+      "x": 342852.25,
+      "y": 44382.438,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:344984:141306",
+      "categoryId": "wild-ruby-vine",
+      "x": 344984.34,
+      "y": 141306.27,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:345552:180694",
+      "categoryId": "wild-ruby-vine",
+      "x": 345551.9,
+      "y": 180694.17,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:346714:178060",
+      "categoryId": "wild-ruby-vine",
+      "x": 346713.78,
+      "y": 178059.83,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:353085:49277",
+      "categoryId": "wild-ruby-vine",
+      "x": 353085.2,
+      "y": 49276.51,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:355065:142982",
+      "categoryId": "wild-ruby-vine",
+      "x": 355064.75,
+      "y": 142982.28,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:355675:49833",
+      "categoryId": "wild-ruby-vine",
+      "x": 355675.38,
+      "y": 49833.484,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:356156:47340",
+      "categoryId": "wild-ruby-vine",
+      "x": 356156.34,
+      "y": 47339.516,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:356337:140381",
+      "categoryId": "wild-ruby-vine",
+      "x": 356337,
+      "y": 140380.64,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:356404:46429",
+      "categoryId": "wild-ruby-vine",
+      "x": 356403.56,
+      "y": 46429.457,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:360237:76180",
+      "categoryId": "wild-ruby-vine",
+      "x": 360236.5,
+      "y": 76180.08,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:362382:76977",
+      "categoryId": "wild-ruby-vine",
+      "x": 362381.97,
+      "y": 76977.336,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:362525:77844",
+      "categoryId": "wild-ruby-vine",
+      "x": 362525.47,
+      "y": 77844.37,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:363021:78924",
+      "categoryId": "wild-ruby-vine",
+      "x": 363020.84,
+      "y": 78924.055,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:363448:76670",
+      "categoryId": "wild-ruby-vine",
+      "x": 363448.1,
+      "y": 76670.34,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:363526:79606",
+      "categoryId": "wild-ruby-vine",
+      "x": 363526.38,
+      "y": 79605.805,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:364308:179854",
+      "categoryId": "wild-ruby-vine",
+      "x": 364307.56,
+      "y": 179854.27,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:364686:60992",
+      "categoryId": "wild-ruby-vine",
+      "x": 364685.9,
+      "y": 60991.57,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:364755:191719",
+      "categoryId": "wild-ruby-vine",
+      "x": 364755.2,
+      "y": 191719.12,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:365043:182857",
+      "categoryId": "wild-ruby-vine",
+      "x": 365043.3,
+      "y": 182857.2,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:366536:58923",
+      "categoryId": "wild-ruby-vine",
+      "x": 366535.66,
+      "y": 58923.05,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:366700:183304",
+      "categoryId": "wild-ruby-vine",
+      "x": 366699.6,
+      "y": 183303.69,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:367049:73464",
+      "categoryId": "wild-ruby-vine",
+      "x": 367049.12,
+      "y": 73463.805,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:367094:80746",
+      "categoryId": "wild-ruby-vine",
+      "x": 367093.8,
+      "y": 80746.33,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:367285:171130",
+      "categoryId": "wild-ruby-vine",
+      "x": 367284.94,
+      "y": 171129.66,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:367350:44082",
+      "categoryId": "wild-ruby-vine",
+      "x": 367349.6,
+      "y": 44082.496,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:369483:76283",
+      "categoryId": "wild-ruby-vine",
+      "x": 369482.84,
+      "y": 76283.22,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:372742:176298",
+      "categoryId": "wild-ruby-vine",
+      "x": 372742.1,
+      "y": 176298.19,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:375064:101604",
+      "categoryId": "wild-ruby-vine",
+      "x": 375063.9,
+      "y": 101604.24,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:376681:179820",
+      "categoryId": "wild-ruby-vine",
+      "x": 376680.72,
+      "y": 179819.6,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wild-ruby-vine:386184:111235",
+      "categoryId": "wild-ruby-vine",
+      "x": 386183.78,
+      "y": 111235.445,
+      "region": "Umbral Sands",
+      "regionGuessed": true
+    },
+    {
+      "id": "wildcaller-druid:143700:66095",
+      "categoryId": "wildcaller-druid",
+      "x": 143700,
+      "y": 66095,
       "region": "Ghornfell",
       "regionGuessed": true
     },

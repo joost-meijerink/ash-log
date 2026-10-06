@@ -862,8 +862,8 @@
         "section": "Mark Day"
       },
       {
-        "id": "Icthlarin's Little Helper:s:c9ae1645",
-        "text": "There will be three green circles on your map. North of the camp, you'll need to find Brialka the historian councillor, Chirot the Broker Councillor and Alabrais the Science Councillor. Each one will need to be convinced on abandoning Mark Day.",
+        "id": "Icthlarin's Little Helper:s:1896ef81",
+        "text": "There will be three green circles on your map. North of the camp, you'll need to find Brialka the historian councillor. South of the camp, you will find Chirot the Broker Councillor and Alabrais the Science Councillor. Each one will need to be convinced on abandoning Mark Day.",
         "section": "Mark Day"
       },
       {
@@ -872,8 +872,8 @@
         "section": "Mark Day"
       },
       {
-        "id": "Icthlarin's Little Helper:s:0e90cb99",
-        "text": "Alabrais the Science Councillor: Fuzan's Aim to control you. There is only evidence Fuzan destroys. Fuzan's constant is control over others",
+        "id": "Icthlarin's Little Helper:s:2ab20ff5",
+        "text": "Alabrais the Science Councillor: Fuzan's aim is to control you, like his KotHaar. There is only evidence Fuzan destroys. Fuzan's constant is control of others",
         "section": "Mark Day"
       },
       {
@@ -882,8 +882,8 @@
         "section": "Mark Day"
       },
       {
-        "id": "Icthlarin's Little Helper:s:0ae61907",
-        "text": "Chirot the Broker Councillor: Lose money on the deal. Fuzan takes a cut. Fuzan will steal what you plan to steal",
+        "id": "Icthlarin's Little Helper:s:5369c021",
+        "text": "Chirot the Broker Councillor: Fuzan's actions have cost you money. Before or after Fuzan takes his cut? Fuzan will steal what you wish to steal",
         "section": "Mark Day"
       },
       {
@@ -1659,7 +1659,8 @@
     ],
     "rewards": [
       "1x Ravanna's ring",
-      "  Includes the recipe to crafting more"
+      "  Includes the recipe to crafting more",
+      "  Deletes Salve Amulet if worn"
     ],
     "requires": [],
     "wikiUrl": "https://dragonwilds.runescape.wiki/w/A_Melody_Remembered"
@@ -1846,12 +1847,8 @@
     "startMatch": "quest-map",
     "steps": [
       {
-        "id": "The Wild Hunt:s:a15d63cc",
-        "text": "To begin this quest, speak to Vannaka who can be found west of Cathan's location in the Bleakfields Valley region of Fellhollow. He will explain to you how nature spirits are dying out due to the nature of this region and he tasks you to find nature spirits and defeat them to collect their primordial hearts. These spirits can only be found in Willow groves at or around the western area of Fellhollow and will look like white glowing terrorbirds."
-      },
-      {
-        "id": "The Wild Hunt:s:36c01b24",
-        "text": "If you aren't up to looking all over for them, you can find one near the northwestern area of the druid's circle in the Emberwood area, one in the Dragon's Run area, and another in the southern section of Witchwillow Range."
+        "id": "The Wild Hunt:s:edd33d0b",
+        "text": "To begin this quest, speak to Vannaka who can be found west of Cathan's location in the Bleakfields Valley region of Fellhollow. He will explain to you how nature spirits are dying out due to the nature of this region and he tasks you to find nature spirits and defeat them to collect their primordial hearts. These spirits can only be found in Willow groves at or around the western area of Fellhollow and will look like white glowing terrorbirds. If you aren't up to looking all over for them, you can find one near the northwestern area of the druid's circle in the Emberwood area, one in the Dragon's Run area, and another in the southern section of Witchwillow Range."
       },
       {
         "id": "The Wild Hunt:s:5e7ef8d1",
@@ -1948,6 +1945,8 @@
     "region": "Fellhollow",
     "description": "Find the statues to gain entrance to the vault and uncover the secrets that lie within.",
     "location": "Speak to Doric east of the Lake of Lost Souls, inside a cave.",
+    "startPointId": "doric:194041:-42347",
+    "startMatch": "npc-name",
     "steps": [
       {
         "id": "Seeking Salvation:s:36a3bf4f",
@@ -2022,6 +2021,8 @@
     "region": "Fellhollow",
     "description": "Doric is looking for rare weapons in Fellhollow.",
     "location": "Speak to Doric",
+    "startPointId": "doric:194041:-42347",
+    "startMatch": "quest-map",
     "steps": [
       {
         "id": "Doric's Quest:s:c8d9e13b",
@@ -2168,8 +2169,8 @@
     "startMatch": "npc-name",
     "steps": [
       {
-        "id": "What Remains is Written:s:30e9e185",
-        "text": "Speak to Abraxus The Eternal in Coalridge Pass just north of the fork in the road while wearing the full necromancer's gear. He will assume, at least from your clothes, that you are an apprentice of his and will require your aid. He will introduce himself quite arrogantly that you stand in the presence of \"Abraxus The Eternal, master of necromancy, Keeper of secrets, both occult and arcane\" and inform you that locals have ransacked his library and his most precious tomes have been spread across the eastern sub-regions. He tasks you to find them and bring them back, but not to read any of them. He claims that your mind is too young and too limited to contain the dread secrets within.",
+        "id": "What Remains is Written:s:fa5d2bc0",
+        "text": "Speak to Abraxus The Eternal in Coalridge Pass just north of the fork in the road while wearing the full necromancer's gear. He will assume, at least from your clothes, that you are an apprentice of his and will require your aid. He will introduce himself quite arrogantly that you stand in the presence of \"Abraxus The Eternal, master of necromancy, Keeper of secrets, both occult and arcane\" and inform you that locals have ransacked his library and his most precious tomes have been spread across the eastern sub-regions. He tasks you to find them and bring them back, but not to read any of them. He claims that your mind is too young and too limited to contain the dreaded secrets within.",
         "section": "Ransacked!"
       },
       {

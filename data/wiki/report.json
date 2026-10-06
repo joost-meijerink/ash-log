@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-09-28T13:53:31.935Z",
+  "syncedAt": "2026-10-06T12:31:28.073Z",
   "ok": true,
   "domains": [
     "map",
@@ -9,7 +9,9 @@
   ],
   "orphans": {
     "quests": [],
-    "steps": [],
+    "steps": [
+      "The Wild Hunt:s:a15d63cc"
+    ],
     "items": [],
     "points": [],
     "vaults": [],
@@ -126,6 +128,36 @@
       "message": "Verwijderd uit het spel ({{Gone}}), overgeslagen"
     },
     {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Quests",
+      "message": "Tabel zonder kolom Quests op de Quests-pagina, overgeslagen"
+    },
+    {
       "source": "assets",
       "page": "File:Adamant_Ore.png",
       "message": "Geen afbeelding gevonden voor icoon Adamant_Ore.png"
@@ -133,196 +165,243 @@
   ],
   "map": {
     "categories": {
-      "added": [],
+      "added": [
+        "aggressive-terrorbird",
+        "black-knight-crusader",
+        "blazing-black-knight",
+        "doric",
+        "garou-exile",
+        "goblin-thug",
+        "magic-tree",
+        "rotsworn-reanimator",
+        "seeking-salvation",
+        "skeletal-blightshot",
+        "wild-ruby-vine",
+        "wildcaller-druid"
+      ],
       "removed": [],
       "changed": [
-        "a-corroded-serrated-blade",
-        "a-simple-broken-bow",
-        "abyssal-demon",
-        "aetheric-fundamentals-a-primordial-primer",
-        "an-educational-blade",
-        "anima-infused-bark",
-        "animal-bone",
-        "ash-tree",
-        "azure-metal-contraption",
-        "bedraggled-spellbook",
-        "bilegut",
-        "black-dragon",
-        "black-knight-guardian",
-        "black-knight-sniper",
-        "black-knight-warrior",
-        "blightscale",
-        "blightwood-root",
-        "bloodblight-cape",
-        "bloodwood-sap",
-        "bloodwood-tree",
-        "blue-dragon",
-        "boggs",
-        "bramblemead-cape",
-        "buried-treasure",
-        "cabbage",
-        "cadavaberry-bush",
-        "carnivorous-chinchompa",
-        "chefs-journal",
-        "chicken",
-        "chinchompa",
-        "clay-node",
-        "coclear-malificarum",
-        "copper-ore-node",
-        "corpse-cotton-plant",
-        "corrupted-raven",
-        "cow",
-        "cow-cooks-assistant",
-        "crumbling-well",
-        "crystal-tree",
-        "curly",
-        "deer",
-        "delrom",
-        "desert-devil-kebbit",
-        "dire-wolf",
-        "doctor-fenkenstrain",
-        "dragon-shrine",
-        "dragon-tooth",
-        "dragon-wolf",
-        "dwellberry-bush",
-        "edna",
-        "elite-black-knight",
-        "eventide-a-new-spawn",
-        "exploding-plant-trap",
-        "fell-cape",
-        "fido",
-        "flax",
-        "forbidden-scroll-moon-goddess",
-        "forbidden-scroll-old-kingdom",
-        "forbidden-scroll-sun-demon",
-        "forbidden-scroll-the-schism",
-        "fractured-cape",
-        "garou-arms",
-        "garou-berserker",
-        "garou-druid",
-        "garou-hunter",
-        "garou-king",
-        "garou-thane",
-        "giant-rat",
-        "glass-owl",
-        "gnasher",
-        "goblin-archer",
-        "goblin-bruiser",
-        "goblin-legs",
-        "goblin-poisonshot-archer",
-        "goblin-runt",
-        "goblin-warrior",
-        "granite-deposit",
-        "green-dragon",
-        "gyrfalcon",
-        "hellhound",
-        "hellrat",
-        "houndmaster-rexiton",
-        "human-torso",
-        "imaru",
-        "iron-ore-node",
-        "jade-emblem",
-        "kebbit",
-        "leonard-the-bound",
-        "lesser-demon",
-        "limestone-rock",
-        "lodestone",
+        "garou-lightning-berserker",
         "lore-scraps",
-        "lougrims-shrine",
-        "luminite-deposit",
-        "lurch",
-        "mage-of-zamorak",
-        "magpie",
-        "maple-tree",
-        "marrentil",
-        "nodestone",
-        "nosey",
-        "oak-tree",
-        "onion",
-        "opal-emblem",
-        "outlook-ruins",
-        "parts-of-a-sinister-looking-staff",
-        "patch-hellrat",
-        "pip",
-        "plague-king",
-        "postbox",
-        "postie-pete",
-        "potato",
-        "putrid-rat",
-        "putrilius",
-        "ram",
-        "rat-king",
-        "rat-master-skrexis",
-        "redberry-bush",
-        "reek",
-        "reliquary",
-        "rotridden-rat",
-        "rotsworn-marauder",
-        "rotsworn-necromancer",
-        "rotsworn-warrior",
-        "rotsworn-zombie",
-        "rufus",
-        "runite-ore-node",
-        "sapphire-emblem",
-        "saradomin-symbol",
-        "sergeant-blister",
-        "shard-of-the-dreaming-stone",
-        "shardbound-lesser-demon",
-        "sheep",
-        "silver-ore-node",
-        "skeletal-archer",
-        "skeletal-hoplite",
-        "skeletal-marauder",
-        "skeletal-necromancer",
-        "skeletal-warrior",
-        "snapdragon",
-        "snotpit",
-        "spectral-chinchompa",
-        "spectral-door",
-        "stormtouched-cape",
-        "summoner-flament",
-        "suspiciously-light-tattered-boots",
-        "swamp-tar",
-        "swamp-weed",
-        "terrorbird",
-        "the-binding-of-ib",
-        "the-importance-of-chaos",
-        "the-pride-of-the-avernic",
-        "the-wrath-of-baba-potterington",
-        "thorny-irit-root",
-        "thorny-vine",
-        "threadbare-grain-sack",
-        "tin-ore-node",
-        "tiny",
-        "toadflax",
-        "torn-tapestry",
-        "treasure-chest",
-        "ulgo-the-zogre",
-        "undead-chicken",
-        "vannaka",
-        "whispering-cape",
-        "wild-jade-vine",
-        "wild-lapulis-vine",
-        "willow-tree",
-        "wise-old-man",
-        "wolf",
-        "wormelbow",
-        "x-marks-the-spot",
-        "yew-tree",
-        "zogre",
-        "zombie",
-        "zombie-rat"
+        "rune-essence-geyser"
       ]
     },
     "points": {
-      "postbox": {
+      "aggressive-terrorbird": {
+        "added": [
+          "aggressive-terrorbird:143336:66307",
+          "aggressive-terrorbird:143859:66521"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "black-knight-crusader": {
+        "added": [
+          "black-knight-crusader:232570:50355"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "blazing-black-knight": {
+        "added": [
+          "blazing-black-knight:193913:58419",
+          "blazing-black-knight:214298:51523",
+          "blazing-black-knight:230692:22268",
+          "blazing-black-knight:230793:22411",
+          "blazing-black-knight:238368:21700",
+          "blazing-black-knight:243313:26581"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "buried-treasure": {
         "added": [],
         "removed": [],
         "changed": [
-          "postbox:115992:-37154",
-          "postbox:133736:-59325",
-          "postbox:138649:-15531"
+          "buried-treasure:10786:169394",
+          "buried-treasure:35565:154471",
+          "buried-treasure:43605:139507",
+          "buried-treasure:52502:172062",
+          "buried-treasure:57100:142866",
+          "buried-treasure:71718:180485",
+          "buried-treasure:82202:158204",
+          "buried-treasure:89649:146734"
         ]
+      },
+      "doric": {
+        "added": [
+          "doric:10908:184632",
+          "doric:142219:92602",
+          "doric:194041:-42347",
+          "doric:228062:54540"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "garou-exile": {
+        "added": [
+          "garou-exile:113202:81888",
+          "garou-exile:119298:64973",
+          "garou-exile:128571:119664",
+          "garou-exile:128744:119732",
+          "garou-exile:132658:83158",
+          "garou-exile:135767:109389",
+          "garou-exile:139595:99209",
+          "garou-exile:39510:110879",
+          "garou-exile:46025:102501",
+          "garou-exile:52655:93013",
+          "garou-exile:52855:92855",
+          "garou-exile:53916:123789",
+          "garou-exile:54202:123752",
+          "garou-exile:71610:110042",
+          "garou-exile:72508:98012",
+          "garou-exile:81689:89958",
+          "garou-exile:87895:133071"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "goblin-thug": {
+        "added": [
+          "goblin-thug:54866:126179"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "lore-scraps": {
+        "added": [],
+        "removed": [],
+        "changed": [
+          "lore-scraps:198570:43253",
+          "lore-scraps:199142:33929",
+          "lore-scraps:199977:42338",
+          "lore-scraps:203437:49666",
+          "lore-scraps:206611:39508",
+          "lore-scraps:210531:46368",
+          "lore-scraps:213887:57694",
+          "lore-scraps:227666:34596",
+          "lore-scraps:229763:53720"
+        ]
+      },
+      "magic-tree": {
+        "added": [
+          "magic-tree:77979:18011",
+          "magic-tree:82601:2355",
+          "magic-tree:84800:3910"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "rotsworn-reanimator": {
+        "added": [
+          "rotsworn-reanimator:185816:-19743"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "seeking-salvation": {
+        "added": [
+          "seeking-salvation:194041:-42347",
+          "seeking-salvation:197429:-42244"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "skeletal-blightshot": {
+        "added": [
+          "skeletal-blightshot:190320:-22220",
+          "skeletal-blightshot:212142:-21517",
+          "skeletal-blightshot:218373:-8091",
+          "skeletal-blightshot:93351:-61691"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "wild-ruby-vine": {
+        "added": [
+          "wild-ruby-vine:198110:208095",
+          "wild-ruby-vine:200062:212349",
+          "wild-ruby-vine:206434:151369",
+          "wild-ruby-vine:234463:246416",
+          "wild-ruby-vine:236273:249762",
+          "wild-ruby-vine:236467:200374",
+          "wild-ruby-vine:239146:183166",
+          "wild-ruby-vine:239435:198020",
+          "wild-ruby-vine:239786:200706",
+          "wild-ruby-vine:269367:215646",
+          "wild-ruby-vine:269572:198390",
+          "wild-ruby-vine:269914:133519",
+          "wild-ruby-vine:270527:194365",
+          "wild-ruby-vine:271092:211236",
+          "wild-ruby-vine:283723:244015",
+          "wild-ruby-vine:283898:242069",
+          "wild-ruby-vine:284562:244059",
+          "wild-ruby-vine:298825:65133",
+          "wild-ruby-vine:301972:63975",
+          "wild-ruby-vine:303563:64847",
+          "wild-ruby-vine:316022:175656",
+          "wild-ruby-vine:319330:187864",
+          "wild-ruby-vine:319935:61682",
+          "wild-ruby-vine:321827:63218",
+          "wild-ruby-vine:322532:66018",
+          "wild-ruby-vine:323098:65118",
+          "wild-ruby-vine:323251:64985",
+          "wild-ruby-vine:323914:65218",
+          "wild-ruby-vine:324017:60597",
+          "wild-ruby-vine:324467:66113",
+          "wild-ruby-vine:324844:64419",
+          "wild-ruby-vine:325680:182637",
+          "wild-ruby-vine:327520:77859",
+          "wild-ruby-vine:327707:110679",
+          "wild-ruby-vine:328896:108303",
+          "wild-ruby-vine:329091:110957",
+          "wild-ruby-vine:329305:169660",
+          "wild-ruby-vine:333243:37566",
+          "wild-ruby-vine:333373:131649",
+          "wild-ruby-vine:334742:129116",
+          "wild-ruby-vine:335188:165975",
+          "wild-ruby-vine:336467:55859",
+          "wild-ruby-vine:342852:44382",
+          "wild-ruby-vine:344984:141306",
+          "wild-ruby-vine:345552:180694",
+          "wild-ruby-vine:346714:178060",
+          "wild-ruby-vine:353085:49277",
+          "wild-ruby-vine:355065:142982",
+          "wild-ruby-vine:355675:49833",
+          "wild-ruby-vine:356156:47340",
+          "wild-ruby-vine:356337:140381",
+          "wild-ruby-vine:356404:46429",
+          "wild-ruby-vine:360237:76180",
+          "wild-ruby-vine:362382:76977",
+          "wild-ruby-vine:362525:77844",
+          "wild-ruby-vine:363021:78924",
+          "wild-ruby-vine:363448:76670",
+          "wild-ruby-vine:363526:79606",
+          "wild-ruby-vine:364308:179854",
+          "wild-ruby-vine:364686:60992",
+          "wild-ruby-vine:364755:191719",
+          "wild-ruby-vine:365043:182857",
+          "wild-ruby-vine:366536:58923",
+          "wild-ruby-vine:366700:183304",
+          "wild-ruby-vine:367049:73464",
+          "wild-ruby-vine:367094:80746",
+          "wild-ruby-vine:367285:171130",
+          "wild-ruby-vine:367350:44082",
+          "wild-ruby-vine:369483:76283",
+          "wild-ruby-vine:372742:176298",
+          "wild-ruby-vine:375064:101604",
+          "wild-ruby-vine:376681:179820",
+          "wild-ruby-vine:386184:111235"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "wildcaller-druid": {
+        "added": [
+          "wildcaller-druid:143700:66095"
+        ],
+        "removed": [],
+        "changed": []
       }
     }
   },
@@ -330,9 +409,82 @@
     "quests": {
       "added": [],
       "removed": [],
-      "changed": []
+      "changed": [
+        "A Melody Remembered",
+        "Doric's Quest",
+        "Icthlarin's Little Helper",
+        "Seeking Salvation",
+        "The Wild Hunt",
+        "What Remains is Written"
+      ]
     },
-    "steps": []
+    "steps": [
+      {
+        "questId": "Icthlarin's Little Helper",
+        "added": [
+          {
+            "id": "Icthlarin's Little Helper:s:1896ef81",
+            "text": "There will be three green circles on your map. North of the camp, you'll need to find Brialka the historian councillor. South of the camp, you will find Chirot the Broker Councillor and Alabrais the Science Councillor. Each one will need to be convinced on abandoning Mark Day."
+          },
+          {
+            "id": "Icthlarin's Little Helper:s:2ab20ff5",
+            "text": "Alabrais the Science Councillor: Fuzan's aim is to control you, like his KotHaar. There is only evidence Fuzan destroys. Fuzan's constant is control of others"
+          },
+          {
+            "id": "Icthlarin's Little Helper:s:5369c021",
+            "text": "Chirot the Broker Councillor: Fuzan's actions have cost you money. Before or after Fuzan takes his cut? Fuzan will steal what you wish to steal"
+          }
+        ],
+        "removed": [
+          {
+            "id": "Icthlarin's Little Helper:s:c9ae1645",
+            "text": "There will be three green circles on your map. North of the camp, you'll need to find Brialka the historian councillor, Chirot the Broker Councillor and Alabrais the Science Councillor. Each one will need to be convinced on abandoning Mark Day."
+          },
+          {
+            "id": "Icthlarin's Little Helper:s:0e90cb99",
+            "text": "Alabrais the Science Councillor: Fuzan's Aim to control you. There is only evidence Fuzan destroys. Fuzan's constant is control over others"
+          },
+          {
+            "id": "Icthlarin's Little Helper:s:0ae61907",
+            "text": "Chirot the Broker Councillor: Lose money on the deal. Fuzan takes a cut. Fuzan will steal what you plan to steal"
+          }
+        ]
+      },
+      {
+        "questId": "The Wild Hunt",
+        "added": [
+          {
+            "id": "The Wild Hunt:s:edd33d0b",
+            "text": "To begin this quest, speak to Vannaka who can be found west of Cathan's location in the Bleakfields Valley region of Fellhollow. He will explain to you how nature spirits are dying out due to the nature of this region and he tasks you to find nature spirits and defeat them to collect their primordial hearts. These spirits can only be found in Willow groves at or around the western area of Fellhollow and will look like white glowing terrorbirds. If you aren't up to looking all over for them, you can find one near the northwestern area of the druid's circle in the Emberwood area, one in the Dragon's Run area, and another in the southern section of Witchwillow Range."
+          }
+        ],
+        "removed": [
+          {
+            "id": "The Wild Hunt:s:a15d63cc",
+            "text": "To begin this quest, speak to Vannaka who can be found west of Cathan's location in the Bleakfields Valley region of Fellhollow. He will explain to you how nature spirits are dying out due to the nature of this region and he tasks you to find nature spirits and defeat them to collect their primordial hearts. These spirits can only be found in Willow groves at or around the western area of Fellhollow and will look like white glowing terrorbirds."
+          },
+          {
+            "id": "The Wild Hunt:s:36c01b24",
+            "text": "If you aren't up to looking all over for them, you can find one near the northwestern area of the druid's circle in the Emberwood area, one in the Dragon's Run area, and another in the southern section of Witchwillow Range."
+          }
+        ]
+      },
+      {
+        "questId": "What Remains is Written",
+        "added": [
+          {
+            "id": "What Remains is Written:s:fa5d2bc0",
+            "text": "Speak to Abraxus The Eternal in Coalridge Pass just north of the fork in the road while wearing the full necromancer's gear. He will assume, at least from your clothes, that you are an apprentice of his and will require your aid. He will introduce himself quite arrogantly that you stand in the presence of \"Abraxus The Eternal, master of necromancy, Keeper of secrets, both occult and arcane\" and inform you that locals have ransacked his library and his most precious tomes have been spread across the eastern sub-regions. He tasks you to find them and bring them back, but not to read any of them. He claims that your mind is too young and too limited to contain the dreaded secrets within."
+          }
+        ],
+        "removed": [
+          {
+            "id": "What Remains is Written:s:30e9e185",
+            "text": "Speak to Abraxus The Eternal in Coalridge Pass just north of the fork in the road while wearing the full necromancer's gear. He will assume, at least from your clothes, that you are an apprentice of his and will require your aid. He will introduce himself quite arrogantly that you stand in the presence of \"Abraxus The Eternal, master of necromancy, Keeper of secrets, both occult and arcane\" and inform you that locals have ransacked his library and his most precious tomes have been spread across the eastern sub-regions. He tasks you to find them and bring them back, but not to read any of them. He claims that your mind is too young and too limited to contain the dread secrets within."
+          }
+        ]
+      }
+    ]
   },
   "vaults": {
     "vaults": {
