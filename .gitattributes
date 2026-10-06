@@ -1,0 +1,28 @@
+# Text is stored and checked out with LF on every system, also on Windows with
+# core.autocrlf=true. Parsers, fixtures, JSON and shell scripts expect LF, and tests compare
+# some files byte for byte.
+* text=auto eol=lf
+
+# cmd.exe misreads labels (goto, call :label) in batch files with LF line endings.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+# Windows PowerShell 5.1 and PowerShell 7 read LF just fine: .ps1 stays LF (see above).
+
+# Binary: never converted, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.icns binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mobileconfig binary
+*.der binary
+*.cer binary
+*.p12 binary
+*.zip binary
+*.pdf binary

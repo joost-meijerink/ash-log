@@ -1,0 +1,316 @@
+/*
+ * Leaflet elements for the map (plain CSS: Leaflet builds these nodes, scoped styles cannot reach them).
+ * Colours are the tokens from tailwind.config.ts.
+ */
+
+/* Beyond the tiles the sea goes on: the sea layer (sea-layer.ts) paints the water's texture;
+   this is the open-water colour of the map's edges (rgb 101 117 115) until it has loaded. */
+.ash-map.leaflet-container {
+  background: #657573;
+  font-family: 'Alegreya Sans', system-ui, sans-serif;
+  outline: none;
+}
+
+/* Tile seams. Leaflet 1.9 draws tiles with mix-blend-mode: plus-lighter, which adds the
+   anti-aliased tile edges to what lies behind them: on the sea colour that shows as light
+   lines on the tile grid. The tiles are opaque, so draw them normally and let each overlap
+   its neighbour by 1px instead, which closes the seam at any scale. */
+.ash-map.leaflet-container img.leaflet-tile,
+.ash-map.leaflet-container canvas.ash-sea-tile {
+  mix-blend-mode: normal;
+  width: 257px !important;
+  height: 257px !important;
+}
+
+.ash-map.leaflet-container:focus-visible {
+  box-shadow: inset 0 0 0 2px #c9a24a;
+}
+
+.ash-map.is-pinning,
+.ash-map.is-pinning .leaflet-grab,
+.ash-map.is-pinning .leaflet-interactive {
+  cursor: crosshair;
+}
+
+.ash-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------- point markers ---------------- */
+
+/* Doubled class beats leaflet.css (.leaflet-marker-icon { display: block }) whatever the load order. */
+.ash-marker,
+.leaflet-marker-icon.ash-marker {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+}
+
+.ash-marker > * {
+  grid-area: 1 / 1;
+}
+
+.ash-marker__disc {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #211c16;
+  border: 1.5px solid currentColor;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+.ash-marker .ash-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ash-marker--ember {
+  color: #e08a6c;
+}
+.ash-marker--ember .ash-marker__disc {
+  border-color: #a4452a;
+  background: #2a1a13;
+}
+
+.ash-marker--gold {
+  color: #c9a24a;
+}
+
+.ash-marker--muted {
+  color: #d3c3a3;
+}
+.ash-marker--muted .ash-marker__disc {
+  border-color: rgba(168, 151, 122, 0.8);
+}
+
+/* Leaflet sets `width: auto` on marker-pane images with a stronger selector; match it. */
+.leaflet-container .leaflet-marker-pane .ash-marker__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 2px rgba(0, 0, 0, 0.55));
+  user-select: none;
+}
+
+.ash-marker.has-img .ash-marker__disc {
+  display: none;
+}
+.ash-marker.has-img.is-broken .ash-marker__img {
+  display: none;
+}
+.ash-marker.has-img.is-broken .ash-marker__disc {
+  display: grid;
+}
+
+/*
+ * Hit areas. Clusters and quest pins get the full 44px (they never crowd each other: clusters
+ * keep 40px or more apart, quest pins are few). Point markers grow only 4px on each side, to
+ * about 32/36px: from zoom 5 on clustering is off and nodes can sit closer than 44px, where a
+ * bigger area would steal clicks from the neighbouring marker. Leaflet positions the marker
+ * elements absolutely, so they hold the pseudo-elements.
+ */
+.leaflet-marker-icon.ash-marker::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+}
+
+.leaflet-marker-icon.ash-cluster::before,
+.leaflet-marker-icon.ash-quest-pin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+}
+
+/* On the pin head, not around the tip. */
+.leaflet-marker-icon.ash-quest-pin::before {
+  top: 40%;
+}
+
+/* Found lore and unique points fade back. */
+.ash-marker.is-found {
+  opacity: 0.45;
+  filter: grayscale(0.85);
+}
+
+.ash-marker:focus-visible,
+.ash-cluster:focus-visible,
+.ash-quest-pin:focus-visible {
+  outline: 2px solid #efe2c4;
+  outline-offset: 2px;
+}
+
+/* ---------------- clusters: leather seals with a gold count ---------------- */
+
+.leaflet-marker-icon.ash-cluster {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 32%, #30281e, #1a1510 72%);
+  border: 1.5px solid rgba(201, 162, 74, 0.75);
+  box-shadow:
+    inset 0 0 0 3px #211c16,
+    inset 0 0 0 4px rgba(201, 162, 74, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.7);
+  color: #d8b35d;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.ash-cluster--46,
+.ash-cluster--52 {
+  font-size: 13px;
+}
+
+.ash-cluster:hover {
+  border-color: #d8b35d;
+  color: #ecd08a;
+}
+
+/* ---------------- quest start pins ---------------- */
+
+/*
+ * No position rule here: leaflet.css makes every marker icon absolute, which also anchors the
+ * parts below. A plain `position: relative` loaded after leaflet.css would put the pins in the
+ * normal flow of the marker pane, so every pin after the first would slide down.
+ */
+
+.ash-quest-pin__shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.75));
+}
+
+.ash-quest-pin__shape path {
+  fill: #211c16;
+  stroke: #c9a24a;
+  stroke-width: 2;
+}
+
+.ash-quest-pin.is-manual .ash-quest-pin__shape path {
+  stroke-dasharray: 4 2.5;
+}
+
+.ash-quest-pin.is-highlighted .ash-quest-pin__shape path {
+  fill: #c9a24a;
+  stroke: #15120e;
+  stroke-dasharray: none;
+}
+
+.ash-quest-pin__glyph {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 58%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  color: #c9a24a;
+  stroke-width: 3;
+}
+
+.ash-quest-pin.is-highlighted .ash-quest-pin__glyph {
+  color: #15120e;
+}
+
+.ash-quest-pin__count {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  border: 1px solid #15120e;
+  background: #c9a24a;
+  color: #15120e;
+  font: 700 11px/16px 'Alegreya Sans', system-ui, sans-serif;
+  text-align: center;
+}
+
+.ash-quest-pin__ring {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 34px;
+  height: 14px;
+  margin-left: -17px;
+  border-radius: 50%;
+  border: 2px solid rgba(201, 162, 74, 0.85);
+  animation: ash-pulse 1.8s ease-out infinite;
+}
+
+/* ---------------- selected point ---------------- */
+
+.leaflet-marker-icon.ash-selected {
+  display: grid;
+  place-items: center;
+}
+
+.ash-selected > * {
+  grid-area: 1 / 1;
+}
+
+.ash-selected > .ash-marker {
+  width: 28px;
+  height: 28px;
+}
+
+.ash-selected__ring {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 2px solid #c9a24a;
+  background: rgba(21, 18, 14, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(21, 18, 14, 0.65),
+    0 0 20px 3px rgba(201, 162, 74, 0.5);
+}
+
+.ash-selected__ring::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 2px solid rgba(201, 162, 74, 0.75);
+  animation: ash-pulse 1.8s ease-out infinite;
+}
+
+@keyframes ash-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ash-selected__ring::after,
+  .ash-quest-pin__ring {
+    animation: none;
+  }
+}

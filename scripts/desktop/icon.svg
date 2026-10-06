@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Ash Log app icon: tooled dark leather with the Ash Logs sprite. -->
+  <defs>
+    <radialGradient id="leather" cx="512" cy="430" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2d261d"/>
+      <stop offset="0.5" stop-color="#211c16"/>
+      <stop offset="1" stop-color="#15120e"/>
+    </radialGradient>
+    <linearGradient id="gilt" x1="0" y1="3" x2="0" y2="21" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e0bd68"/>
+      <stop offset="0.5" stop-color="#c9a24a"/>
+      <stop offset="1" stop-color="#a88338"/>
+    </linearGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.1"/>
+    </filter>
+    <filter id="press" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+    <!-- The mask iOS puts on a home-screen icon: Apple's continuous-corner square, radius 22.5%.
+         The borders below are exact inward offsets of it, so they follow the corners. -->
+    <path id="mask" d="M352.2 0H671.8C773.21 0 823.92 0 878.5 17.26C938.1 38.95 985.05 85.9 1006.74 145.5C1024 200.08 1024 250.79 1024 352.2V671.8C1024 773.21 1024 823.92 1006.74 878.5C985.05 938.1 938.1 985.05 878.5 1006.74C823.92 1024 773.21 1024 671.8 1024H352.2C250.79 1024 200.08 1024 145.5 1006.74C85.9 985.05 38.95 938.1 17.26 878.5C0 823.92 0 773.21 0 671.8V352.2C0 250.79 0 200.08 17.26 145.5C38.95 85.9 85.9 38.95 145.5 17.26C200.08 0 250.79 0 352.2 0Z"/>
+    <clipPath id="inside"><use href="#mask"/></clipPath>
+    <mask id="band-outer" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <use href="#mask" fill="none" stroke="#fff" stroke-width="146"/>
+      <use href="#mask" fill="none" stroke="#000" stroke-width="118"/>
+    </mask>
+    <mask id="band-inner" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <use href="#mask" fill="none" stroke="#fff" stroke-width="152"/>
+      <use href="#mask" fill="none" stroke="#000" stroke-width="144"/>
+    </mask>
+    <mask id="band-gold" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <use href="#mask" fill="none" stroke="#fff" stroke-width="220"/>
+      <use href="#mask" fill="none" stroke="#000" stroke-width="196"/>
+    </mask>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#leather)"/>
+  <rect width="1024" height="1024" filter="url(#grain)" opacity="0.16"/>
+
+  <!-- Blind-tooled compass rose behind the book -->
+  <g fill="none" stroke="#0d0b08" stroke-width="6" stroke-linejoin="round">
+    <circle cx="512" cy="512" r="330"/>
+    <circle cx="512" cy="512" r="306" stroke-width="3"/>
+    <path d="M512 132 546 478 892 512 546 546 512 892 478 546 132 512 478 478Z"/>
+    <path d="M512 262 530 494 762 512 530 530 512 762 494 530 262 512 494 494Z" transform="rotate(45 512 512)"/>
+  </g>
+
+  <!-- Tooled border, concentric with the rounded mask iOS puts on the icon -->
+  <g clip-path="url(#inside)">
+    <rect width="1024" height="1024" fill="#0c0a07" mask="url(#band-outer)"/>
+    <rect width="1024" height="1024" fill="#3a2f22" mask="url(#band-inner)"/>
+    <rect width="1024" height="1024" fill="#c9a24a" opacity="0.85" mask="url(#band-gold)"/>
+  </g>
+  <g fill="#c9a24a" opacity="0.95">
+    <path d="M512 76 540 104 512 132 484 104Z"/>
+    <path d="M512 892 540 920 512 948 484 920Z"/>
+    <path d="M104 484 132 512 104 540 76 512Z"/>
+    <path d="M920 484 948 512 920 540 892 512Z"/>
+  </g>
+
+  <!-- The Ash Logs sprite from the wiki (File:Ash_Logs.png), pressed onto the leather -->
+  <image href="ash-logs.png" x="62" y="70" width="900" height="900" filter="url(#press)"/>
+</svg>

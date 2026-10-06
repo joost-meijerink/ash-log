@@ -1,0 +1,196 @@
+[
+  {
+    "id": "Crasorak Kara",
+    "name": "Crasorak Kara",
+    "order": 1,
+    "power": 2,
+    "area": "Temple Woods",
+    "region": "Brynmoor",
+    "recipes": [],
+    "pointId": "vaults:37482:191753",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Crasorak_Kara"
+  },
+  {
+    "id": "Thishepen Kara",
+    "name": "Thishepen Kara",
+    "order": 2,
+    "power": 2,
+    "area": "Bramblemead Valley",
+    "region": "Brynmoor",
+    "recipes": [],
+    "pointId": "vaults:26749:150692",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Thishepen_Kara"
+  },
+  {
+    "id": "Vertentis Kara",
+    "name": "Vertentis Kara",
+    "order": 3,
+    "power": 2,
+    "area": "Whispering Swamp",
+    "region": "Brynmoor",
+    "recipes": [
+      {
+        "name": "Anti-dragon shield"
+      }
+    ],
+    "pointId": "vaults:102981:145062",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Vertentis_Kara"
+  },
+  {
+    "id": "Takla Kara",
+    "name": "Takla Kara",
+    "order": 4,
+    "power": 3,
+    "area": "Fractured Plains",
+    "region": "Ghornfell",
+    "recipes": [
+      {
+        "name": "Paladin's helm",
+        "set": "Paladin armour set"
+      },
+      {
+        "name": "Paladin's platebody",
+        "set": "Paladin armour set"
+      },
+      {
+        "name": "Paladin platelegs",
+        "set": "Paladin armour set"
+      },
+      {
+        "name": "Wild scout's shortbow"
+      }
+    ],
+    "pointId": "vaults:73020:118948",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Takla_Kara"
+  },
+  {
+    "id": "Skeklac Kara",
+    "name": "Skeklac Kara",
+    "order": 5,
+    "power": 4,
+    "area": "Fractured Plains",
+    "region": "Ghornfell",
+    "recipes": [
+      {
+        "name": "Granite maul"
+      }
+    ],
+    "note": "This recipe is not fully unlocked until completion of the quest Granite Mauled.",
+    "pointId": "vaults:135920:78549",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Skeklac_Kara"
+  },
+  {
+    "id": "Kletterbuja Kara",
+    "name": "Kletterbuja Kara",
+    "order": 6,
+    "power": 3,
+    "area": "Bloodblight Swamp",
+    "region": "Ghornfell",
+    "recipes": [
+      {
+        "name": "Abyssal whip"
+      }
+    ],
+    "note": "An abyssal spine must be in the players inventory in order to unlock this recipe.",
+    "pointId": "vaults:118481:169062",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Kletterbuja_Kara"
+  },
+  {
+    "id": "Chaktan Kara",
+    "name": "Chaktan Kara",
+    "order": 7,
+    "power": 4,
+    "area": "Stormtouched Highlands",
+    "region": "Ghornfell",
+    "recipes": [
+      {
+        "name": "Dragonbone dagger"
+      },
+      {
+        "name": "Dragonkin mage hood",
+        "set": "Dragonkin mage armour set"
+      },
+      {
+        "name": "Dragonkin mage robes",
+        "set": "Dragonkin mage armour set"
+      },
+      {
+        "name": "Dragonkin mage robe legs",
+        "set": "Dragonkin mage armour set"
+      }
+    ],
+    "pointId": "vaults:15712:79152",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Chaktan_Kara"
+  },
+  {
+    "id": "Kalistrakthen Kara",
+    "name": "Kalistrakthen Kara",
+    "order": 8,
+    "power": 5,
+    "area": "Emberwood",
+    "region": "Fellhollow",
+    "recipes": [
+      {
+        "name": "Fallen hoplite's chest"
+      }
+    ],
+    "pointId": "vaults:29382:-51578",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Kalistrakthen_Kara"
+  },
+  {
+    "id": "Skekven Kara",
+    "name": "Skekven Kara",
+    "order": 9,
+    "power": 5,
+    "area": "Lake of Lost Souls (east)",
+    "region": "Fellhollow",
+    "recipes": [
+      {
+        "name": "Fallen hoplite's tassets"
+      },
+      {
+        "name": "Undead ranger's bow"
+      }
+    ],
+    "pointId": "vaults:197934:-42374",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Skekven_Kara"
+  },
+  {
+    "id": "Vekchenven Kara",
+    "name": "Vekchenven Kara",
+    "order": 10,
+    "power": 5,
+    "area": "Lake of Lost Souls (west)",
+    "region": "Fellhollow",
+    "recipes": [
+      {
+        "name": "Necromancer's staff"
+      },
+      {
+        "name": "Fallen hoplite's helm"
+      }
+    ],
+    "pointId": "vaults:144038:-57700",
+    "wikiUrl": "https://dragonwilds.runescape.wiki/w/Vekchenven_Kara"
+  },
+  {
+    "id": "Manafem Kara",
+    "name": "Manafem Kara",
+    "order": 11,
+    "power": 7,
+    "area": "Umbral Sands",
+    "region": "Umbral Sands",
+    "recipes": [],
+    "pointId": "vaults:233978:223195"
+  },
+  {
+    "id": "Uzzer Kara",
+    "name": "Uzzer Kara",
+    "order": 11,
+    "power": 7,
+    "area": "Umbral Sands",
+    "region": "Umbral Sands",
+    "recipes": [],
+    "pointId": "vaults:342891:74271"
+  }
+]

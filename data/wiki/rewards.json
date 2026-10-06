@@ -1,0 +1,2161 @@
+[
+  {
+    "id": "plan:dragonkin-gargoyle-01",
+    "kind": "plan",
+    "name": "Dragonkin Gargoyle 01",
+    "recipe": "PLAN: Dragonkin Gargoyle 01",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-gargoyle-02",
+    "kind": "plan",
+    "name": "Dragonkin Gargoyle 02",
+    "recipe": "PLAN: Dragonkin Gargoyle 02",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-gargoyle-03",
+    "kind": "plan",
+    "name": "Dragonkin Gargoyle 03",
+    "recipe": "PLAN: Dragonkin Gargoyle 03",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-obelisk-01",
+    "kind": "plan",
+    "name": "Dragonkin Obelisk 01",
+    "recipe": "PLAN: Dragonkin Obelisk 01",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-obelisk-02",
+    "kind": "plan",
+    "name": "Dragonkin Obelisk 02",
+    "recipe": "PLAN: Dragonkin Obelisk 02",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-obelisk-03",
+    "kind": "plan",
+    "name": "Dragonkin Obelisk 03",
+    "recipe": "PLAN: Dragonkin Obelisk 03",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-statue-01",
+    "kind": "plan",
+    "name": "Dragonkin Statue 01",
+    "recipe": "PLAN: Dragonkin Statue 01",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:dragonkin-statue-02",
+    "kind": "plan",
+    "name": "Dragonkin Statue 02",
+    "recipe": "PLAN: Dragonkin Statue 02",
+    "group": "Ancient Dragonkin",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-banner-01",
+    "kind": "plan",
+    "name": "Armadyl Banner 01",
+    "recipe": "PLAN: Armadyl Banner 01",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-banner-02",
+    "kind": "plan",
+    "name": "Armadyl Banner 02",
+    "recipe": "PLAN: Armadyl Banner 02",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-banner-03",
+    "kind": "plan",
+    "name": "Armadyl Banner 03",
+    "recipe": "PLAN: Armadyl Banner 03",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-flag-01",
+    "kind": "plan",
+    "name": "Armadyl Flag 01",
+    "recipe": "PLAN: Armadyl Flag 01",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-flag-02",
+    "kind": "plan",
+    "name": "Armadyl Flag 02",
+    "recipe": "PLAN: Armadyl Flag 02",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-flag-03",
+    "kind": "plan",
+    "name": "Armadyl Flag 03",
+    "recipe": "PLAN: Armadyl Flag 03",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-flag-04",
+    "kind": "plan",
+    "name": "Armadyl Flag 04",
+    "recipe": "PLAN: Armadyl Flag 04",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:armadyl-flag-05",
+    "kind": "plan",
+    "name": "Armadyl Flag 05",
+    "recipe": "PLAN: Armadyl Flag 05",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-banner-01",
+    "kind": "plan",
+    "name": "Bandos Banner 01",
+    "recipe": "PLAN: Bandos Banner 01",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-banner-02",
+    "kind": "plan",
+    "name": "Bandos Banner 02",
+    "recipe": "PLAN: Bandos Banner 02",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-banner-03",
+    "kind": "plan",
+    "name": "Bandos Banner 03",
+    "recipe": "PLAN: Bandos Banner 03",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-flag-01",
+    "kind": "plan",
+    "name": "Bandos Flag 01",
+    "recipe": "PLAN: Bandos Flag 01",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-flag-02",
+    "kind": "plan",
+    "name": "Bandos Flag 02",
+    "recipe": "PLAN: Bandos Flag 02",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-flag-03",
+    "kind": "plan",
+    "name": "Bandos Flag 03",
+    "recipe": "PLAN: Bandos Flag 03",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-flag-04",
+    "kind": "plan",
+    "name": "Bandos Flag 04",
+    "recipe": "PLAN: Bandos Flag 04",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bandos-flag-05",
+    "kind": "plan",
+    "name": "Bandos Flag 05",
+    "recipe": "PLAN: Bandos Flag 05",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-banner-01",
+    "kind": "plan",
+    "name": "Guthix Banner 01",
+    "recipe": "PLAN: Guthix Banner 01",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-banner-02",
+    "kind": "plan",
+    "name": "Guthix Banner 02",
+    "recipe": "PLAN: Guthix Banner 02",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-banner-03",
+    "kind": "plan",
+    "name": "Guthix Banner 03",
+    "recipe": "PLAN: Guthix Banner 03",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-flag-01",
+    "kind": "plan",
+    "name": "Guthix Flag 01",
+    "recipe": "PLAN: Guthix Flag 01",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-flag-02",
+    "kind": "plan",
+    "name": "Guthix Flag 02",
+    "recipe": "PLAN: Guthix Flag 02",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-flag-03",
+    "kind": "plan",
+    "name": "Guthix Flag 03",
+    "recipe": "PLAN: Guthix Flag 03",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-flag-04",
+    "kind": "plan",
+    "name": "Guthix Flag 04",
+    "recipe": "PLAN: Guthix Flag 04",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:guthix-flag-05",
+    "kind": "plan",
+    "name": "Guthix Flag 05",
+    "recipe": "PLAN: Guthix Flag 05",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-banner-01",
+    "kind": "plan",
+    "name": "Saradomin Banner 01",
+    "recipe": "PLAN: Saradomin Banner 01",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-banner-02",
+    "kind": "plan",
+    "name": "Saradomin Banner 02",
+    "recipe": "PLAN: Saradomin Banner 02",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-banner-03",
+    "kind": "plan",
+    "name": "Saradomin Banner 03",
+    "recipe": "PLAN: Saradomin Banner 03",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-flag-01",
+    "kind": "plan",
+    "name": "Saradomin Flag 01",
+    "recipe": "PLAN: Saradomin Flag 01",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-flag-02",
+    "kind": "plan",
+    "name": "Saradomin Flag 02",
+    "recipe": "PLAN: Saradomin Flag 02",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-flag-03",
+    "kind": "plan",
+    "name": "Saradomin Flag 03",
+    "recipe": "PLAN: Saradomin Flag 03",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-flag-04",
+    "kind": "plan",
+    "name": "Saradomin Flag 04",
+    "recipe": "PLAN: Saradomin Flag 04",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:saradomin-flag-05",
+    "kind": "plan",
+    "name": "Saradomin Flag 05",
+    "recipe": "PLAN: Saradomin Flag 05",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-banner-01",
+    "kind": "plan",
+    "name": "Zamorak Banner 01",
+    "recipe": "PLAN: Zamorak Banner 01",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-banner-02",
+    "kind": "plan",
+    "name": "Zamorak Banner 02",
+    "recipe": "PLAN: Zamorak Banner 02",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-banner-03",
+    "kind": "plan",
+    "name": "Zamorak Banner 03",
+    "recipe": "PLAN: Zamorak Banner 03",
+    "group": "Dowdun Reach",
+    "source": "Found in chests in Dowdun Reach.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-flag-01",
+    "kind": "plan",
+    "name": "Zamorak Flag 01",
+    "recipe": "PLAN: Zamorak Flag 01",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-flag-02",
+    "kind": "plan",
+    "name": "Zamorak Flag 02",
+    "recipe": "PLAN: Zamorak Flag 02",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-flag-03",
+    "kind": "plan",
+    "name": "Zamorak Flag 03",
+    "recipe": "PLAN: Zamorak Flag 03",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-flag-04",
+    "kind": "plan",
+    "name": "Zamorak Flag 04",
+    "recipe": "PLAN: Zamorak Flag 04",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:zamorak-flag-05",
+    "kind": "plan",
+    "name": "Zamorak Flag 05",
+    "recipe": "PLAN: Zamorak Flag 05",
+    "group": "Dowdun Reach",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:grave-01",
+    "kind": "plan",
+    "name": "Grave 01",
+    "recipe": "PLAN: Grave 1",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:grave-02",
+    "kind": "plan",
+    "name": "Grave 02",
+    "recipe": "PLAN: Grave 2",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:grave-03",
+    "kind": "plan",
+    "name": "Grave 03",
+    "recipe": "PLAN: Grave 3",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:grave-04",
+    "kind": "plan",
+    "name": "Grave 04",
+    "recipe": "PLAN: Grave 4",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:headstone-01",
+    "kind": "plan",
+    "name": "Headstone 01",
+    "recipe": "PLAN: Headstone 01",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:headstone-02",
+    "kind": "plan",
+    "name": "Headstone 02",
+    "recipe": "PLAN: Headstone 02",
+    "group": "Fellhollow",
+    "source": "PLAN: headstone 01 and PLAN: grave 1 are available from 3 spectral platforming chests. PLAN: headstone 02, PLAN: grave 2, PLAN: grave 3, and PLAN: grave 4 are available from 3 Moving spectral platforming chests.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:spectral-book",
+    "kind": "plan",
+    "name": "Spectral Book",
+    "recipe": "PLAN: Spectral Book",
+    "group": "Fellhollow",
+    "source": "Reward from the activity X Marks the Spot.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bowl-of-onions",
+    "kind": "plan",
+    "name": "Bowl of Onions",
+    "recipe": "PLAN: Bowl of Onions",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:bowl-of-peaches",
+    "kind": "plan",
+    "name": "Bowl of Peaches",
+    "recipe": "PLAN: Bowl of Peaches",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:potted-dwellberry-bush",
+    "kind": "plan",
+    "name": "Potted Dwellberry Bush",
+    "recipe": "PLAN: Potted Dwellberry Bush",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:potted-onion",
+    "kind": "plan",
+    "name": "Potted Onion",
+    "recipe": "PLAN: Potted Onion",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:potted-redberry-bush",
+    "kind": "plan",
+    "name": "Potted Redberry Bush",
+    "recipe": "PLAN: Potted Redberry Bush",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:stack-of-bowls",
+    "kind": "plan",
+    "name": "Stack of Bowls",
+    "recipe": "PLAN: Stack of Bowls",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:vial-shelf",
+    "kind": "plan",
+    "name": "Vial Shelf",
+    "recipe": "PLAN: Vial Shelf",
+    "group": "Food and Drink, Plants, and Shelves and Cabinets",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-drum",
+    "kind": "plan",
+    "name": "Garou Drum",
+    "recipe": "PLAN: Garou Drum",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-hanging-ornament-01",
+    "kind": "plan",
+    "name": "Garou Hanging Ornament 01",
+    "recipe": "PLAN: Garou Hanging Ornament 01",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-hanging-ornament-02",
+    "kind": "plan",
+    "name": "Garou Hanging Ornament 02",
+    "recipe": "PLAN: Garou Hanging Ornament 02",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-hanging-ornament-03",
+    "kind": "plan",
+    "name": "Garou Hanging Ornament 03",
+    "recipe": "PLAN: Garou Hanging Ornament 03",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-hanging-ornament-04",
+    "kind": "plan",
+    "name": "Garou Hanging Ornament 04",
+    "recipe": "PLAN: Garou Hanging Ornament 04",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-stool",
+    "kind": "plan",
+    "name": "Garou Stool",
+    "recipe": "PLAN: Garou Stool",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-trophy-01",
+    "kind": "plan",
+    "name": "Garou Trophy 01",
+    "recipe": "PLAN: Garou Trophy 01",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-trophy-02",
+    "kind": "plan",
+    "name": "Garou Trophy 02",
+    "recipe": "PLAN: Garou Trophy 02",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-trophy-03",
+    "kind": "plan",
+    "name": "Garou Trophy 03",
+    "recipe": "PLAN: Garou Trophy 03",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-trophy-04",
+    "kind": "plan",
+    "name": "Garou Trophy 04",
+    "recipe": "PLAN: Garou Trophy 04",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-tusks-01",
+    "kind": "plan",
+    "name": "Garou Tusks 01",
+    "recipe": "PLAN: Garou Tusks 01",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-tusks-02",
+    "kind": "plan",
+    "name": "Garou Tusks 02",
+    "recipe": "PLAN: Garou Tusks 02",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-tusks-03",
+    "kind": "plan",
+    "name": "Garou Tusks 03",
+    "recipe": "PLAN: Garou Tusks 03",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-wall-banner",
+    "kind": "plan",
+    "name": "Garou Wall Banner",
+    "recipe": "PLAN: Garou Wall Banner",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:garou-wall-pelt",
+    "kind": "plan",
+    "name": "Garou Wall Pelt",
+    "recipe": "PLAN: Garou Hanging Pelt",
+    "group": "Garou",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:barrel-pile",
+    "kind": "plan",
+    "name": "Barrel Pile",
+    "recipe": "PLAN: Barrel Pile",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:broken-wooden-crate",
+    "kind": "plan",
+    "name": "Broken Wooden Crate",
+    "recipe": "PLAN: Broken Wooden Crate",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:keg-barrel",
+    "kind": "plan",
+    "name": "Keg Barrel",
+    "recipe": "PLAN: Keg Barrel",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:open-wooden-barrel",
+    "kind": "plan",
+    "name": "Open Wooden Barrel",
+    "recipe": "PLAN: Open Wooden Barrel",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:sealed-wooden-crate",
+    "kind": "plan",
+    "name": "Sealed Wooden Crate",
+    "recipe": "PLAN: Sealed Wooden Crate",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:stacked-wooden-crates",
+    "kind": "plan",
+    "name": "Stacked Wooden Crates",
+    "recipe": "PLAN: Stacked Wooden Crates",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:textile-kit",
+    "kind": "plan",
+    "name": "Textile Kit",
+    "recipe": "PLAN: Textile Kit",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:wooden-barrel",
+    "kind": "plan",
+    "name": "Wooden Barrel",
+    "recipe": "PLAN: Wooden Barrel",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:wooden-bin",
+    "kind": "plan",
+    "name": "Wooden Bin",
+    "recipe": "PLAN: Wooden Bin",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:wooden-bin-pile",
+    "kind": "plan",
+    "name": "Wooden Bin Pile",
+    "recipe": "PLAN: Wooden Bin Pile",
+    "group": "General",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:blue-standing-torch",
+    "kind": "plan",
+    "name": "Blue Standing Torch",
+    "recipe": "PLAN: Blue Standing Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:blue-wall-mounted-torch",
+    "kind": "plan",
+    "name": "Blue Wall-mounted Torch",
+    "recipe": "PLAN: Blue Wall-Mounted Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:green-standing-torch",
+    "kind": "plan",
+    "name": "Green Standing Torch",
+    "recipe": "PLAN: Green Standing Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:green-wall-mounted-torch",
+    "kind": "plan",
+    "name": "Green Wall-mounted Torch",
+    "recipe": "PLAN: Green Wall-Mounted Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:purple-standing-torch",
+    "kind": "plan",
+    "name": "Purple Standing Torch",
+    "recipe": "PLAN: Purple Standing Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:purple-wall-mounted-torch",
+    "kind": "plan",
+    "name": "Purple Wall-mounted Torch",
+    "recipe": "PLAN: Purple Wall-Mounted Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:red-standing-torch",
+    "kind": "plan",
+    "name": "Red Standing Torch",
+    "recipe": "PLAN: Red Standing Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "plan:red-wall-mounted-torch",
+    "kind": "plan",
+    "name": "Red Wall-mounted Torch",
+    "recipe": "PLAN: Red Wall-Mounted Torch",
+    "group": "Lighting",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "pattern:bloodblight-cape",
+    "kind": "pattern",
+    "name": "Bloodblight Cape",
+    "recipe": "PATTERN: Bloodblight Cape",
+    "source": "Located inside a chest hidden behind a breakable wall (requires level 20 Mining) on top of one of the structures in the fortress located in the Bloodblight Swamp.",
+    "pointIds": [
+      "bloodblight-cape:125281:170452"
+    ]
+  },
+  {
+    "id": "pattern:bramblemead-cape",
+    "kind": "pattern",
+    "name": "Bramblemead Cape",
+    "recipe": "PATTERN: Bramblemead Cape",
+    "source": "Located inside a chest at the top of the Runecrafting Guild. It is buried in the rubble at the highest point of the tower.",
+    "pointIds": [
+      "bramblemead-cape:21416:147505"
+    ]
+  },
+  {
+    "id": "pattern:dowdun-reach-cape",
+    "kind": "pattern",
+    "name": "Dowdun Reach Cape",
+    "recipe": "Torn Tapestry",
+    "source": "Located inside a buried chest behind a rock near the Grand Hall goblin camp.",
+    "pointIds": [
+      "torn-tapestry:241275:44716"
+    ]
+  },
+  {
+    "id": "pattern:fellhollow-cape",
+    "kind": "pattern",
+    "name": "Fellhollow Cape",
+    "recipe": "PATTERN: Fell Cape",
+    "source": "Located in Hope's Fall behind rocks against the bones of the fallen dragon.",
+    "pointIds": [
+      "fell-cape:132216:-50829"
+    ]
+  },
+  {
+    "id": "pattern:fractured-cape",
+    "kind": "pattern",
+    "name": "Fractured Cape",
+    "recipe": "PATTERN: Fractured Cape",
+    "source": "Located inside a chest at the northernmost tip of the Fractured Plains (right behind a garou camp).",
+    "pointIds": [
+      "fractured-cape:118550:62845"
+    ]
+  },
+  {
+    "id": "pattern:stormtouched-cape",
+    "kind": "pattern",
+    "name": "Stormtouched Cape",
+    "recipe": "PATTERN: Stormtouched Cape",
+    "source": "Located inside a chest on top of the Highlands Castle where the Garou King is located.",
+    "pointIds": [
+      "stormtouched-cape:21453:71957"
+    ]
+  },
+  {
+    "id": "pattern:umbral-sands-cape",
+    "kind": "pattern",
+    "name": "Umbral Sands Cape",
+    "recipe": "Shred of Sunbleached Weave",
+    "source": "Located near the top of a stone obelisk in the Dunes of Uzzer in Umbral Sands."
+  },
+  {
+    "id": "pattern:whispering-cape",
+    "kind": "pattern",
+    "name": "Whispering Cape",
+    "recipe": "PATTERN: Whispering Cape",
+    "source": "Located inside a chest in an alcove along the wall following the cave where you must fight the garou druid for the Goblin Diplomacy quest (western side of the Whispering Swamp).",
+    "pointIds": [
+      "whispering-cape:82869:143638"
+    ]
+  },
+  {
+    "id": "vestige:adventurers-longbow",
+    "kind": "vestige",
+    "name": "Adventurer's Longbow",
+    "recipe": "A Simple Broken Bow",
+    "group": "Brynmoor",
+    "source": "Located inside a chest found inside a cave to the south-east of the Wise Old Man",
+    "pointIds": [
+      "a-simple-broken-bow:64332:186189"
+    ]
+  },
+  {
+    "id": "vestige:bag-of-noggin",
+    "kind": "vestige",
+    "name": "Bag of Noggin'",
+    "recipe": "A Threadbare Grain Sack",
+    "group": "Brynmoor",
+    "source": "Located inside a chest within a broken-down home in Bramblemead Village",
+    "pointIds": [
+      "threadbare-grain-sack:42722:172338"
+    ]
+  },
+  {
+    "id": "vestige:goblin-swingslash",
+    "kind": "vestige",
+    "name": "Goblin \"Swingslash\"",
+    "recipe": "A Cruel Goblin Blade",
+    "group": "Brynmoor",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:leggings-of-lightness",
+    "kind": "vestige",
+    "name": "Leggings Of Lightness",
+    "recipe": "Suspiciously Light Tattered Boots",
+    "group": "Brynmoor",
+    "source": "Located inside a chest on top of the windmill.",
+    "pointIds": [
+      "suspiciously-light-tattered-boots:16257:172060"
+    ]
+  },
+  {
+    "id": "vestige:wooden-training-sword",
+    "kind": "vestige",
+    "name": "Wooden Training Sword",
+    "recipe": "An Educational Blade",
+    "group": "Brynmoor",
+    "source": "Located inside a chest on top of the Temple of Saradomin ledge",
+    "pointIds": [
+      "an-educational-blade:5179:190727"
+    ]
+  },
+  {
+    "id": "vestige:black-greataxe",
+    "kind": "vestige",
+    "name": "Black Greataxe",
+    "recipe": "Bloodstained Hilt",
+    "group": "Dowdun Reach",
+    "source": "Also found in chests in Dowdun Reach.",
+    "via": [
+      "shops",
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:black-knight-helmet",
+    "kind": "vestige",
+    "name": "Black Knight Helmet",
+    "recipe": "Bloodstained Black Visor",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:black-knight-platebody",
+    "kind": "vestige",
+    "name": "Black Knight Platebody",
+    "recipe": "Shard of Black Pauldron",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:black-knight-platelegs",
+    "kind": "vestige",
+    "name": "Black Knight Platelegs",
+    "recipe": "Grim Black Codpiece",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:black-shield",
+    "kind": "vestige",
+    "name": "Black Shield",
+    "recipe": "Battle-Scarred Black Metal",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:black-sword",
+    "kind": "vestige",
+    "name": "Black Sword",
+    "recipe": "Shattered Black Blade",
+    "group": "Dowdun Reach",
+    "source": "Also found in chests in Dowdun Reach.",
+    "via": [
+      "shops",
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:blue-dyad-cape",
+    "kind": "vestige",
+    "name": "Blue Dyad Cape",
+    "recipe": "Chewed Blue Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:blue-hex-cape",
+    "kind": "vestige",
+    "name": "Blue Hex Cape",
+    "recipe": "Soiled Blue Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:green-dyad-cape",
+    "kind": "vestige",
+    "name": "Green Dyad Cape",
+    "recipe": "Chewed Green Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:green-hex-cape",
+    "kind": "vestige",
+    "name": "Green Hex Cape",
+    "recipe": "Soiled Green Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:pink-dyad-cape",
+    "kind": "vestige",
+    "name": "Pink Dyad Cape",
+    "recipe": "Chewed Pink Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:pink-hex-cape",
+    "kind": "vestige",
+    "name": "Pink Hex Cape",
+    "recipe": "Soiled Pink Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:red-dyad-cape",
+    "kind": "vestige",
+    "name": "Red Dyad Cape",
+    "recipe": "Chewed Red Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:red-hex-cape",
+    "kind": "vestige",
+    "name": "Red Hex Cape",
+    "recipe": "Soiled Red Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:shadow-body",
+    "kind": "vestige",
+    "name": "Shadow Body",
+    "recipe": "Limp Black Lining",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:shadow-chaps",
+    "kind": "vestige",
+    "name": "Shadow Chaps",
+    "recipe": "Dusty Black Pocket",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:shadow-cowl",
+    "kind": "vestige",
+    "name": "Shadow Cowl",
+    "recipe": "Sodden Black Leather",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:shadow-crossbow",
+    "kind": "vestige",
+    "name": "Shadow Crossbow",
+    "recipe": "Sinister Mechanism",
+    "group": "Dowdun Reach",
+    "source": "Also found in chests in Dowdun Reach.",
+    "via": [
+      "shops",
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:subjugation-staff",
+    "kind": "vestige",
+    "name": "Subjugation Staff",
+    "recipe": "Demonic Metal Rod",
+    "group": "Dowdun Reach",
+    "source": "Also found in chests in Dowdun Reach.",
+    "via": [
+      "shops",
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:yellow-dyad-cape",
+    "kind": "vestige",
+    "name": "Yellow Dyad Cape",
+    "recipe": "Chewed Yellow Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:yellow-hex-cape",
+    "kind": "vestige",
+    "name": "Yellow Hex Cape",
+    "recipe": "Soiled Yellow Cloth",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:zamorak-hood",
+    "kind": "vestige",
+    "name": "Zamorak Hood",
+    "recipe": "Fabric That Hums With You",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:zamorak-robe-legs",
+    "kind": "vestige",
+    "name": "Zamorak Robe Legs",
+    "recipe": "Wizard's Kneecap",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:zamorak-robes",
+    "kind": "vestige",
+    "name": "Zamorak Robes",
+    "recipe": "Whispering Elbow Pad",
+    "group": "Dowdun Reach",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:amulet-of-accuracy",
+    "kind": "vestige",
+    "name": "Amulet of Accuracy",
+    "recipe": "Arrowhead of Ancient Origin",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:amulet-of-defence",
+    "kind": "vestige",
+    "name": "Amulet of Defence",
+    "recipe": "Hardy Weathered Shell",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:amulet-of-magic",
+    "kind": "vestige",
+    "name": "Amulet of Magic",
+    "recipe": "Softly Vibrating Orb",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:amulet-of-strength",
+    "kind": "vestige",
+    "name": "Amulet of Strength",
+    "recipe": "Weighted Training Band",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:black-adventurers-cape",
+    "kind": "vestige",
+    "name": "Black Adventurer's Cape",
+    "recipe": "Moth Eaten Black Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:blue-adventurers-cape",
+    "kind": "vestige",
+    "name": "Blue Adventurer's Cape",
+    "recipe": "Moth Eaten Blue Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:fallen-hoplites-aspis",
+    "kind": "vestige",
+    "name": "Fallen Hoplite's Aspis",
+    "recipe": "Sundering Spiked Slab",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:green-adventurers-cape",
+    "kind": "vestige",
+    "name": "Green Adventurer's Cape",
+    "recipe": "Moth Eaten Green Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:imarus-talon",
+    "kind": "vestige",
+    "name": "Imaru's Talon",
+    "recipe": "Serrated Claw",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:necromancers-crown",
+    "kind": "vestige",
+    "name": "Necromancer's Crown",
+    "recipe": "Curse Carrying Crown",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:necromancers-robe-bottom",
+    "kind": "vestige",
+    "name": "Necromancer's Robe Bottom",
+    "recipe": "Burnished Belt Buckle",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:necromancers-robe-top",
+    "kind": "vestige",
+    "name": "Necromancer's Robe Top",
+    "recipe": "Remnants of a Rotting Robe",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:orange-adventurers-cape",
+    "kind": "vestige",
+    "name": "Orange Adventurer's Cape",
+    "recipe": "Moth Eaten Orange Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:pink-adventurers-cape",
+    "kind": "vestige",
+    "name": "Pink Adventurer's Cape",
+    "recipe": "Moth Eaten Pink Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:purple-adventurers-cape",
+    "kind": "vestige",
+    "name": "Purple Adventurer's Cape",
+    "recipe": "Moth Eaten Purple Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:ranger-hat",
+    "kind": "vestige",
+    "name": "Ranger Hat",
+    "recipe": "Simply Splendid Feather",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:ranger-tights",
+    "kind": "vestige",
+    "name": "Ranger Tights",
+    "recipe": "Tastefully Torn Tights",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:ranger-tunic",
+    "kind": "vestige",
+    "name": "Ranger Tunic",
+    "recipe": "Slightly Chaffing Chestguard",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:red-adventurers-cape",
+    "kind": "vestige",
+    "name": "Red Adventurer's Cape",
+    "recipe": "Moth Eaten Red Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:ring-of-life",
+    "kind": "vestige",
+    "name": "Ring of Life",
+    "recipe": "Sigil of a Phoenix",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:ring-of-pursuit",
+    "kind": "vestige",
+    "name": "Ring of Pursuit",
+    "recipe": "Carved Bone Animal Lure",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:ring-of-recoil",
+    "kind": "vestige",
+    "name": "Ring of Recoil",
+    "recipe": "A Cracked Bronze Vanity Mirror",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:shadow-sword",
+    "kind": "vestige",
+    "name": "Shadow Sword",
+    "recipe": "Shard of Smoky Glass",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:shadowscale-cape",
+    "kind": "vestige",
+    "name": "Shadowscale Cape",
+    "recipe": "Tattered Time-Lost Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:shadowscale-hood",
+    "kind": "vestige",
+    "name": "Shadowscale Hood",
+    "recipe": "Cloying Damp Cowl",
+    "group": "Fellhollow",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:undead-spade",
+    "kind": "vestige",
+    "name": "Undead Spade",
+    "recipe": "Rotten Farming Tool",
+    "group": "Fellhollow",
+    "source": "Buried Chests in Fellhollow have this vestige with a rarity of 5/100.",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:white-adventurers-cape",
+    "kind": "vestige",
+    "name": "White Adventurer's Cape",
+    "recipe": "Moth Eaten White Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:white-full-helm",
+    "kind": "vestige",
+    "name": "White Full Helm",
+    "recipe": "Corroded White Visor",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:white-platebody",
+    "kind": "vestige",
+    "name": "White Platebody",
+    "recipe": "Dented White Pauldron",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:white-platelegs",
+    "kind": "vestige",
+    "name": "White Platelegs",
+    "recipe": "Crushed White Cuisse",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:yellow-adventurers-cape",
+    "kind": "vestige",
+    "name": "Yellow Adventurer's Cape",
+    "recipe": "Moth Eaten Yellow Cloth",
+    "group": "Fellhollow",
+    "via": [
+      "shops"
+    ]
+  },
+  {
+    "id": "vestige:blurite-crossbow",
+    "kind": "vestige",
+    "name": "Blurite Crossbow",
+    "recipe": "Azure Metal Contraption",
+    "group": "Ghornfell",
+    "source": "Located under a cliff near the northern border of the Fractured Plains, west of the main river",
+    "pointIds": [
+      "azure-metal-contraption:75514:83247"
+    ]
+  },
+  {
+    "id": "vestige:chieftains-blade",
+    "kind": "vestige",
+    "name": "Chieftain's Blade",
+    "recipe": "A Corroded Serrated Blade",
+    "group": "Ghornfell",
+    "source": "Located inside a chest atop the Crystalline Mesa along one of the ruined walls",
+    "pointIds": [
+      "a-corroded-serrated-blade:78372:114684"
+    ]
+  },
+  {
+    "id": "vestige:draconic-staff",
+    "kind": "vestige",
+    "name": "Draconic Staff",
+    "recipe": "Parts of a Sinister-Looking Staff",
+    "group": "Ghornfell",
+    "source": "Located in a chest on the western wall, outside of Ashien's Watch (located in the north-east corner of the Fractured Plains)",
+    "pointIds": [
+      "parts-of-a-sinister-looking-staff:138348:76395"
+    ]
+  },
+  {
+    "id": "vestige:grieving-moonstaff",
+    "kind": "vestige",
+    "name": "Grieving Moonstaff",
+    "recipe": "A Mysterious Crescent Carving",
+    "group": "Ghornfell",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:hunter-stagbow",
+    "kind": "vestige",
+    "name": "Hunter Stagbow",
+    "recipe": "A String of Sinew",
+    "group": "Ghornfell",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:skullsplitter",
+    "kind": "vestige",
+    "name": "Skullsplitter",
+    "recipe": "Remnants of a Shattered Skull",
+    "group": "Ghornfell",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "vestige:thanes-authority",
+    "kind": "vestige",
+    "name": "Thane's Authority",
+    "recipe": "A Brutal Bladehead",
+    "group": "Ghornfell",
+    "via": [
+      "drops"
+    ]
+  },
+  {
+    "id": "quest:abraxus-ring",
+    "kind": "quest",
+    "name": "Abraxus Ring",
+    "requirement": "Necromancer equipment",
+    "questId": "What Remains is Written"
+  },
+  {
+    "id": "quest:anti-dragon-shield",
+    "kind": "quest",
+    "name": "Anti-Dragon Shield",
+    "requirement": "Vertentis Kara",
+    "questId": "Dragon Slayer"
+  },
+  {
+    "id": "quest:avas-accumulator",
+    "kind": "quest",
+    "name": "Ava's Accumulator",
+    "requirement": "Undead Chicken, Bundle of Undead Twigs, Magnet",
+    "questId": "Animal Magnetism"
+  },
+  {
+    "id": "quest:crystal-bow",
+    "kind": "quest",
+    "name": "Crystal Bow",
+    "requirement": "Crystal Seed",
+    "questId": "Heartstrings"
+  },
+  {
+    "id": "quest:dorgeshuun-crossbow",
+    "kind": "quest",
+    "name": "Dorgeshuun Crossbow",
+    "requirement": "Clay Decoration",
+    "questId": "Even More Restless Ghosts"
+  },
+  {
+    "id": "quest:dragonblight-shield",
+    "kind": "quest",
+    "name": "Dragonblight Shield",
+    "requirement": "Draconic Visage",
+    "questId": "Dragon Slayer"
+  },
+  {
+    "id": "quest:dragoncurse-shield",
+    "kind": "quest",
+    "name": "Dragoncurse Shield",
+    "requirement": "Undead Draconic Visage",
+    "questId": "Withering Heights"
+  },
+  {
+    "id": "quest:garou-highborns-cloak",
+    "kind": "quest",
+    "name": "Garou Highborn's Cloak",
+    "requirement": "Purified King's Token",
+    "questId": "Dog Days"
+  },
+  {
+    "id": "quest:ghostspeak-amulet",
+    "kind": "quest",
+    "name": "Ghostspeak Amulet",
+    "requirement": "Required for Even More Restless Ghosts",
+    "questId": "Restless Ghosts"
+  },
+  {
+    "id": "quest:goblin-war-banner",
+    "kind": "quest",
+    "name": "Goblin War Banner",
+    "requirement": "Druid's Bandosian Amulet",
+    "questId": "Goblin Diplomacy"
+  },
+  {
+    "id": "quest:granite-maul",
+    "kind": "quest",
+    "name": "Granite Maul",
+    "requirement": "Skeklac Kara",
+    "questId": "Granite Mauled"
+  },
+  {
+    "id": "quest:hanging-tools",
+    "kind": "quest",
+    "name": "Hanging Tools",
+    "requirement": "Ash Logs",
+    "questId": "A Room With A Garou"
+  },
+  {
+    "id": "quest:mount",
+    "kind": "quest",
+    "name": "Mount",
+    "requirement": "Primordial Heart",
+    "questId": "The Wild Hunt"
+  },
+  {
+    "id": "quest:postbox",
+    "kind": "quest",
+    "name": "Postbox",
+    "requirement": "Letter",
+    "questId": "Letters for the Dead"
+  },
+  {
+    "id": "quest:pots-on-a-bench",
+    "kind": "quest",
+    "name": "Pots on a Bench",
+    "requirement": "Ash Logs",
+    "questId": "A Room With A Garou"
+  },
+  {
+    "id": "quest:salve-amulet",
+    "kind": "quest",
+    "name": "Salve Amulet",
+    "requirement": "Salve Crystal",
+    "questId": "Seeking Salvation"
+  },
+  {
+    "id": "quest:sawhorse",
+    "kind": "quest",
+    "name": "Sawhorse",
+    "requirement": "Ash Logs",
+    "questId": "A Room With A Garou"
+  },
+  {
+    "id": "quest:spectral-chinchompa-cape",
+    "kind": "quest",
+    "name": "Spectral Chinchompa Cape",
+    "requirement": "Spectral Chinchompa Skull",
+    "questId": "Things That Go Boom In The Night"
+  },
+  {
+    "id": "quest:staff-of-light",
+    "kind": "quest",
+    "name": "Staff of Light",
+    "requirement": "Thishepen Kara",
+    "questId": "Highlighting the Problem"
+  },
+  {
+    "id": "quest:titans-wrath",
+    "kind": "quest",
+    "name": "Titan's Wrath",
+    "requirement": "Broken Titan's Wrath",
+    "questId": "Black Knight's Fortress"
+  },
+  {
+    "id": "quest:ulvs-longbow",
+    "kind": "quest",
+    "name": "Ulv's Longbow",
+    "requirement": "Spectral Silver Thread",
+    "questId": "Mirror, Mirror"
+  },
+  {
+    "id": "quest:unholy-symbol",
+    "kind": "quest",
+    "name": "Unholy Symbol",
+    "requirement": "Journal",
+    "questId": "Wanted!"
+  },
+  {
+    "id": "quest:victoria-sponge-cake",
+    "kind": "quest",
+    "name": "Victoria Sponge Cake",
+    "requirement": "Bucket of Milk",
+    "questId": "Cook's Assistant"
+  },
+  {
+    "id": "quest:zamorak-cape",
+    "kind": "quest",
+    "name": "Zamorak Cape",
+    "requirement": "Corrupted Essence Sample",
+    "questId": "Biohazard"
+  },
+  {
+    "id": "quest:zamorak-staff",
+    "kind": "quest",
+    "name": "Zamorak Staff",
+    "requirement": "Nodestone",
+    "questId": "What's Theirs is Mine!"
+  },
+  {
+    "id": "quest:zombie-axe",
+    "kind": "quest",
+    "name": "Zombie Axe",
+    "requirement": "Undead Ranger's Bow, Necromancer's Staff, Shadow Sword",
+    "questId": "Doric's Quest"
+  },
+  {
+    "id": "effigy:fallen-hoplites-chest",
+    "kind": "effigy",
+    "name": "Fallen Hoplite's Chest",
+    "group": "Fellhollow",
+    "vaultId": "Kalistrakthen Kara"
+  },
+  {
+    "id": "effigy:fallen-hoplites-helm",
+    "kind": "effigy",
+    "name": "Fallen Hoplite's Helm",
+    "group": "Fellhollow",
+    "vaultId": "Vekchenven Kara"
+  },
+  {
+    "id": "effigy:fallen-hoplites-tassets",
+    "kind": "effigy",
+    "name": "Fallen Hoplite's Tassets",
+    "group": "Fellhollow",
+    "vaultId": "Skekven Kara"
+  },
+  {
+    "id": "effigy:necromancers-staff",
+    "kind": "effigy",
+    "name": "Necromancer's Staff",
+    "group": "Fellhollow",
+    "vaultId": "Vekchenven Kara"
+  },
+  {
+    "id": "effigy:undead-rangers-bow",
+    "kind": "effigy",
+    "name": "Undead Ranger's Bow",
+    "group": "Fellhollow",
+    "vaultId": "Skekven Kara"
+  },
+  {
+    "id": "effigy:wolfbane-dagger",
+    "kind": "effigy",
+    "name": "Wolfbane Dagger",
+    "group": "Fellhollow",
+    "vaultId": "Vekchenven Kara"
+  },
+  {
+    "id": "effigy:abyssal-whip",
+    "kind": "effigy",
+    "name": "Abyssal Whip",
+    "group": "Ghornfell",
+    "vaultId": "Kletterbuja Kara"
+  },
+  {
+    "id": "effigy:dragonbone-dagger",
+    "kind": "effigy",
+    "name": "Dragonbone Dagger",
+    "group": "Ghornfell",
+    "vaultId": "Chaktan Kara"
+  },
+  {
+    "id": "effigy:dragonkin-mage-hood",
+    "kind": "effigy",
+    "name": "Dragonkin Mage Hood",
+    "group": "Ghornfell",
+    "set": "Dragonkin mage armour set",
+    "vaultId": "Chaktan Kara"
+  },
+  {
+    "id": "effigy:dragonkin-mage-robe-legs",
+    "kind": "effigy",
+    "name": "Dragonkin Mage Robe Legs",
+    "group": "Ghornfell",
+    "set": "Dragonkin mage armour set",
+    "vaultId": "Chaktan Kara"
+  },
+  {
+    "id": "effigy:dragonkin-mage-robes",
+    "kind": "effigy",
+    "name": "Dragonkin Mage Robes",
+    "group": "Ghornfell",
+    "set": "Dragonkin mage armour set",
+    "vaultId": "Chaktan Kara"
+  },
+  {
+    "id": "effigy:paladin-platelegs",
+    "kind": "effigy",
+    "name": "Paladin Platelegs",
+    "group": "Ghornfell",
+    "set": "Paladin armour set",
+    "vaultId": "Takla Kara"
+  },
+  {
+    "id": "effigy:paladins-helm",
+    "kind": "effigy",
+    "name": "Paladin's Helm",
+    "group": "Ghornfell",
+    "set": "Paladin armour set",
+    "vaultId": "Takla Kara"
+  },
+  {
+    "id": "effigy:paladins-platebody",
+    "kind": "effigy",
+    "name": "Paladin's Platebody",
+    "group": "Ghornfell",
+    "set": "Paladin armour set",
+    "vaultId": "Takla Kara"
+  },
+  {
+    "id": "effigy:wild-archer-body",
+    "kind": "effigy",
+    "name": "Wild Archer Body",
+    "group": "Ghornfell",
+    "vaultId": "Kletterbuja Kara"
+  },
+  {
+    "id": "effigy:wild-archer-chaps",
+    "kind": "effigy",
+    "name": "Wild Archer Chaps",
+    "group": "Ghornfell",
+    "vaultId": "Kletterbuja Kara"
+  },
+  {
+    "id": "effigy:wild-archer-cowl",
+    "kind": "effigy",
+    "name": "Wild Archer Cowl",
+    "group": "Ghornfell",
+    "vaultId": "Kletterbuja Kara"
+  },
+  {
+    "id": "effigy:wild-scouts-shortbow",
+    "kind": "effigy",
+    "name": "Wild Scout's Shortbow",
+    "group": "Ghornfell",
+    "vaultId": "Takla Kara"
+  },
+  {
+    "id": "recipe-book:foragers-sandwich",
+    "kind": "recipe-book",
+    "name": "Forager's Sandwich",
+    "pointIds": [
+      "recipe-books:238359:20436"
+    ]
+  },
+  {
+    "id": "recipe-book:glazed-pumpkin-sandwich",
+    "kind": "recipe-book",
+    "name": "Glazed Pumpkin Sandwich",
+    "pointIds": [
+      "recipe-books:217906:31672"
+    ]
+  },
+  {
+    "id": "recipe-book:maple-toastie",
+    "kind": "recipe-book",
+    "name": "Maple Toastie",
+    "source": "Awarded as part of the Black Knight's Fortress (quest)",
+    "questId": "Black Knight's Fortress"
+  },
+  {
+    "id": "recipe-book:meat-sandwich",
+    "kind": "recipe-book",
+    "name": "Meat Sandwich",
+    "pointIds": [
+      "recipe-books:201455:34717"
+    ]
+  },
+  {
+    "id": "recipe-book:meat-twist-sandwich",
+    "kind": "recipe-book",
+    "name": "Meat Twist Sandwich",
+    "pointIds": [
+      "recipe-books:202923:48558"
+    ]
+  },
+  {
+    "id": "recipe-book:steak-sandwich",
+    "kind": "recipe-book",
+    "name": "Steak Sandwich",
+    "pointIds": [
+      "recipe-books:214569:50748"
+    ]
+  },
+  {
+    "id": "fishing-trophy:pristine-armoured-catfish-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Armoured Catfish Trophy",
+    "recipe": "Pristine Armoured Catfish",
+    "source": "Rod fishing spots in Dowdun Reach."
+  },
+  {
+    "id": "fishing-trophy:pristine-herring-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Herring Trophy",
+    "recipe": "Pristine Herring",
+    "source": "Rod fishing spots in Ghornfell."
+  },
+  {
+    "id": "fishing-trophy:pristine-infernal-eel-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Infernal Eel Trophy",
+    "recipe": "Pristine Infernal Eel",
+    "source": "Rod fishing spots in Dowdun Reach."
+  },
+  {
+    "id": "fishing-trophy:pristine-lobster-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Lobster Trophy",
+    "recipe": "Pristine Lobster",
+    "source": "Net fishing spots in Fellhollow."
+  },
+  {
+    "id": "fishing-trophy:pristine-salmon-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Salmon Trophy",
+    "recipe": "Pristine Salmon",
+    "source": "Rod fishing spots in Ghornfell."
+  },
+  {
+    "id": "fishing-trophy:pristine-sardine-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Sardine Trophy",
+    "recipe": "Pristine Sardine",
+    "source": "Rod fishing spots in Brynmoor."
+  },
+  {
+    "id": "fishing-trophy:pristine-trout-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Trout Trophy",
+    "recipe": "Pristine Trout",
+    "source": "Rod fishing spots in Brynmoor."
+  },
+  {
+    "id": "fishing-trophy:pristine-undead-bass-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Undead Bass Trophy",
+    "recipe": "Pristine Undead Bass",
+    "source": "Rod fishing spots in Fellhollow."
+  },
+  {
+    "id": "fishing-trophy:pristine-undead-eel-trophy",
+    "kind": "fishing-trophy",
+    "name": "Pristine Undead Eel Trophy",
+    "recipe": "Pristine Undead Eel",
+    "source": "Rod fishing spots in Fellhollow."
+  }
+]

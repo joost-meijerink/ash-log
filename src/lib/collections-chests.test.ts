@@ -1,0 +1,171 @@
+import { describe, expect, it } from 'vitest'
+import { buildChestMatrix, chestCategories, mapFilterHref, mapFilterLocation, type MapFilter } from './collections-chests'
+import { splitByWorld, visiblePoints } from './map-filter'
+import { emptyFilters, parseMapQuery, type MapUrlKnown } from './map-url'
+import { WORLD_BOUNDS } from './projection'
+import type { MapCategory, MapPoint } from './types'
+
+const cat = (id: string, label: string, group: MapCategory['group']): MapCategory => ({
+  id,
+  label,
+  group,
+  sources: [],
+  count: 0,
+})
+
+const categories = [
+  cat('treasure-chest', 'Treasure Chest', 'chest'),
+  cat('buried-treasure', 'Buried Treasure', 'chest'),
+  cat('gold-ore-node', 'Gold Ore Node', 'resource'),
+  cat('spectral-chest', 'Spectral Chest', 'other'),
+]
+
+let n = 0
+const pt = (categoryId: string, region?: string, power?: number): MapPoint => {
+  n++
+  return { id: `${categoryId}:${n}:${n}`, categoryId, x: n, y: n, region, power }
+}
+
+describe('chestCategories', () => {
+  it('picks the chest group, sorted by label', () => {
+    expect(chestCategories(categories).map((c) => c.id)).toEqual(['buried-treasure', 'treasure-chest'])
+  })
+
+  it('respects the categoryGroup override', () => {
+    const overrides = { categoryGroup: { 'spectral-chest': 'chest' as const, 'buried-treasure': 'other' as const } }
+    expect(chestCategories(categories, overrides).map((c) => c.id)).toEqual(['spectral-chest', 'treasure-chest'])
+  })
+})
+
+describe('buildChestMatrix', () => {
+  const points = [
+    pt('treasure-chest', 'Dowdun Reach', 6),
+    pt('treasure-chest', 'Dowdun Reach', 6),
+    pt('treasure-chest', 'Brynmoor', 2),
+    pt('treasure-chest', 'Brynmoor'),
+    pt('buried-treasure', 'Brynmoor', 3),
+    pt('buried-treasure', 'Umbral Sands'),
+    pt('treasure-chest', 'Scorned Wilderness', 2),
+    pt('treasure-chest', undefined, 4),
+  ]
+
+  it('builds rows per region in play order with power columns and an unknown column', () => {
+    const m = buildChestMatrix(points, new Set(['treasure-chest', 'buried-treasure']))
+    expect(m.powers).toEqual([2, 3, 4, 6])
+    expect(m.hasUnknown).toBe(true)
+    expect(m.rows.map((r) => [r.region, r.cells, r.unknown, r.total])).toEqual([
+      ['Brynmoor', [1, 1, 0, 0], 1, 3],
+      ['Dowdun Reach', [0, 0, 0, 2], 0, 2],
+      ['Umbral Sands', [0, 0, 0, 0], 1, 1],
+      ['Scorned Wilderness', [1, 0, 0, 0], 0, 1],
+      [null, [0, 0, 1, 0], 0, 1],
+    ])
+    expect(m.totals).toEqual({ cells: [2, 1, 1, 2], unknown: 2, total: 8 })
+  })
+
+  it('only counts selected categories but keeps the table shape', () => {
+    const m = buildChestMatrix(points, new Set(['buried-treasure']))
+    expect(m.powers).toEqual([2, 3, 4, 6])
+    expect(m.rows.map((r) => r.region)).toEqual(['Brynmoor', 'Dowdun Reach', 'Umbral Sands', 'Scorned Wilderness', null])
+    expect(m.rows[0]).toMatchObject({ cells: [0, 1, 0, 0], unknown: 0, total: 1 })
+    expect(m.totals.total).toBe(2)
+  })
+
+  it('handles no points at all', () => {
+    expect(buildChestMatrix([], new Set())).toEqual({
+      powers: [],
+      hasUnknown: false,
+      rows: [],
+      totals: { cells: [], unknown: 0, total: 0 },
+    })
+  })
+
+  it('has no unknown column when every point has a power level', () => {
+    expect(buildChestMatrix([pt('treasure-chest', 'Brynmoor', 2)], new Set(['treasure-chest'])).hasUnknown).toBe(false)
+  })
+})
+
+describe('map links', () => {
+  it('builds the /kaart location with c, r and p', () => {
+    expect(
+      mapFilterLocation({ categories: ['buried-treasure', 'treasure-chest'], regions: ['Dowdun Reach'], powers: [6] }),
+    ).toEqual({ path: '/kaart', query: { c: 'buried-treasure,treasure-chest', r: 'Dowdun Reach', p: '6' } })
+  })
+
+  it('leaves out empty filters', () => {
+    expect(mapFilterLocation({ categories: ['treasure-chest'] })).toEqual({ path: '/kaart', query: { c: 'treasure-chest' } })
+    expect(mapFilterLocation({ categories: [], regions: [], powers: [] })).toEqual({ path: '/kaart', query: {} })
+  })
+
+  it('adds ps=1 for a strict power filter, only together with powers', () => {
+    expect(mapFilterLocation({ categories: ['treasure-chest'], regions: ['Ghornfell'], powers: [3], strictPower: true })).toEqual({
+      path: '/kaart',
+      query: { c: 'treasure-chest', r: 'Ghornfell', p: '3', ps: '1' },
+    })
+    expect(mapFilterLocation({ categories: ['treasure-chest'], regions: ['Ghornfell'], strictPower: true }).query).toEqual({
+      c: 'treasure-chest',
+      r: 'Ghornfell',
+    })
+    expect(mapFilterLocation({ categories: ['treasure-chest'], powers: [], strictPower: true }).query).toEqual({ c: 'treasure-chest' })
+    expect(mapFilterHref({ categories: ['treasure-chest'], powers: [4], strictPower: true })).toBe('/kaart?c=treasure-chest&p=4&ps=1')
+  })
+
+  it('renders an href with encoded values and literal commas', () => {
+    expect(mapFilterHref({ categories: ['a', 'b'], regions: ['Dowdun Reach'], powers: [2, 3] })).toBe(
+      '/kaart?c=a,b&r=Dowdun%20Reach&p=2,3',
+    )
+    expect(mapFilterHref({ categories: [] })).toBe('/kaart')
+  })
+})
+
+describe('matrix links agree with the map', () => {
+  it('opens a map that shows exactly the chests counted in each cell', () => {
+    const [[minLat, minLng], [maxLat, maxLng]] = WORLD_BOUNDS
+    const cx = (minLng + maxLng) / 2
+    const cy = (minLat + maxLat) / 2
+    let k = 0
+    const chest = (categoryId: string, region: string, power?: number): MapPoint => {
+      k++
+      return { id: `${categoryId}:${k}:${k}`, categoryId, x: cx + k, y: cy + k, region, power }
+    }
+    const cats = [cat('treasure-chest', 'Treasure Chest', 'chest'), cat('buried-treasure', 'Buried Treasure', 'chest')]
+    const points = [
+      chest('treasure-chest', 'Ghornfell', 3),
+      chest('treasure-chest', 'Ghornfell', 3),
+      chest('treasure-chest', 'Ghornfell', 4),
+      chest('treasure-chest', 'Ghornfell'),
+      chest('buried-treasure', 'Ghornfell'),
+      chest('buried-treasure', 'Brynmoor', 2),
+      chest('treasure-chest', 'Brynmoor'),
+    ]
+    const ids = cats.map((c) => c.id).sort()
+    const matrix = buildChestMatrix(points, new Set(ids))
+    const categoryById = new Map(cats.map((c) => [c.id, c]))
+    const { drawable } = splitByWorld(points)
+    const known: MapUrlKnown = {
+      category: (id) => categoryById.has(id),
+      power: () => true,
+      region: () => true,
+      point: () => false,
+      quest: () => false,
+    }
+    const onMap = (filter: MapFilter) => {
+      const f = parseMapQuery(mapFilterLocation(filter).query, known, emptyFilters())
+      const visibility = { powers: new Set(f.powers), strictPower: f.strictPower, regions: new Set(f.regions), hideFound: false, found: new Set<string>() }
+      return visiblePoints(f.categories, categoryById, drawable, visibility).length
+    }
+
+    for (const row of matrix.rows) {
+      row.cells.forEach((count, i) => {
+        expect(onMap({ categories: ids, regions: [row.region!], powers: [matrix.powers[i]!], strictPower: true })).toBe(count)
+      })
+      expect(onMap({ categories: ids, regions: [row.region!] })).toBe(row.total)
+    }
+    matrix.totals.cells.forEach((count, i) => {
+      expect(onMap({ categories: ids, powers: [matrix.powers[i]!], strictPower: true })).toBe(count)
+    })
+    expect(onMap({ categories: ids })).toBe(matrix.totals.total)
+    // Without ps=1 the chests without a level would leak into a power level link.
+    expect(onMap({ categories: ids, regions: ['Ghornfell'], powers: [3] })).toBe(4)
+  })
+})

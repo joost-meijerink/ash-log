@@ -1,0 +1,100 @@
+# Typecheck, tests, build and a smoke test of the app server on Windows, macOS and Linux.
+# Never syncs with the wiki (tests run against fixtures) and never starts a browser.
+# Tests that only make sense on macOS (the Swift app, caffeinate, Apple's certificate check)
+# skip themselves elsewhere.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }}, Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node: [22, 24]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Node ${{ matrix.node }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npx vite build
+
+      - name: Smoke test of the app server
+        run: node .github/scripts/smoke-app.mjs
+
+      # Windows only: the Start menu launcher (scripts/windows). Start, check and stop in one step,
+      # so no server outlives it. dist/ is fresh from the Build step, so the launcher does not build.
+      - name: Windows launcher (start, status, stop)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          ASHENFALL_PORT: '5299'
+          ASH_LOG_LOCAL_DIR: ${{ runner.temp }}\ash-log-local
+          ASHENFALL_START_TIMEOUT: '120'
+        run: |
+          node --import tsx scripts/windows/launcher.ts --no-browser
+          if ($LASTEXITCODE -ne 0) { Get-Content "$env:ASH_LOG_LOCAL_DIR\server.log" -ErrorAction SilentlyContinue; exit 1 }
+          $health = Invoke-RestMethod -Uri 'http://127.0.0.1:5299/api/health' -TimeoutSec 10
+          if ($health.mode -ne 'app') { Write-Error 'unexpected /api/health'; exit 1 }
+          node --import tsx scripts/windows/launcher.ts --status
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          node --import tsx scripts/windows/launcher.ts --stop
+          if ($LASTEXITCODE -ne 0) { Get-Content "$env:ASH_LOG_LOCAL_DIR\server.log"; exit 1 }
+          node --import tsx scripts/windows/launcher.ts --status
+          if ($LASTEXITCODE -eq 0) { Write-Error 'server still running after --stop'; exit 1 }
+          Get-Content "$env:ASH_LOG_LOCAL_DIR\server.log"
+          # The deliberate 1 of the last --status would otherwise fail the step.
+          exit 0
+
+      - name: Windows Start menu shortcuts (install, uninstall)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          npm run app:install -- --desktop
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $programs = [Environment]::GetFolderPath('Programs')
+          foreach ($name in 'Ash Log', 'Ash Log stoppen') {
+            $path = Join-Path $programs "$name.lnk"
+            if (-not (Test-Path -LiteralPath $path)) { Write-Error "missing: $path"; exit 1 }
+            $link = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+            Write-Output "$name -> $($link.TargetPath) $($link.Arguments) [$($link.WorkingDirectory)]"
+          }
+          npm run app:uninstall
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          foreach ($name in 'Ash Log', 'Ash Log stoppen') {
+            if (Test-Path -LiteralPath (Join-Path $programs "$name.lnk")) { Write-Error "still there: $name"; exit 1 }
+          }
+          exit 0

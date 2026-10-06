@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Small variant of icon.svg for 16 to 32 px (favicon): a rounded leather tile and a
+       bigger, bolder mark. No border, compass or page lines, they turn to mud this small. -->
+  <defs>
+    <linearGradient id="leather" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a231b"/>
+      <stop offset="1" stop-color="#15120e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="200" fill="url(#leather)"/>
+  <!-- The Ash Logs sprite, as large as the tile allows -->
+  <image href="ash-logs.png" x="42" y="46" width="940" height="940"/>
+</svg>

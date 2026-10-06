@@ -1,0 +1,351 @@
+{
+  "syncedAt": "2026-09-28T13:53:31.935Z",
+  "ok": true,
+  "domains": [
+    "map",
+    "quests",
+    "vaults",
+    "rewards"
+  ],
+  "orphans": {
+    "quests": [],
+    "steps": [],
+    "items": [],
+    "points": [],
+    "vaults": [],
+    "rewards": []
+  },
+  "warnings": [
+    {
+      "source": "map",
+      "page": "Module:Map/HealingPotionTest.json",
+      "message": "Overgeslagen: testpagina"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Rotridden Cow.json",
+      "message": "1 van 1 punten zonder geldige x/y overgeslagen"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/User:Jsfour/sandbox.json",
+      "message": "Overgeslagen: sandbox van een gebruiker"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/abyssalwhipstatue.json",
+      "message": "Overgeslagen: testpunt op plaatshouder-coördinaten"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/test.json",
+      "message": "Overgeslagen: testpagina"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Anima Tree.json",
+      "message": "1 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Ash Tree.json",
+      "message": "91 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Deer.json",
+      "message": "28 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Garou Berserker.json",
+      "message": "44 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Goblin Archer.json",
+      "message": "11 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Goblin Bruiser.json",
+      "message": "2 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Kalphite Queen Egg.json",
+      "message": "4 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Marrentil.json",
+      "message": "3 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Oak Tree.json",
+      "message": "17 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Ram.json",
+      "message": "16 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Rune Essence Geyser.json",
+      "message": "1 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Sheep.json",
+      "message": "16 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "page": "Module:Map/Terrorbird.json",
+      "message": "4 dubbele punten (zelfde coördinaten) samengevoegd"
+    },
+    {
+      "source": "map",
+      "message": "Geen groep gevonden voor 7 categorieën, ze staan onder 'other': Death, Jewellery Box, Kalphite Queen Egg, Rasthin's Riddle of Faith, Razlem the Deranged, Saga of the Adventurer, Scaling Difficulties"
+    },
+    {
+      "source": "quests",
+      "page": "Consumable Recipes",
+      "message": "Geen Quest details/qtype, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Statues of Saradomin",
+      "message": "Geen Quest details/qtype, overgeslagen"
+    },
+    {
+      "source": "quests",
+      "page": "Warding Off Danger",
+      "message": "Verwijderd uit het spel ({{Gone}}), overgeslagen"
+    },
+    {
+      "source": "assets",
+      "page": "File:Adamant_Ore.png",
+      "message": "Geen afbeelding gevonden voor icoon Adamant_Ore.png"
+    }
+  ],
+  "map": {
+    "categories": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        "a-corroded-serrated-blade",
+        "a-simple-broken-bow",
+        "abyssal-demon",
+        "aetheric-fundamentals-a-primordial-primer",
+        "an-educational-blade",
+        "anima-infused-bark",
+        "animal-bone",
+        "ash-tree",
+        "azure-metal-contraption",
+        "bedraggled-spellbook",
+        "bilegut",
+        "black-dragon",
+        "black-knight-guardian",
+        "black-knight-sniper",
+        "black-knight-warrior",
+        "blightscale",
+        "blightwood-root",
+        "bloodblight-cape",
+        "bloodwood-sap",
+        "bloodwood-tree",
+        "blue-dragon",
+        "boggs",
+        "bramblemead-cape",
+        "buried-treasure",
+        "cabbage",
+        "cadavaberry-bush",
+        "carnivorous-chinchompa",
+        "chefs-journal",
+        "chicken",
+        "chinchompa",
+        "clay-node",
+        "coclear-malificarum",
+        "copper-ore-node",
+        "corpse-cotton-plant",
+        "corrupted-raven",
+        "cow",
+        "cow-cooks-assistant",
+        "crumbling-well",
+        "crystal-tree",
+        "curly",
+        "deer",
+        "delrom",
+        "desert-devil-kebbit",
+        "dire-wolf",
+        "doctor-fenkenstrain",
+        "dragon-shrine",
+        "dragon-tooth",
+        "dragon-wolf",
+        "dwellberry-bush",
+        "edna",
+        "elite-black-knight",
+        "eventide-a-new-spawn",
+        "exploding-plant-trap",
+        "fell-cape",
+        "fido",
+        "flax",
+        "forbidden-scroll-moon-goddess",
+        "forbidden-scroll-old-kingdom",
+        "forbidden-scroll-sun-demon",
+        "forbidden-scroll-the-schism",
+        "fractured-cape",
+        "garou-arms",
+        "garou-berserker",
+        "garou-druid",
+        "garou-hunter",
+        "garou-king",
+        "garou-thane",
+        "giant-rat",
+        "glass-owl",
+        "gnasher",
+        "goblin-archer",
+        "goblin-bruiser",
+        "goblin-legs",
+        "goblin-poisonshot-archer",
+        "goblin-runt",
+        "goblin-warrior",
+        "granite-deposit",
+        "green-dragon",
+        "gyrfalcon",
+        "hellhound",
+        "hellrat",
+        "houndmaster-rexiton",
+        "human-torso",
+        "imaru",
+        "iron-ore-node",
+        "jade-emblem",
+        "kebbit",
+        "leonard-the-bound",
+        "lesser-demon",
+        "limestone-rock",
+        "lodestone",
+        "lore-scraps",
+        "lougrims-shrine",
+        "luminite-deposit",
+        "lurch",
+        "mage-of-zamorak",
+        "magpie",
+        "maple-tree",
+        "marrentil",
+        "nodestone",
+        "nosey",
+        "oak-tree",
+        "onion",
+        "opal-emblem",
+        "outlook-ruins",
+        "parts-of-a-sinister-looking-staff",
+        "patch-hellrat",
+        "pip",
+        "plague-king",
+        "postbox",
+        "postie-pete",
+        "potato",
+        "putrid-rat",
+        "putrilius",
+        "ram",
+        "rat-king",
+        "rat-master-skrexis",
+        "redberry-bush",
+        "reek",
+        "reliquary",
+        "rotridden-rat",
+        "rotsworn-marauder",
+        "rotsworn-necromancer",
+        "rotsworn-warrior",
+        "rotsworn-zombie",
+        "rufus",
+        "runite-ore-node",
+        "sapphire-emblem",
+        "saradomin-symbol",
+        "sergeant-blister",
+        "shard-of-the-dreaming-stone",
+        "shardbound-lesser-demon",
+        "sheep",
+        "silver-ore-node",
+        "skeletal-archer",
+        "skeletal-hoplite",
+        "skeletal-marauder",
+        "skeletal-necromancer",
+        "skeletal-warrior",
+        "snapdragon",
+        "snotpit",
+        "spectral-chinchompa",
+        "spectral-door",
+        "stormtouched-cape",
+        "summoner-flament",
+        "suspiciously-light-tattered-boots",
+        "swamp-tar",
+        "swamp-weed",
+        "terrorbird",
+        "the-binding-of-ib",
+        "the-importance-of-chaos",
+        "the-pride-of-the-avernic",
+        "the-wrath-of-baba-potterington",
+        "thorny-irit-root",
+        "thorny-vine",
+        "threadbare-grain-sack",
+        "tin-ore-node",
+        "tiny",
+        "toadflax",
+        "torn-tapestry",
+        "treasure-chest",
+        "ulgo-the-zogre",
+        "undead-chicken",
+        "vannaka",
+        "whispering-cape",
+        "wild-jade-vine",
+        "wild-lapulis-vine",
+        "willow-tree",
+        "wise-old-man",
+        "wolf",
+        "wormelbow",
+        "x-marks-the-spot",
+        "yew-tree",
+        "zogre",
+        "zombie",
+        "zombie-rat"
+      ]
+    },
+    "points": {
+      "postbox": {
+        "added": [],
+        "removed": [],
+        "changed": [
+          "postbox:115992:-37154",
+          "postbox:133736:-59325",
+          "postbox:138649:-15531"
+        ]
+      }
+    }
+  },
+  "quests": {
+    "quests": {
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "steps": []
+  },
+  "vaults": {
+    "vaults": {
+      "added": [],
+      "removed": [],
+      "changed": []
+    }
+  },
+  "rewards": {
+    "rewards": {
+      "added": [],
+      "removed": [],
+      "changed": []
+    }
+  }
+}

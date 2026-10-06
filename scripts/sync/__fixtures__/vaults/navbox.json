@@ -1,0 +1,25 @@
+{
+ "batchcomplete": true,
+ "query": {
+  "pages": [
+   {
+    "pageid": 5295,
+    "ns": 10,
+    "title": "Template:Dragonkin Vaults",
+    "revisions": [
+     {
+      "revid": 51818,
+      "parentid": 48147,
+      "slots": {
+       "main": {
+        "contentmodel": "wikitext",
+        "contentformat": "text/x-wiki",
+        "content": "{{Navbox\n|name = Dragonkin Vaults\n|title = [[Dragonkin Vault]]s\n|gtitle1 = Locations\n|gtype1 = subgroup\n|group1 =\n  {{Navbox\n  |subgroup = yes\n  |gtitle1 = [[Brynmoor]]\n  |group1 = \n  * [[Crasorak Kara]]\n  * [[Thishepen Kara]]\n  * [[Vertentis Kara]]\n  |gtitle2 = [[Ghornfell]]\n  |group2 = \n  * [[Takla Kara]]\n  * [[Skeklac Kara]]\n  * [[Kletterbuja Kara]]\n  * [[Chaktan Kara]]\n  |gtitle3 = [[Fellhollow]]\n  |group3 = \n  * [[Kalistrakthen Kara]]\n  * [[Vekchenven Kara]]\n  * [[Skekven Kara]]\n  |gtitle4 = [[Umbral Sands]]\n  |group4 = \n  * Uzzer Kara\n  * Manafem Kara\n  }}\n|gtitle2 = Monsters\n|gtype2 = subgroup\n|group2 = \n  {{Navbox\n  |subgroup = yes\n  |gtitle1 = [[Vault Guardians]]\n  |group1 = \n  * [[Vault Archon]]\n  * [[Vault Corruptor]]\n  * [[Vault Guardian Hulk]]\n  * [[Vault Guardian Sentinel]]\n  * [[Vault Incinerator]]\n  * [[Vault Overlord]]\n  * [[Vault Pyroclast]]\n  * [[Vault Striker]]\n  |gtitle2 = Other monsters\n  |group2 =\n  * [[Goblin (race)#Goblin enemies|Goblins]]\n  * [[Rat|Rats]]\n  * [[Skeleton|Skeletons]]\n  * [[Rotsworn]]\n  }}\n|gtitle3 = Traps\n|gtype3 = subgroup\n|group3 = \n  {{Navbox\n  |subgroup = yes\n  |gtitle1 = Spear and spike traps\n  |group1 = \n  * [[Spear Trap]]s\n  * [[Spike Trap]]s\n  |gtitle2 = [[Fire trap]]s\n  |group2 = \n  * [[Fire Trap]]s\n  * [[Fire Jet]]s\n  * [[Rotating Fire Column]]s\n  |gtitle3 = Other traps\n  |group3 = \n  * [[Active Vault Shard]]s\n  * [[Exploding Plant Trap]]s\n  * [[Poison Rock]]\n  * [[Shock Ray Trap]]s\n  * [[Pressure Plate]]s\n  }}\n|gtitle4 = Resources\n|group4 = \n* [[Blurite Ore Node]]\n* [[Chest]]\n* [[Vault Core]]\n* [[Vault Shard]]\n}}<includeonly>[[Category:Dragonkin Vaults]]</includeonly>"
+       }
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.DS_Store
+*.log
+/public/wiki-img/
+/node_modules/.tmp
+/.local/
+# Per user, never in git: your checkmarks and your own corrections. A fresh clone starts
+# without them; the app creates them on the first save.
+/data/progress.json
+/data/overrides.json
+# Half-written files of an atomic write or download that was cut off (sync stopped, crash).
+*.tmp
+*.part
