@@ -14,7 +14,7 @@ import { capsLabel, inlineLink } from './styles'
 
 /**
  * A Dragonkin vault: order, name, power level, where it is, its recipes (grouped by armour
- * set, tickable when they match a unique unlock), and 'Voltooid'. Vault cores respawn in the game, so they are not tracked.
+ * set, tickable when they match a unique unlock), and 'Done'. Vault cores respawn in the game, so they are not tracked.
  * The root carries id 'vault-<slug>' for deep links.
  */
 const props = defineProps<{
@@ -59,9 +59,9 @@ function checkAllRecipes() {
 }
 
 function groupLabel(group: VaultCardData['groups'][number]): string | undefined {
-  if (group.extra) return group.set ? `${group.set} (ook uit deze vault)` : 'Ook uit deze vault'
+  if (group.extra) return group.set ? `${group.set} (also from this vault)` : 'Also from this vault'
   if (group.set) return group.set
-  return hasSets.value ? 'Losse recepten' : undefined
+  return hasSets.value ? 'Other recipes' : undefined
 }
 
 const questName = (id: string) => data.questById.get(id)?.name ?? id
@@ -110,13 +110,13 @@ const questName = (id: string) => data.questById.get(id)?.name ?? id
     <!-- Recipes -->
     <section class="mt-4 border-t border-gold-ink/15 pt-3" :aria-labelledby="`${card.anchor}-recipes`">
       <div class="flex items-baseline justify-between gap-3 px-2.5">
-        <h4 :id="`${card.anchor}-recipes`" :class="capsLabel">Recepten</h4>
+        <h4 :id="`${card.anchor}-recipes`" :class="capsLabel">Recipes</h4>
         <span v-if="tally.total" class="text-sm text-text-parchment/65 tabular-nums">
-          {{ tallyText(tally) }}<span class="sr-only"> afgevinkt</span>
+          {{ tallyText(tally) }}<span class="sr-only"> ticked off</span>
         </span>
       </div>
 
-      <p v-if="!rowCount" class="px-2.5 pt-2 text-[0.95rem] text-text-parchment/60">Nog geen recepten bekend op de wiki.</p>
+      <p v-if="!rowCount" class="px-2.5 pt-2 text-[0.95rem] text-text-parchment/60">No recipes known on the wiki yet.</p>
 
       <div v-for="group in card.groups" :key="group.key" class="mt-1.5">
         <p
@@ -140,7 +140,7 @@ const questName = (id: string) => data.questById.get(id)?.name ?? id
               <template v-if="row.note || row.reward.kind !== 'effigy'" #note>
                 <span class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span v-if="row.reward.kind === 'quest' && row.reward.questId">
-                    Questbeloning uit
+                    Quest reward from
                     <RouterLink :to="`/quests/${encodeURIComponent(row.reward.questId)}`" :class="inlineLink">
                       <ScrollText aria-hidden="true" /><span lang="en">{{ questName(row.reward.questId) }}</span>
                     </RouterLink>
@@ -153,7 +153,7 @@ const questName = (id: string) => data.questById.get(id)?.name ?? id
             <div
               v-else
               class="flex min-h-11 items-start gap-3 px-2.5 py-[11px] text-[0.975rem] leading-snug"
-              title="Staat niet in de lijst met unieke unlocks"
+              title="Not in the list of unique unlocks"
             >
               <span aria-hidden="true" class="grid size-5 shrink-0 place-content-center">
                 <span class="block size-1.5 rotate-45 bg-gold-ink/50" />
@@ -185,7 +185,7 @@ const questName = (id: string) => data.questById.get(id)?.name ?? id
         >
           <Check v-if="done" aria-hidden="true" :stroke-width="2.5" />
           <Circle v-else aria-hidden="true" />
-          Voltooid
+          Done
         </Button>
       </div>
 
@@ -195,21 +195,21 @@ const questName = (id: string) => data.questById.get(id)?.name ?? id
           class="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-gold-ink/25 bg-gold-ink/[0.07] py-1.5 pr-1 pl-3"
         >
           <p class="min-w-0 flex-1 text-sm text-text-parchment/80">
-            Vault voltooid. Nog {{ unchecked.length === 1 ? '1 recept' : `${unchecked.length} recepten` }} open.
+            Vault done. {{ unchecked.length === 1 ? '1 recipe' : `${unchecked.length} recipes` }} still open.
           </p>
-          <Button variant="link" size="sm" :disabled="disabled" @click="checkAllRecipes">Ook de recepten van deze vault afvinken</Button>
-          <IconButton label="Niet nodig" size="icon-sm" @click="offer = false">
+          <Button variant="link" size="sm" :disabled="disabled" @click="checkAllRecipes">Tick off this vault's recipes too</Button>
+          <IconButton label="No thanks" size="icon-sm" @click="offer = false">
             <X aria-hidden="true" />
           </IconButton>
         </div>
       </div>
 
       <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 px-0.5 text-[0.95rem]">
-        <RouterLink v-if="vault.pointId" :to="{ path: '/kaart', query: { focus: vault.pointId } }" :class="cn(inlineLink, 'py-2.5')">
-          <MapPin aria-hidden="true" />Toon op kaart
+        <RouterLink v-if="vault.pointId" :to="{ path: '/map', query: { focus: vault.pointId } }" :class="cn(inlineLink, 'py-2.5')">
+          <MapPin aria-hidden="true" />Show on map
         </RouterLink>
-        <WikiLink v-if="vault.wikiUrl" :href="vault.wikiUrl" class="py-2.5">Op de wiki</WikiLink>
-        <span v-else class="py-2.5 text-text-parchment/55">Nog geen wikipagina</span>
+        <WikiLink v-if="vault.wikiUrl" :href="vault.wikiUrl" class="py-2.5">On the wiki</WikiLink>
+        <span v-else class="py-2.5 text-text-parchment/55">No wiki page yet</span>
       </div>
     </footer>
   </ParchmentPanel>

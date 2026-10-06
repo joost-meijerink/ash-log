@@ -1,4 +1,4 @@
-// Small formatting helpers for the live dialog and the 'not reachable' screen.
+// Small formatting helpers for the live dialog and the 'can't be reached' screen.
 
 /** Remaining time as 'm:ss' ('9:05'), never below '0:00'. */
 export function formatCountdown(ms: number): string {
@@ -31,10 +31,10 @@ export function isLoopbackHost(hostname: string): boolean {
  */
 export function unreachableHint(opts: { mode?: 'dev' | 'app'; hostname: string }): string {
   if (opts.mode === 'dev') {
-    return 'De app leest en schrijft via een kleine server die met npm run dev meedraait. Draait die nog?'
+    return 'The app reads and writes through a small server that runs along with npm run dev. Is it still running?'
   }
   if (isLoopbackHost(opts.hostname)) {
-    return 'De server van het logboek reageert niet. Open Ash Log opnieuw via het icoon en probeer het nog eens.'
+    return "Ash Log's server isn't answering. Open Ash Log again from its icon and try once more."
   }
-  return 'Het logboek op je laptop reageert niet. Staat de laptop aan, is de app open en staat Live op wifi aan?'
+  return "Ash Log on your computer isn't answering. Is it on, is the app open and is Live on Wi-Fi on?"
 }

@@ -23,10 +23,10 @@ beforeEach(() => {
     vi.fn(async (url: string, init?: RequestInit) => {
       calls.push(`${init?.method ?? 'GET'} ${url}`)
       if (!macUp) throw new TypeError('Load failed')
-      if (url === '/api/sync/status') return new Response(JSON.stringify({ running: syncRunning, log: ['bezig'] }), { status: 200 })
+      if (url === '/api/sync/status') return new Response(JSON.stringify({ running: syncRunning, log: ['syncing'] }), { status: 200 })
       if (url === '/api/health') return new Response(JSON.stringify({ ok: true, mode: 'app' }), { status: 200 })
       // Data and progress reloads on reconnect: not what this test looks at.
-      return new Response(JSON.stringify({ error: 'niet in deze test' }), { status: 500 })
+      return new Response(JSON.stringify({ error: 'not in this test' }), { status: 500 })
     }),
   )
 })

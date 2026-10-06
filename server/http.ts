@@ -49,7 +49,7 @@ export async function readBody(req: IncomingMessage): Promise<unknown> {
   let size = 0
   for await (const chunk of req) {
     size += (chunk as Buffer).length
-    if (size > MAX_BODY) throw new HttpError(413, 'Body te groot')
+    if (size > MAX_BODY) throw new HttpError(413, 'Body too large')
     chunks.push(chunk as Buffer)
   }
   const text = Buffer.concat(chunks).toString('utf8')
@@ -57,7 +57,7 @@ export async function readBody(req: IncomingMessage): Promise<unknown> {
   try {
     return JSON.parse(text)
   } catch {
-    throw new HttpError(400, 'Ongeldige JSON')
+    throw new HttpError(400, 'Invalid JSON')
   }
 }
 
@@ -67,7 +67,7 @@ export async function readBody(req: IncomingMessage): Promise<unknown> {
  * from other sites with Sec-Fetch-Site or an Origin that does not match the host.
  */
 export function checkWriteRequest(req: IncomingMessage) {
-  if (req.headers['sec-fetch-site'] === 'cross-site') throw new HttpError(403, 'Verboden: verzoek van een andere site')
+  if (req.headers['sec-fetch-site'] === 'cross-site') throw new HttpError(403, 'Forbidden: request from another site')
   const origin = req.headers.origin
   if (origin && req.headers.host) {
     let host: string | undefined
@@ -76,10 +76,10 @@ export function checkWriteRequest(req: IncomingMessage) {
     } catch {
       host = undefined
     }
-    if (host !== req.headers.host.toLowerCase()) throw new HttpError(403, 'Verboden: verzoek van een andere site')
+    if (host !== req.headers.host.toLowerCase()) throw new HttpError(403, 'Forbidden: request from another site')
   }
   if (!/^application\/json\b/i.test(String(req.headers['content-type'] ?? ''))) {
-    throw new HttpError(415, 'Verwacht application/json')
+    throw new HttpError(415, 'Expected application/json')
   }
 }
 

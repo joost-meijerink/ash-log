@@ -73,10 +73,10 @@ describe('marker markup', () => {
 })
 
 describe('clusters', () => {
-  it('formats counts compactly with a Dutch decimal comma', () => {
+  it('formats counts compactly with an English decimal point', () => {
     expect(formatClusterCount(7)).toBe('7')
     expect(formatClusterCount(999)).toBe('999')
-    expect(formatClusterCount(1234)).toBe('1,2k')
+    expect(formatClusterCount(1234)).toBe('1.2k')
     expect(formatClusterCount(2000)).toBe('2k')
     expect(formatClusterCount(11350)).toBe('11k')
   })

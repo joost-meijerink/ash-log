@@ -25,13 +25,13 @@ export const MAX_TRACKED_ADDRESSES = 1000
 /** lastSeenAt is written to disk at most this often per device. */
 const LAST_SEEN_PERSIST_MS = 5 * 60 * 1000
 
-/** Error texts for a phone that pairs; they name the computer ('je Mac', 'je pc'). */
+/** Error texts for a phone that pairs; they name the computer ('your Mac', 'your PC'). */
 export function pairErrors(platform: string = process.platform) {
   return {
-    format: 'Typ de zes cijfers van de koppelcode',
-    wrong: 'Deze code klopt niet',
-    expired: `Deze code is niet meer geldig. Maak op je ${computerNoun(serverPlatform(platform))} een nieuwe.`,
-    rateLimited: 'Te veel pogingen. Wacht een minuut en probeer het opnieuw.',
+    format: 'Type the six digits of the pairing code',
+    wrong: "That code isn't right",
+    expired: `That code has expired. Make a new one on your ${computerNoun(serverPlatform(platform))}.`,
+    rateLimited: 'Too many tries. Wait a minute and try again.',
   } as const
 }
 
@@ -87,14 +87,14 @@ export function deviceNameFromUserAgent(ua: string | undefined): string {
       ? 'iPad'
       : /Android/.test(text)
         ? /Mobile/.test(text)
-          ? 'Android-telefoon'
-          : 'Android-tablet'
+          ? 'Android phone'
+          : 'Android tablet'
         : /Macintosh|Mac OS X/.test(text)
           ? 'Mac'
           : /Windows/.test(text)
-            ? 'Windows-pc'
+            ? 'Windows PC'
             : /Linux/.test(text)
-              ? 'Linux-pc'
+              ? 'Linux PC'
               : ''
   const browser = /EdgiOS|EdgA?\//.test(text)
     ? 'Edge'
@@ -105,9 +105,9 @@ export function deviceNameFromUserAgent(ua: string | undefined): string {
         : /Version\/[\d.]+.*Safari\//.test(text)
           ? 'Safari'
           : /(iPhone|iPad).*AppleWebKit/.test(text) && !/Safari\//.test(text)
-            ? 'web-app'
+            ? 'web app'
             : ''
-  if (!device) return browser ? `Onbekend apparaat (${browser})` : 'Onbekend apparaat'
+  if (!device) return browser ? `Unknown device (${browser})` : 'Unknown device'
   return browser ? `${device} (${browser})` : device
 }
 
@@ -122,13 +122,28 @@ function sameCode(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y)
 }
 
+/** Names that the Dutch version of Ash Log gave devices, and their English names. */
+const DUTCH_DEVICE_NAMES: readonly (readonly [RegExp, string])[] = [
+  [/^Android-telefoon\b/, 'Android phone'],
+  [/^Android-tablet\b/, 'Android tablet'],
+  [/^Windows-pc\b/, 'Windows PC'],
+  [/^Linux-pc\b/, 'Linux PC'],
+  [/^Onbekend apparaat\b/, 'Unknown device'],
+]
+
+/** A stored device name in English: 'Android-telefoon (Chrome) 2' becomes 'Android phone (Chrome) 2'. */
+export function englishDeviceName(name: string): string {
+  for (const [dutch, english] of DUTCH_DEVICE_NAMES) if (dutch.test(name)) return name.replace(dutch, english)
+  return name
+}
+
 function normalizeDevice(raw: unknown): StoredDevice | null {
   if (!isRecord(raw)) return null
   const { id, name, pairedAt, lastSeenAt, tokenHash } = raw
   if (typeof id !== 'string' || !id || typeof tokenHash !== 'string' || !/^[0-9a-f]{64}$/.test(tokenHash)) return null
   return {
     id,
-    name: typeof name === 'string' && name ? name : 'Onbekend apparaat',
+    name: typeof name === 'string' && name ? englishDeviceName(name) : 'Unknown device',
     pairedAt: typeof pairedAt === 'string' ? pairedAt : new Date(0).toISOString(),
     ...(typeof lastSeenAt === 'string' ? { lastSeenAt } : {}),
     tokenHash,
@@ -172,9 +187,9 @@ export class Pairing {
     try {
       raw = parseJson<unknown>(bytes.toString('utf8'), this.file)
     } catch (err) {
-      const aside = `${this.file}.ongeldig-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}`
+      const aside = `${this.file}.invalid-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}`
       await rename(this.file, aside).catch(() => {})
-      this.log(`Let op: ${(err as Error).message}. Bewaard als ${aside}; gekoppelde apparaten moeten opnieuw koppelen.`)
+      this.log(`Heads up: ${(err as Error).message}. Kept as ${aside}; paired devices need to pair again.`)
       return
     }
     const list = isRecord(raw) && Array.isArray(raw.devices) ? raw.devices : []
@@ -215,7 +230,7 @@ export class Pairing {
     this.dirty = true
     if (now - (this.persistedSeen.get(device.id) ?? 0) >= LAST_SEEN_PERSIST_MS) {
       this.persistedSeen.set(device.id, now)
-      void this.persist().catch((err: Error) => this.log(`Apparaten opslaan mislukt: ${err.message}`))
+      void this.persist().catch((err: Error) => this.log(`Couldn't save devices: ${err.message}`))
     }
     return publicDevice(device)
   }
@@ -236,7 +251,7 @@ export class Pairing {
       this.failures.set(address, [...recent, now])
       if (this.active && !this.active.used && ++this.active.failures >= MAX_FAILURES_PER_CODE) {
         this.active.used = true
-        this.log('Koppelcode ingetrokken na te veel foute pogingen')
+        this.log('Pairing code revoked after too many wrong tries')
       }
       return { ok: false, status, error }
     }
@@ -261,7 +276,7 @@ export class Pairing {
     this.persistedSeen.set(device.id, now)
     this.failures.delete(address)
     await this.persist()
-    this.log(`Gekoppeld: ${device.name}`)
+    this.log(`Paired: ${device.name}`)
     return { ok: true, token, device: publicDevice(device) }
   }
 
@@ -272,7 +287,7 @@ export class Pairing {
       this.devicesByHash.delete(hash)
       this.persistedSeen.delete(id)
       await this.persist()
-      this.log(`Ontkoppeld: ${device.name}`)
+      this.log(`Unpaired: ${device.name}`)
       return true
     }
     return false

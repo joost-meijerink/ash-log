@@ -21,8 +21,8 @@ export type ViewName = (typeof VIEW_NAMES)[number]
 /** Where each view lives; the tab of the view you are on links here. Route names: see src/router.ts. */
 export const VIEW_PATHS: Readonly<Record<ViewName, string>> = {
   quests: '/quests',
-  map: '/kaart',
-  collections: '/verzamelingen',
+  map: '/map',
+  collections: '/collections',
 }
 
 export function isViewName(name: unknown): name is ViewName {

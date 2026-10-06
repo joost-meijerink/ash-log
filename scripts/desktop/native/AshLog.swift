@@ -1,4 +1,4 @@
-// Ash Log: the macOS app around the Logboek. One Dock icon, one window that shows the app
+// Ash Log: the macOS app around the web app. One Dock icon, one window that shows the app
 // in a WKWebView, and the life cycle of the local app server:
 //
 //   launch            GET /api/health; when no app server answers, run scripts/desktop/start.sh
@@ -112,7 +112,7 @@ struct ConfigProblem: Error {
     let key: String
 
     var message: String {
-        "Ash Log is niet goed geïnstalleerd: \(key) ontbreekt of klopt niet in Info.plist. Installeer de app opnieuw met: npm run app:install"
+        "Ash Log isn't installed correctly: \(key) is missing or wrong in Info.plist. Reinstall the app with: npm run app:install"
     }
 }
 
@@ -128,19 +128,19 @@ struct ScriptResult: Sendable {
 
     var succeeded: Bool { status == 0 }
 
-    /// The scripts print their Dutch reason as the last line (see fail() in lib.sh).
+    /// The scripts print their reason as the last line (see fail() in lib.sh).
     var lastLine: String? {
         output.split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .last { !$0.isEmpty }
     }
 
-    /// What went wrong, in Dutch, for a dialog or the terminal.
+    /// What went wrong, for a dialog or the terminal.
     func problem(_ config: AppConfig) -> String {
         if missing {
-            return "De projectmap van het Logboek is niet gevonden: \(config.projectDir)\n\nStaat hij nog op dezelfde plek? Installeer de app dan opnieuw met: npm run app:install. Of geef Ash Log toegang tot die map in Systeeminstellingen > Privacy en beveiliging > Bestanden en mappen."
+            return "Can't find the Ash Log project folder: \(config.projectDir)\n\nDid it move? Then reinstall the app with: npm run app:install. Or give Ash Log access to that folder in System Settings > Privacy & Security > Files & Folders."
         }
-        return lastLine ?? "\(script) stopte met code \(status)."
+        return lastLine ?? "\(script) exited with code \(status)."
     }
 }
 
@@ -201,7 +201,7 @@ final class DesktopScript: @unchecked Sendable {
         }
         lock.unlock()
         if let launchError {
-            return ScriptResult(script: name, status: 126, output: "\(name) kon niet starten: \(launchError.localizedDescription)")
+            return ScriptResult(script: name, status: 126, output: "\(name) couldn't start: \(launchError.localizedDescription)")
         }
         // The server the script starts writes to .local/server.log, not to this pipe, so the
         // pipe closes when the script ends.
@@ -361,7 +361,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         case quitting
     }
 
-    private static let startingText = "Ash Log wordt gestart…"
+    private static let startingText = "Starting Ash Log…"
     private static let zoomKey = "AshLogPageZoom"
     private static let zoomSteps: [CGFloat] = [0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3]
     private static let wikiURL = URL(string: "https://dragonwilds.runescape.wiki")!
@@ -400,7 +400,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         case .success:
             beginStart()
         case .failure(let problem):
-            report("Ash Log kan niet starten.", problem.message, withLog: false)
+            report("Ash Log can't start.", problem.message, withLog: false)
         }
     }
 
@@ -469,7 +469,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             serverReady(config)
         } else {
             // The log is in the project folder: no use offering it when that is out of reach.
-            report("Ash Log kan niet starten.", result.problem(config), withLog: !result.missing)
+            report("Ash Log can't start.", result.problem(config), withLog: !result.missing)
         }
     }
 
@@ -517,10 +517,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         if let url = webView.url, config?.isAppOrigin(url) == true { resumeURL = url }
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "De server van Ash Log is gestopt."
-        alert.informativeText = "Start hem opnieuw, of stop Ash Log. Wat er gebeurde staat in .local/server.log."
-        alert.addButton(withTitle: "Opnieuw starten")
-        alert.addButton(withTitle: "Stoppen").keyEquivalent = "\u{1b}"
+        alert.messageText = "The Ash Log server stopped."
+        alert.informativeText = "Start it again, or quit Ash Log. What happened is in .local/server.log."
+        alert.addButton(withTitle: "Restart")
+        alert.addButton(withTitle: "Quit").keyEquivalent = "\u{1b}"
         present(alert) { [weak self] response in
             guard let self, self.phase == .halted else { return }
             if response == .alertFirstButtonReturn {
@@ -539,8 +539,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         alert.alertStyle = .warning
         alert.messageText = title
         alert.informativeText = message
-        if withLog { alert.addButton(withTitle: "Log openen") }
-        alert.addButton(withTitle: "Stoppen").keyEquivalent = withLog ? "\u{1b}" : "\r"
+        if withLog { alert.addButton(withTitle: "Open Log") }
+        alert.addButton(withTitle: "Quit").keyEquivalent = withLog ? "\u{1b}" : "\r"
         present(alert) { [weak self] response in
             if withLog && response == .alertFirstButtonReturn { self?.openLog() }
             NSApp.terminate(nil)
@@ -704,7 +704,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
     /// The overlay normally goes at didFinish, which waits for every image on the page. The page
     /// paints ink from its first frame, so a few seconds after the commit it may go anyway: a
-    /// request that never ends must not leave the window on "wordt gestart".
+    /// request that never ends must not leave the window on "Starting Ash Log".
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         commits += 1
         let commit = commits
@@ -728,7 +728,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         guard error.domain == NSURLErrorDomain, error.code != NSURLErrorCancelled else { return }
         guard phase == .running, !loadingView.isHidden, let config else { return }
         guard loadAttempts < 3 else {
-            loadingView.show("Ash Log laadt niet. Kies Weergave > Herladen om het opnieuw te proberen.", pulsing: false)
+            loadingView.show("Ash Log won't load. Choose View > Reload Page to try again.", pulsing: false)
             return
         }
         loadAttempts += 1
@@ -762,7 +762,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         let alert = NSAlert()
         alert.messageText = message
         alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Annuleer").keyEquivalent = "\u{1b}"
+        alert.addButton(withTitle: "Cancel").keyEquivalent = "\u{1b}"
         alert.beginSheetModal(for: window) { response in
             MainActor.assumeIsolated { completionHandler(response == .alertFirstButtonReturn) }
         }
@@ -826,11 +826,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             .foregroundColor: NSColor.secondaryLabelColor,
             .paragraphStyle: paragraph,
         ]
-        let credits = NSMutableAttributedString(string: "Spelgegevens van de ", attributes: attributes)
+        let credits = NSMutableAttributedString(string: "Game data from the ", attributes: attributes)
         var link = attributes
         link[.link] = Self.wikiURL
         credits.append(NSAttributedString(string: "RuneScape: Dragonwilds Wiki", attributes: link))
-        credits.append(NSAttributedString(string: ", onder CC BY-NC-SA 3.0.", attributes: attributes))
+        credits.append(NSAttributedString(string: ", under CC BY-NC-SA 3.0.", attributes: attributes))
         NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
         if #available(macOS 14.0, *) {
             NSApp.activate()
@@ -866,55 +866,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         let main = NSMenu()
 
         let app = submenu(of: main, title: "Ash Log")
-        add(to: app, "Over Ash Log", #selector(showAbout(_:)), target: self)
+        add(to: app, "About Ash Log", #selector(showAbout(_:)), target: self)
         app.addItem(.separator())
-        let services = NSMenu(title: "Voorzieningen")
-        app.addItem(withTitle: "Voorzieningen", action: nil, keyEquivalent: "").submenu = services
+        let services = NSMenu(title: "Services")
+        app.addItem(withTitle: "Services", action: nil, keyEquivalent: "").submenu = services
         NSApp.servicesMenu = services
         app.addItem(.separator())
-        add(to: app, "Verberg Ash Log", #selector(NSApplication.hide(_:)), "h")
-        add(to: app, "Verberg andere", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option])
-        add(to: app, "Toon alle", #selector(NSApplication.unhideAllApplications(_:)))
+        add(to: app, "Hide Ash Log", #selector(NSApplication.hide(_:)), "h")
+        add(to: app, "Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option])
+        add(to: app, "Show All", #selector(NSApplication.unhideAllApplications(_:)))
         app.addItem(.separator())
-        add(to: app, "Stop Ash Log", #selector(NSApplication.terminate(_:)), "q")
+        add(to: app, "Quit Ash Log", #selector(NSApplication.terminate(_:)), "q")
 
         // Needed for Cmd-C, Cmd-V and friends in the web view's text fields.
-        let edit = submenu(of: main, title: "Wijzig")
-        add(to: edit, "Herstel", Selector(("undo:")), "z")
-        add(to: edit, "Opnieuw", Selector(("redo:")), "z", [.command, .shift])
+        let edit = submenu(of: main, title: "Edit")
+        add(to: edit, "Undo", Selector(("undo:")), "z")
+        add(to: edit, "Redo", Selector(("redo:")), "z", [.command, .shift])
         edit.addItem(.separator())
-        add(to: edit, "Knip", #selector(NSText.cut(_:)), "x")
-        add(to: edit, "Kopieer", #selector(NSText.copy(_:)), "c")
-        add(to: edit, "Plak", #selector(NSText.paste(_:)), "v")
-        add(to: edit, "Selecteer alles", #selector(NSText.selectAll(_:)), "a")
+        add(to: edit, "Cut", #selector(NSText.cut(_:)), "x")
+        add(to: edit, "Copy", #selector(NSText.copy(_:)), "c")
+        add(to: edit, "Paste", #selector(NSText.paste(_:)), "v")
+        add(to: edit, "Select All", #selector(NSText.selectAll(_:)), "a")
 
-        let view = submenu(of: main, title: "Weergave")
-        add(to: view, "Terug", #selector(goBack(_:)), "[", target: self)
-        add(to: view, "Vooruit", #selector(goForward(_:)), "]", target: self)
+        let view = submenu(of: main, title: "View")
+        add(to: view, "Back", #selector(goBack(_:)), "[", target: self)
+        add(to: view, "Forward", #selector(goForward(_:)), "]", target: self)
         view.addItem(.separator())
-        add(to: view, "Herladen", #selector(reloadPage(_:)), "r", target: self)
+        add(to: view, "Reload Page", #selector(reloadPage(_:)), "r", target: self)
         view.addItem(.separator())
-        add(to: view, "Werkelijke grootte", #selector(actualSize(_:)), "0", target: self)
-        add(to: view, "Zoom in", #selector(zoomIn(_:)), "+", target: self)
+        add(to: view, "Actual Size", #selector(actualSize(_:)), "0", target: self)
+        add(to: view, "Zoom In", #selector(zoomIn(_:)), "+", target: self)
         // Cmd-= as well, like in Safari, without a second visible item.
-        let zoomInEquals = add(to: view, "Zoom in", #selector(zoomIn(_:)), "=", target: self)
+        let zoomInEquals = add(to: view, "Zoom In", #selector(zoomIn(_:)), "=", target: self)
         zoomInEquals.isHidden = true
         zoomInEquals.allowsKeyEquivalentWhenHidden = true
-        add(to: view, "Zoom uit", #selector(zoomOut(_:)), "-", target: self)
+        add(to: view, "Zoom Out", #selector(zoomOut(_:)), "-", target: self)
         view.addItem(.separator())
-        add(to: view, "Schermvullende weergave", #selector(NSWindow.toggleFullScreen(_:)), "f", [.command, .control])
+        add(to: view, "Enter Full Screen", #selector(NSWindow.toggleFullScreen(_:)), "f", [.command, .control])
 
-        let windowMenu = submenu(of: main, title: "Venster")
-        add(to: windowMenu, "Minimaliseer", #selector(NSWindow.performMiniaturize(_:)), "m")
+        let windowMenu = submenu(of: main, title: "Window")
+        add(to: windowMenu, "Minimize", #selector(NSWindow.performMiniaturize(_:)), "m")
         add(to: windowMenu, "Zoom", #selector(NSWindow.performZoom(_:)))
         windowMenu.addItem(.separator())
-        add(to: windowMenu, "Sluit venster", #selector(NSWindow.performClose(_:)), "w")
+        add(to: windowMenu, "Close Window", #selector(NSWindow.performClose(_:)), "w")
         windowMenu.addItem(.separator())
-        add(to: windowMenu, "Breng alles naar voren", #selector(NSApplication.arrangeInFront(_:)))
+        add(to: windowMenu, "Bring All to Front", #selector(NSApplication.arrangeInFront(_:)))
         NSApp.windowsMenu = windowMenu
 
         let help = submenu(of: main, title: "Help")
-        add(to: help, "Serverlog openen", #selector(openServerLog(_:)), target: self)
+        add(to: help, "Open Server Log", #selector(openServerLog(_:)), target: self)
         NSApp.helpMenu = help
 
         return main
@@ -985,16 +985,16 @@ enum Headless {
         Task {
             if mode == "--start-server" {
                 if await Health.isAppServer(config, timeout: 1) {
-                    print("De server draait al op \(config.appURL.absoluteString)")
+                    print("The server is already running at \(config.appURL.absoluteString)")
                     exit(0)
                 }
                 let started = await DesktopScript("start.sh", config: config).run()
                 guard started.succeeded else { fail(started.problem(config)) }
-                print("De server draait op \(config.appURL.absoluteString)")
+                print("The server is running at \(config.appURL.absoluteString)")
             } else {
                 let stopped = await DesktopScript("stop.sh", config: config).run()
                 guard stopped.succeeded else { fail(stopped.problem(config)) }
-                print("De server is gestopt.")
+                print("The server has stopped.")
             }
             exit(0)
         }

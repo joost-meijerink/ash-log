@@ -40,10 +40,10 @@ export const REWARD_KIND_LABEL: Record<RewardKind, string> = {
   plan: 'Plans',
   pattern: 'Patterns',
   vestige: 'Vestiges',
-  quest: 'Questbeloningen',
+  quest: 'Quest rewards',
   effigy: 'Effigies',
-  'recipe-book': 'Receptenboeken',
-  'fishing-trophy': 'Vistrofeeën',
+  'recipe-book': 'Recipe books',
+  'fishing-trophy': 'Fishing trophies',
 }
 
 export type KindFilter = RewardKind | 'all'
@@ -51,7 +51,7 @@ export type KindFilter = RewardKind | 'all'
 export const KIND_FILTERS: readonly KindFilter[] = ['all', ...REWARD_KINDS]
 
 export function kindLabel(kind: KindFilter): string {
-  return kind === 'all' ? 'Alles' : REWARD_KIND_LABEL[kind]
+  return kind === 'all' ? 'All' : REWARD_KIND_LABEL[kind]
 }
 
 export function isRewardKind(value: unknown): value is RewardKind {
@@ -95,10 +95,10 @@ export function compareGroups(a: string | undefined, b: string | undefined): num
 /** Display order of Reward.via. */
 export const REWARD_VIA: readonly RewardVia[] = ['drops', 'shops']
 
-/** Dutch labels for the source hints the sync reads from wiki templates. */
+/** Labels for the source hints the sync reads from wiki templates. */
 export const REWARD_VIA_LABEL: Record<RewardVia, string> = {
-  drops: 'Drop van monsters',
-  shops: 'Te koop in winkels',
+  drops: 'Dropped by monsters',
+  shops: 'Sold in shops',
 }
 
 /** Known via values in display order, without duplicates. */
@@ -107,14 +107,14 @@ export function rewardVia(r: Pick<Reward, 'via'>): RewardVia[] {
   return REWARD_VIA.filter((v) => set.has(v))
 }
 
-/** 'Drop van monsters, te koop in winkels'. Empty for no via. */
+/** 'Dropped by monsters, sold in shops'. Empty for no via. */
 export function viaText(via: readonly RewardVia[]): string {
   return REWARD_VIA.filter((v) => via.includes(v))
     .map((v, i) => (i ? REWARD_VIA_LABEL[v].charAt(0).toLowerCase() + REWARD_VIA_LABEL[v].slice(1) : REWARD_VIA_LABEL[v]))
     .join(', ')
 }
 
-/** How you get a reward, as a row shows it: via labels (Dutch) and the wiki source (English). */
+/** How you get a reward, as a row shows it: via labels (interface text) and the wiki source (wiki text). */
 export interface RewardNote {
   via: RewardVia[]
   source?: string
@@ -309,7 +309,7 @@ export function buildRewardList(
 }
 
 /* ------------------------------------------------------------------ */
-/* URL state: /verzamelingen?soort=<kind>&verberg=1                     */
+/* URL state: /collections?kind=<kind>&hide=1                         */
 /* ------------------------------------------------------------------ */
 
 type QueryValue = string | null | undefined | readonly (string | null)[]
@@ -324,23 +324,23 @@ export interface CollectionUrlState {
   hideOwned: boolean
 }
 
-/** Reads ?soort= and ?verberg= (unknown values fall back to 'Alles' and off). */
+/** Reads ?kind= and ?hide= (unknown values fall back to 'All' and off). */
 export function parseCollectionQuery(query: Record<string, QueryValue>): CollectionUrlState {
-  const kind = first(query.soort)
-  const hide = first(query.verberg)
+  const kind = first(query.kind)
+  const hide = first(query.hide)
   return {
     kind: isRewardKind(kind) ? kind : 'all',
-    hideOwned: hide === '1' || hide === 'true' || hide === 'ja',
+    hideOwned: hide === '1' || hide === 'true' || hide === 'yes',
   }
 }
 
 /**
  * The state after a link from another screen: what the link names wins, what it leaves out stays
- * as it was. '/verzamelingen#vault-x' names nothing, '?soort=quest' only the kind, and a value
- * that is not a kind ('?soort=all') asks for 'Alles'.
+ * as it was. '/collections#vault-x' names nothing, '?kind=quest' only the kind, and a value
+ * that is not a kind ('?kind=all') asks for 'All'.
  *
  * `toList`: the link points at the unlock list itself ('#unlocks', the unlocks of a map point).
- * What it points at has to be in the list, so 'Verberg wat ik al heb' goes off unless the link
+ * What it points at has to be in the list, so 'Hide what I have' goes off unless the link
  * asks for it; a kept switch could hide exactly those unlocks.
  */
 export function mergeCollectionQuery(
@@ -350,14 +350,14 @@ export function mergeCollectionQuery(
 ): CollectionUrlState {
   const named = parseCollectionQuery(query)
   return {
-    kind: query.soort === undefined ? kept.kind : named.kind,
-    hideOwned: query.verberg === undefined && !toList ? kept.hideOwned : named.hideOwned,
+    kind: query.kind === undefined ? kept.kind : named.kind,
+    hideOwned: query.hide === undefined && !toList ? kept.hideOwned : named.hideOwned,
   }
 }
 
 /** True when a link (its query and hash) points at the unlock list: it names a kind, or the hash is '#unlocks...'. */
 export function targetsUnlockList(query: Record<string, QueryValue>, hash: string | undefined | null): boolean {
-  return query.soort !== undefined || /^#unlocks(-|$)/.test(hash ?? '')
+  return query.kind !== undefined || /^#unlocks(-|$)/.test(hash ?? '')
 }
 
 export function sameCollectionState(a: CollectionUrlState, b: CollectionUrlState): boolean {
@@ -370,9 +370,9 @@ export function collectionQuery(
   base: Record<string, QueryValue> = {},
 ): Record<string, QueryValue> {
   const out: Record<string, QueryValue> = { ...base }
-  delete out.soort
-  delete out.verberg
-  if (state.kind !== 'all') out.soort = state.kind
-  if (state.hideOwned) out.verberg = '1'
+  delete out.kind
+  delete out.hide
+  if (state.kind !== 'all') out.kind = state.kind
+  if (state.hideOwned) out.hide = '1'
   return out
 }

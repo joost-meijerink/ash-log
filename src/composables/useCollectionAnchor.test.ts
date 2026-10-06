@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Anchors of the Verzamelingen view under kept-alive views: a first visit and a link from
+// Anchors of the Collections view under kept-alive views: a first visit and a link from
 // another view reveal the anchor, a hash change on screen scrolls there, and coming back to
 // where the view was left does nothing at all.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -53,16 +53,16 @@ const Collections = defineComponent({
   },
 })
 
-/** Another view, with links into the Verzamelingen view. An element here shares an id with an anchor there. */
+/** Another view, with links into the Collections view. An element here shares an id with an anchor there. */
 const Quests = defineComponent({
   name: 'DummyQuests',
   setup() {
     provideViewRoute('quests')
     const links: Record<string, string> = {
-      a: '/verzamelingen#vault-a',
-      b: '/verzamelingen#vault-b',
-      gone: '/verzamelingen#vault-nowhere',
-      page: '/verzamelingen',
+      a: '/collections#vault-a',
+      b: '/collections#vault-b',
+      gone: '/collections#vault-nowhere',
+      page: '/collections',
     }
     return () =>
       h('div', { 'data-view': 'quests' }, [
@@ -106,7 +106,7 @@ function testRouter(): Router {
     history: createMemoryHistory(),
     routes: [
       { path: '/quests/:questId?', name: 'quests', component: Quests },
-      { path: '/verzamelingen', name: 'collections', component: Collections },
+      { path: '/collections', name: 'collections', component: Collections },
     ],
   })
 }
@@ -165,7 +165,7 @@ afterEach(() => {
 
 describe('the first visit', () => {
   it('jumps to the anchor after a frame, without animation, and focuses and highlights it', async () => {
-    const { main } = await setup('/verzamelingen#vault-a')
+    const { main } = await setup('/collections#vault-a')
     expect(reveals).toEqual([])
     await frame()
     await flushPromises()
@@ -177,7 +177,7 @@ describe('the first visit', () => {
 
   it('takes the highlight away by itself', async () => {
     durationMs = 20
-    await setup('/verzamelingen#vault-a')
+    await setup('/collections#vault-a')
     await frame()
     await new Promise((resolve) => setTimeout(resolve, 60))
     await flushPromises()
@@ -185,7 +185,7 @@ describe('the first visit', () => {
   })
 
   it('only highlights what the view asks for', async () => {
-    await setup('/verzamelingen#vaults')
+    await setup('/collections#vaults')
     await frame()
     await flushPromises()
     expect(reveals).toEqual([{ id: 'vaults', behavior: 'auto' }])
@@ -205,7 +205,7 @@ describe('the first visit', () => {
   })
 
   it('does not jump when the view is left before the frame', async () => {
-    const { router } = await setup('/verzamelingen#vault-a')
+    const { router } = await setup('/collections#vault-a')
     await router.push('/quests/A')
     await flushPromises()
     await frame()
@@ -220,7 +220,7 @@ describe('the first visit', () => {
 
 describe('coming back to where the view was left', () => {
   it('does nothing with the hash that is still in the address: no scroll, no focus, no highlight', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a')
+    const { router, main } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -234,7 +234,7 @@ describe('coming back to where the view was left', () => {
     await tab(router, 'collections')
     await frame()
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#vault-a')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#vault-a')
     expect(setups).toBe(1)
     expect(reveals).toEqual([])
     expect(main.scrollTop).toBe(450)
@@ -243,7 +243,7 @@ describe('coming back to where the view was left', () => {
   })
 
   it('also through back and forward', async () => {
-    const { router, main, memory } = await setup('/verzamelingen#vault-a')
+    const { router, main, memory } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -261,7 +261,7 @@ describe('coming back to where the view was left', () => {
   })
 
   it('is put back by a shell that places main after the view, too', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a', 'late')
+    const { router, main } = await setup('/collections#vault-a', 'late')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -275,7 +275,7 @@ describe('coming back to where the view was left', () => {
 
 describe('a link from another view', () => {
   it('reveals its anchor at once: no animation, once, and not undone by the scroll to the top', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a')
+    const { router, main } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -284,7 +284,7 @@ describe('a link from another view', () => {
 
     await click('[data-link="b"]')
     // No frame needed: it happened in the flush of the switch.
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#vault-b')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#vault-b')
     expect(reveals).toEqual([{ id: 'vault-b', behavior: 'auto' }])
     expect(main.scrollTop).toBe(700)
     expect(focused()).toBe('vault-b')
@@ -296,7 +296,7 @@ describe('a link from another view', () => {
   })
 
   it('reveals the anchor again when the link names the one that was already in the address', async () => {
-    const { router, main, memory } = await setup('/verzamelingen#vault-a')
+    const { router, main, memory } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -311,7 +311,7 @@ describe('a link from another view', () => {
   })
 
   it('without an anchor starts at the top and reveals nothing', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a')
+    const { router, main } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -327,7 +327,7 @@ describe('a link from another view', () => {
   })
 
   it('to an anchor that does not exist starts at the top', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a')
+    const { router, main } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -340,7 +340,7 @@ describe('a link from another view', () => {
   })
 
   it('ends at the anchor whether the shell places main before or after the view', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-a', 'late')
+    const { router, main } = await setup('/collections#vault-a', 'late')
     await frame()
     await flushPromises()
     main.scrollTop = 450
@@ -353,7 +353,7 @@ describe('a link from another view', () => {
   })
 
   it('over back and forward to another address than the remembered one reveals that anchor', async () => {
-    const { router, main, memory } = await setup('/verzamelingen#vault-a')
+    const { router, main, memory } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     await click('[data-go="vault-b"]')
@@ -362,10 +362,10 @@ describe('a link from another view', () => {
     main.scrollTop = 40
     reveals = []
 
-    // Two steps back: past the remembered /verzamelingen#vault-b, straight to #vault-a.
+    // Two steps back: past the remembered /collections#vault-b, straight to #vault-a.
     router.go(-2)
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#vault-a')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#vault-a')
     expect(memory.arrival).toMatchObject({ view: 'collections', kind: 'fresh', via: 'history' })
     expect(reveals).toEqual([{ id: 'vault-a', behavior: 'auto' }])
     expect(main.scrollTop).toBe(300)
@@ -375,21 +375,21 @@ describe('a link from another view', () => {
 
 describe('the hash changing while the view is on screen', () => {
   it('scrolls smoothly to the new anchor, and again when the same anchor is asked for', async () => {
-    const { router } = await setup('/verzamelingen?soort=vestige#vault-a')
+    const { router } = await setup('/collections?kind=vestige#vault-a')
     await frame()
     await flushPromises()
     reveals = []
 
     await click('[data-go="vault-b"]')
     // The query of the view is kept.
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige#vault-b')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige#vault-b')
     expect(reveals).toEqual([{ id: 'vault-b', behavior: 'smooth' }])
     expect(focused()).toBe('vault-b')
     expect(lit()).toEqual(['vault-b'])
 
     // Already in the address: no navigation, just the scroll.
     await click('[data-go="vault-b"]')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige#vault-b')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige#vault-b')
     expect(reveals).toEqual([
       { id: 'vault-b', behavior: 'smooth' },
       { id: 'vault-b', behavior: 'smooth' },
@@ -398,14 +398,14 @@ describe('the hash changing while the view is on screen', () => {
     // Back inside the view is a hash change like any other.
     router.back()
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige#vault-a')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige#vault-a')
     expect(reveals.at(-1)).toEqual({ id: 'vault-a', behavior: 'smooth' })
     expect(lit()).toEqual(['vault-a'])
   })
 
   it('does not animate with prefers-reduced-motion', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('prefers-reduced-motion'), media: query }))
-    await setup('/verzamelingen#vault-a')
+    await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     reveals = []
@@ -414,7 +414,7 @@ describe('the hash changing while the view is on screen', () => {
   })
 
   it('after a link from another view still scrolls smoothly', async () => {
-    const { router } = await setup('/verzamelingen#vault-a')
+    const { router } = await setup('/collections#vault-a')
     await frame()
     await flushPromises()
     await tab(router, 'quests')
@@ -427,7 +427,7 @@ describe('the hash changing while the view is on screen', () => {
 
 describe('while another view is on screen', () => {
   it('does nothing: no navigation, no scroll, no focus, not even for an id that exists in the other view', async () => {
-    const { router, main } = await setup('/verzamelingen#vault-c')
+    const { router, main } = await setup('/collections#vault-c')
     await frame()
     await flushPromises()
     await tab(router, 'quests')

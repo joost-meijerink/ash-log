@@ -27,7 +27,7 @@ export function isLoopback(remoteAddress: string | undefined): boolean {
 
 /** Remote address without the IPv4-mapped prefix, for rate limiting and logs. */
 export function normalizeAddress(remoteAddress: string | undefined): string {
-  const address = remoteAddress ?? 'onbekend'
+  const address = remoteAddress ?? 'unknown'
   return address.startsWith('::ffff:') && address.includes('.') ? address.slice(7) : address
 }
 
@@ -206,7 +206,7 @@ export function liveUrls(port: number, hostname: string, lan: string[], mode: Ph
  * first LAN address in 'ip' mode.
  */
 export function certificateUrl(port: number, hostname: string, lan: string[] = [], mode: PhoneAddressMode = 'name'): string {
-  return `http://${phoneHosts(port, hostname, lan, mode)[0]}/certificaat`
+  return `http://${phoneHosts(port, hostname, lan, mode)[0]}/certificate`
 }
 
 /**

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRelativeTime } from '@/composables/useRelativeTime'
 
 /**
- * <time> element with a live Dutch relative time ('5 min geleden', or '5 min' with `short`)
+ * <time> element with a live relative time ('5 minutes ago', or '5 min' with `short`)
  * and the absolute date as tooltip. Renders `fallback` when the value is missing.
  */
 const props = withDefaults(
@@ -12,7 +12,7 @@ const props = withDefaults(
     value?: string | number | Date | null
     /** Text when there is no value. Default ''. */
     fallback?: string
-    /** Compact form ('5 min', '14:02', 'gisteren'). Default false. */
+    /** Compact form ('5 min', '14:02', 'yesterday'). Default false. */
     short?: boolean
   }>(),
   { value: undefined, fallback: '', short: false },

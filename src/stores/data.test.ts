@@ -57,9 +57,9 @@ describe('data store refresh', () => {
     await store.refresh()
     expect(store.overrides.questStart).toEqual({ Ratcatcher: { x: 1, y: 2 } })
 
-    vi.mocked(api.data).mockResolvedValueOnce(appData({ overrides: pinned, overridesError: 'overrides.json is geen geldige JSON' }))
+    vi.mocked(api.data).mockResolvedValueOnce(appData({ overrides: pinned, overridesError: 'overrides.json is not valid JSON' }))
     await store.refresh()
-    expect(store.data?.overridesError).toBe('overrides.json is geen geldige JSON')
+    expect(store.data?.overridesError).toBe('overrides.json is not valid JSON')
   })
 
   it('does nothing before the first load, and reports a failed refresh', async () => {

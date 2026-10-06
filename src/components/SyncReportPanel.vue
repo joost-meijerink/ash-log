@@ -16,8 +16,10 @@ import { useConnectionStore } from '@/stores/connection'
 import { useDataStore } from '@/stores/data'
 import { useSyncStore } from '@/stores/sync'
 
-// Same prefix as PARTIAL_WRITE_PREFIX in scripts/sync/files.ts (not importable in the browser bundle).
-const PARTIAL_WRITE_PREFIX = 'Deels weggeschreven'
+// Same prefix as PARTIAL_WRITE_PREFIX in scripts/sync/files.ts (not importable in the browser bundle),
+// plus the Dutch one of reports written before the app was in English.
+const PARTIAL_WRITE_PREFIXES = ['Partially written', 'Deels weggeschreven']
+const isPartialWrite = (error: string | undefined) => !!error && PARTIAL_WRITE_PREFIXES.some((p) => error.startsWith(p))
 
 const data = useDataStore()
 const sync = useSyncStore()
@@ -25,24 +27,24 @@ const connection = useConnectionStore()
 const { orphans, count: orphanTotal, label: orphanLabel } = useOrphans()
 
 const DOMAIN_LABEL: Record<SyncDomain, string> = {
-  map: 'Kaart',
+  map: 'Map',
   quests: 'Quests',
   vaults: 'Vaults',
-  rewards: 'Beloningen',
+  rewards: 'Rewards',
 }
 
 const SOURCE_LABEL: Record<SyncWarning['source'], string> = {
   ...DOMAIN_LABEL,
-  assets: 'Afbeeldingen',
+  assets: 'Images',
   sync: 'Sync',
 }
 
 const report = computed(() => sync.report ?? data.lastReport ?? null)
 
 const description = computed(() => {
-  if (sync.running) return 'De sync loopt. Dat kan een paar minuten duren, je kunt gewoon verder.'
+  if (sync.running) return "The sync is running. It can take a few minutes, you can just carry on."
   const r = report.value
-  if (!r) return 'Hier zie je na een sync wat er op de wiki veranderd is.'
+  if (!r) return 'After a sync, this shows what changed on the wiki.'
   const domains = r.domains.map((d) => DOMAIN_LABEL[d]).join(', ')
   return `${formatDateTime(r.syncedAt)}, ${domains}`
 })
@@ -75,14 +77,14 @@ const COUNT_KEYS = ['added', 'removed', 'changed'] as const
 
 const countsOf = (d: ListDiff): Counts => ({ added: d.added.length, removed: d.removed.length, changed: d.changed.length })
 const total = (c: Counts) => c.added + c.removed + c.changed
-/** Dutch thousands separator: 16.012. */
-const fmt = (n: number) => n.toLocaleString('nl-NL')
+/** English thousands separator: 16,012. */
+const fmt = (n: number) => n.toLocaleString('en-GB')
 
 function listsOf(d: ListDiff, name: (id: string) => string): ChangeRow['lists'] {
   return [
-    { title: 'Nieuw', items: d.added.map(name) },
-    { title: 'Weg', items: d.removed.map(name) },
-    { title: 'Gewijzigd', items: d.changed.map(name) },
+    { title: 'New', items: d.added.map(name) },
+    { title: 'Removed', items: d.removed.map(name) },
+    { title: 'Changed', items: d.changed.map(name) },
   ].filter((l) => l.items.length > 0)
 }
 
@@ -97,7 +99,7 @@ const changeRows = computed<ChangeRow[]>(() => {
   if (r.map) {
     rows.push({
       key: 'map-categories',
-      label: 'Kaartcategorieën',
+      label: 'Map categories',
       counts: countsOf(r.map.categories),
       lists: listsOf(r.map.categories, categoryLabel),
     })
@@ -113,7 +115,7 @@ const changeRows = computed<ChangeRow[]>(() => {
       }),
       { added: 0, removed: 0, changed: 0 },
     )
-    rows.push({ key: 'map-points', label: 'Kaartpunten', counts: sum, categories })
+    rows.push({ key: 'map-points', label: 'Map points', counts: sum, categories })
   }
   if (r.quests) {
     rows.push({ key: 'quests', label: 'Quests', counts: countsOf(r.quests.quests), lists: listsOf(r.quests.quests, questLabel) })
@@ -124,7 +126,7 @@ const changeRows = computed<ChangeRow[]>(() => {
   if (r.rewards) {
     rows.push({
       key: 'rewards',
-      label: 'Beloningen',
+      label: 'Rewards',
       counts: countsOf(r.rewards.rewards),
       lists: listsOf(r.rewards.rewards, rewardLabel),
     })
@@ -206,24 +208,24 @@ const summaryClass =
     <DialogContent layout="sheet" class="gap-0 p-0">
       <div class="shrink-0 border-b border-line-dark px-5 pt-5 pb-4">
         <DialogHeader>
-          <DialogTitle>Syncrapport</DialogTitle>
+          <DialogTitle>Sync report</DialogTitle>
           <DialogDescription>{{ description }}</DialogDescription>
         </DialogHeader>
       </div>
 
       <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-5">
         <!-- Live log while running -->
-        <section v-if="sync.running" aria-label="Sync loopt">
+        <section v-if="sync.running" aria-label="Sync running">
           <div class="mb-2 flex items-center gap-2 text-sm text-gold">
             <LoaderCircle class="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-            Bezig met syncen
+            Syncing
           </div>
           <div
             ref="logBox"
             role="log"
             class="max-h-[50dvh] overflow-y-auto rounded-md border border-line-dark bg-ink px-3 py-2.5 font-mono text-xs leading-relaxed text-muted-light"
           >
-            <p v-if="!sync.log.length">Wachten op de eerste regel...</p>
+            <p v-if="!sync.log.length">Waiting for the first line...</p>
             <p v-for="(line, i) in sync.log" :key="i" class="break-words whitespace-pre-wrap">{{ line }}</p>
           </div>
         </section>
@@ -234,7 +236,7 @@ const summaryClass =
           class="rounded-md border border-ember/50 bg-ember/10 px-4 py-3 text-[0.95rem]"
           role="alert"
         >
-          <p class="font-medium text-[#e9a58c]">Sync starten lukt niet</p>
+          <p class="font-medium text-[#e9a58c]">Couldn't start the sync</p>
           <p class="mt-1 text-text-light/90">{{ sync.error }}</p>
         </div>
 
@@ -247,10 +249,10 @@ const summaryClass =
           >
             <CircleCheck class="mt-0.5 size-5 shrink-0 text-gold" :stroke-width="1.75" aria-hidden="true" />
             <div class="min-w-0 text-[0.95rem]">
-              <p class="font-medium text-text-light">Sync gelukt</p>
+              <p class="font-medium text-text-light">Sync done</p>
               <p v-if="meta" class="mt-0.5 text-muted-light">
-                {{ fmt(meta.counts.points) }} kaartpunten, {{ fmt(meta.counts.quests) }} quests,
-                {{ fmt(meta.counts.vaults) }} vaults, {{ fmt(meta.counts.rewards) }} beloningen<template v-if="meta.durationMs">, in {{ formatDuration(meta.durationMs) }}</template>.
+                {{ fmt(meta.counts.points) }} map points, {{ fmt(meta.counts.quests) }} quests,
+                {{ fmt(meta.counts.vaults) }} vaults, {{ fmt(meta.counts.rewards) }} rewards<template v-if="meta.durationMs">, in {{ formatDuration(meta.durationMs) }}</template>.
               </p>
             </div>
           </div>
@@ -258,43 +260,43 @@ const summaryClass =
             <div class="flex items-start gap-3">
               <CircleX class="mt-0.5 size-5 shrink-0 text-[#e08a6c]" :stroke-width="1.75" aria-hidden="true" />
               <div class="min-w-0 text-[0.95rem]">
-                <p class="font-medium text-[#e9a58c]">Sync mislukt</p>
+                <p class="font-medium text-[#e9a58c]">Sync failed</p>
                 <p v-if="report.error" class="mt-1 font-mono text-[0.8rem] break-words text-text-light/90">{{ report.error }}</p>
-                <p v-if="report.error?.startsWith(PARTIAL_WRITE_PREFIX)" class="mt-2 text-muted-light">Een deel van de wiki-data is al vervangen. Draai de sync opnieuw. Je voortgang is niet veranderd.</p>
-                <p v-else class="mt-2 text-muted-light">Er is niets weggeschreven. Je data en voortgang zijn niet veranderd.</p>
+                <p v-if="isPartialWrite(report.error)" class="mt-2 text-muted-light">Part of the wiki data has already been replaced. Run the sync again. Your progress hasn't changed.</p>
+                <p v-else class="mt-2 text-muted-light">Nothing was written. Your data and progress haven't changed.</p>
               </div>
             </div>
             <div class="mt-3 flex justify-end">
               <Button variant="outline" size="sm" :disabled="connection.readOnly" @click="startSync">
                 <RefreshCw aria-hidden="true" />
-                Opnieuw proberen
+                Try again
               </Button>
             </div>
           </div>
 
           <!-- Changes -->
           <ParchmentPanel v-if="changeRows.length" :padded="false" class="px-3 py-4 sm:px-4">
-            <SectionHeading title="Wijzigingen" class="px-2" />
+            <SectionHeading title="Changes" class="px-2" />
             <div class="mt-2">
               <div
-                class="grid grid-cols-[1fr_repeat(3,4.5rem)] items-end gap-x-1 px-2 pb-1 text-right text-xs font-medium tracking-wide text-text-parchment/55 uppercase"
+                class="grid grid-cols-[1fr_repeat(3,3.75rem)] sm:grid-cols-[1fr_repeat(3,4.5rem)] items-end gap-x-1 px-2 pb-1 text-right text-xs font-medium tracking-wide text-text-parchment/55 uppercase"
                 aria-hidden="true"
               >
                 <span />
-                <span>Nieuw</span>
-                <span>Weg</span>
-                <span>Gewijzigd</span>
+                <span>New</span>
+                <span>Removed</span>
+                <span>Changed</span>
               </div>
               <ul class="divide-y divide-gold-ink/10">
                 <li v-for="row in changeRows" :key="row.key">
                   <details v-if="hasDetails(row)" class="group/row">
-                    <summary :class="cn(summaryClass, 'grid grid-cols-[1fr_repeat(3,4.5rem)] gap-x-1')">
+                    <summary :class="cn(summaryClass, 'grid grid-cols-[1fr_repeat(3,3.75rem)] sm:grid-cols-[1fr_repeat(3,4.5rem)] gap-x-1')">
                       <span class="flex min-w-0 items-center gap-1.5 font-medium">
                         <ChevronDown
                           class="size-4 shrink-0 -rotate-90 text-gold-ink/70 transition-transform group-open/row:rotate-0 motion-reduce:transition-none"
                           aria-hidden="true"
                         />
-                        <span class="truncate">{{ row.label }}</span>
+                        <span class="min-w-0 sm:truncate">{{ row.label }}</span>
                       </span>
                       <span v-for="k in COUNT_KEYS" :key="k" :class="cn('text-right tabular-nums', row.counts[k] ? 'text-text-parchment' : 'text-text-parchment/35')">
                         {{ fmt(row.counts[k]) }}
@@ -302,13 +304,13 @@ const summaryClass =
                     </summary>
                     <div class="pb-3 pl-8 pr-2 text-sm">
                       <table v-if="row.categories?.length" class="w-full">
-                        <caption class="sr-only">Kaartpunten per categorie</caption>
+                        <caption class="sr-only">Map points per category</caption>
                         <tbody>
                           <tr v-for="c in row.categories" :key="c.id" class="align-baseline">
                             <th scope="row" lang="en" class="py-0.5 pr-2 text-left font-normal">{{ c.label }}</th>
-                            <td class="w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.added ? `+${fmt(c.counts.added)}` : '' }}</td>
-                            <td class="w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.removed ? `-${fmt(c.counts.removed)}` : '' }}</td>
-                            <td class="w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.changed ? fmt(c.counts.changed) : '' }}</td>
+                            <td class="w-[3.75rem] sm:w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.added ? `+${fmt(c.counts.added)}` : '' }}</td>
+                            <td class="w-[3.75rem] sm:w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.removed ? `-${fmt(c.counts.removed)}` : '' }}</td>
+                            <td class="w-[3.75rem] sm:w-[4.5rem] text-right tabular-nums text-text-parchment/80">{{ c.counts.changed ? fmt(c.counts.changed) : '' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -322,8 +324,8 @@ const summaryClass =
                       </div>
                     </div>
                   </details>
-                  <div v-else class="grid min-h-11 grid-cols-[1fr_repeat(3,4.5rem)] items-center gap-x-1 px-2">
-                    <span class="truncate pl-[1.375rem] font-medium">{{ row.label }}</span>
+                  <div v-else class="grid min-h-11 grid-cols-[1fr_repeat(3,3.75rem)] sm:grid-cols-[1fr_repeat(3,4.5rem)] items-center gap-x-1 px-2">
+                    <span class="min-w-0 pl-[1.375rem] font-medium sm:truncate">{{ row.label }}</span>
                     <span v-for="k in COUNT_KEYS" :key="k" class="text-right tabular-nums text-text-parchment/35">
                       {{ fmt(row.counts[k]) }}
                     </span>
@@ -335,9 +337,9 @@ const summaryClass =
 
           <!-- Changed quest steps -->
           <ParchmentPanel v-if="stepChanges.length" :padded="false" class="px-3 py-4 sm:px-4">
-            <SectionHeading title="Stappen veranderd" :count="stepChanges.length" class="px-2" />
+            <SectionHeading title="Changed steps" :count="stepChanges.length" class="px-2" />
             <p class="mt-1 px-2 text-sm text-text-parchment/70">
-              Een aangepaste stap is voor de app een nieuwe stap. Het vinkje van de oude stap blijft als verweesd staan.
+              To the app, an edited step is a new step. The tick of the old step stays behind as an orphan.
             </p>
             <ul class="mt-2 divide-y divide-gold-ink/10">
               <li v-for="q in stepChanges" :key="q.questId">
@@ -353,12 +355,12 @@ const summaryClass =
                   <ul class="space-y-1.5 pr-2 pb-3 pl-8 text-sm">
                     <li v-for="s in q.added" :key="`a-${s.id}`" class="flex gap-2">
                       <Plus class="mt-0.5 size-3.5 shrink-0 text-gold-ink" :stroke-width="2.5" aria-hidden="true" />
-                      <span class="sr-only">Nieuw:</span>
+                      <span class="sr-only">New:</span>
                       <span lang="en">{{ s.text }}</span>
                     </li>
                     <li v-for="s in q.removed" :key="`r-${s.id}`" class="flex gap-2 text-text-parchment/60">
                       <Minus class="mt-0.5 size-3.5 shrink-0 text-ember" :stroke-width="2.5" aria-hidden="true" />
-                      <span class="sr-only">Weg:</span>
+                      <span class="sr-only">Removed:</span>
                       <span lang="en" class="line-through decoration-ember/40">{{ s.text }}</span>
                     </li>
                   </ul>
@@ -374,18 +376,18 @@ const summaryClass =
           :padded="false"
           class="px-3 py-4 sm:px-4"
         >
-          <SectionHeading title="Verweesde vinkjes" :count="orphanTotal" class="px-2">
+          <SectionHeading title="Orphaned ticks" :count="orphanTotal" class="px-2">
             <template #right>
-              <Button v-if="orphanTotal > 0" variant="outline" size="sm" :disabled="connection.readOnly" @click="confirmOpen = true">Opruimen</Button>
+              <Button v-if="orphanTotal > 0" variant="outline" size="sm" :disabled="connection.readOnly" @click="confirmOpen = true">Clean up</Button>
             </template>
           </SectionHeading>
           <p class="mt-1 px-2 text-sm text-text-parchment/70">
-            Sync verwijdert nooit voortgang. Vinkjes die nergens meer naar wijzen blijven staan tot jij ze opruimt.
+            Sync never removes progress. Ticks that point at nothing stay until you clean them up.
           </p>
           <p v-if="cleaned" class="mt-3 px-2 text-[0.95rem]" role="status">
-            {{ cleaned === 1 ? '1 vinkje opgeruimd.' : `${cleaned} vinkjes opgeruimd.` }}
+            {{ cleaned === 1 ? '1 tick cleaned up.' : `${cleaned} ticks cleaned up.` }}
           </p>
-          <p v-else-if="orphanTotal === 0" class="mt-3 px-2 text-[0.95rem]">Alles wijst ergens naar. Niets op te ruimen.</p>
+          <p v-else-if="orphanTotal === 0" class="mt-3 px-2 text-[0.95rem]">Everything points somewhere. Nothing to clean up.</p>
           <ul v-if="orphanKinds.length" class="mt-2 divide-y divide-gold-ink/10">
             <li v-for="k in orphanKinds" :key="k.kind">
               <details class="group/o">
@@ -408,10 +410,10 @@ const summaryClass =
         <!-- Warnings -->
         <section v-if="report && !sync.running && warningGroups.length" aria-labelledby="sync-warnings">
           <SectionHeading :count="report.warnings.length" class="mb-1">
-            <span id="sync-warnings">Waarschuwingen</span>
+            <span id="sync-warnings">Warnings</span>
           </SectionHeading>
           <p class="mb-2 text-sm text-muted-light">
-            Pagina's die de parser niet herkende. Die zijn overgeslagen, de rest is wel bijgewerkt.
+            Pages the parser didn't understand. Those were skipped, the rest was updated.
           </p>
           <div class="divide-y divide-line-dark rounded-md border border-line-dark">
             <details v-for="g in warningGroups" :key="g.source" class="group/w">
@@ -444,7 +446,7 @@ const summaryClass =
               class="size-4 shrink-0 -rotate-90 transition-transform group-open/log:rotate-0 motion-reduce:transition-none"
               aria-hidden="true"
             />
-            Log van deze sync
+            Log of this sync
           </summary>
           <div class="max-h-80 overflow-y-auto rounded-md border border-line-dark bg-ink px-3 py-2.5 font-mono text-xs leading-relaxed text-muted-light">
             <p v-for="(line, i) in sync.log" :key="i" class="break-words whitespace-pre-wrap">{{ line }}</p>
@@ -455,13 +457,13 @@ const summaryClass =
         <EmptyState
           v-if="!report && !sync.running && !sync.error && orphanTotal === 0 && !cleaned"
           compact
-          title="Nog geen syncrapport"
-          text="Na een sync zie je hier wat er op de wiki veranderd is."
+          title="No sync report yet"
+          text="After a sync, this shows what changed on the wiki."
         >
           <template #action>
             <Button :disabled="connection.readOnly" @click="startSync">
               <RefreshCw aria-hidden="true" />
-              Wiki bijwerken
+              Update from wiki
             </Button>
           </template>
         </EmptyState>
@@ -470,7 +472,7 @@ const summaryClass =
       <div class="flex shrink-0 items-center gap-3 border-t border-line-dark py-1 pr-5 pl-5">
         <SourceCredit class="flex-1" />
         <DialogClose as-child>
-          <Button variant="outline">Sluiten</Button>
+          <Button variant="outline">Close</Button>
         </DialogClose>
       </div>
     </DialogContent>

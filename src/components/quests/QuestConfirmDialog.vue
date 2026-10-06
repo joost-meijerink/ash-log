@@ -14,7 +14,7 @@ withDefaults(
     /** Ember confirm button. Default true. */
     destructive?: boolean
   }>(),
-  { cancelLabel: 'Annuleren', destructive: true },
+  { cancelLabel: 'Cancel', destructive: true },
 )
 
 const open = defineModel<boolean>('open', { required: true })

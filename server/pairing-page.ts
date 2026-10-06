@@ -1,5 +1,5 @@
 // The page an unpaired phone sees instead of the app: server-rendered, no app bundle, no
-// script. The form submits the six digits as GET /koppel?code=..., the same URL the QR
+// script. The form submits the six digits as GET /pair?code=..., the same URL the QR
 // code opens, so typing and scanning take one path.
 //
 // The page shell (ink background, one parchment card) is shared with the certificate pages
@@ -7,6 +7,9 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { computerNoun, serverPlatform } from '../src/lib/platform.ts'
+
+/** Pairing by QR code or typed code (GET /pair?code=...); the old /koppel of earlier QR codes redirects here. */
+export const PAIR_PATH = '/pair'
 
 export const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -70,7 +73,7 @@ export interface PageOptions {
 /** A complete server-rendered page: brand line, one card, no scripts. */
 export function renderPage(opts: PageOptions): string {
   return `<!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -119,21 +122,21 @@ const HOME_SCREEN_HEAD = `<meta name="apple-mobile-web-app-capable" content="yes
 <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">`
 
-/** `platform` is process.platform of the computer the server runs on: the page names it ('je Mac', 'je pc'). */
+/** `platform` is process.platform of the computer the server runs on: the page names it ('your Mac', 'your PC'). */
 export function renderPairingPage(opts: { error?: string; platform?: string } = {}): string {
   const error = opts.error ? `<p class="error" role="alert">${escapeHtml(opts.error)}</p>` : ''
   const computer = computerNoun(serverPlatform(opts.platform ?? process.platform))
   return renderPage({
-    title: 'Koppel dit apparaat',
+    title: 'Pair this device',
     head: HOME_SCREEN_HEAD,
-    card: `<h1>Koppel dit apparaat</h1>
-<p>Het Logboek draait op je ${computer}. Zet daar <strong>Live op wifi</strong> aan en maak een koppelcode. Scan de QR-code met je camera of typ de zes cijfers hieronder.</p>
-${error}<form method="get" action="/koppel">
-<label for="code">Koppelcode</label>
+    card: `<h1>Pair this device</h1>
+<p>Ash Log runs on your ${computer}. Turn on <strong>Live on Wi-Fi</strong> there and click <strong>Pair a device</strong>. Scan the QR code with your camera or type the six digits below.</p>
+${error}<form method="get" action="${PAIR_PATH}">
+<label for="code">Pairing code</label>
 <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
-<button type="submit">Koppelen</button>
+<button type="submit">Pair</button>
 </form>
-<p class="hint">Een code werkt tien minuten en maar één keer.</p>`,
+<p class="hint">A code works for ten minutes, and only once.</p>`,
   })
 }
 

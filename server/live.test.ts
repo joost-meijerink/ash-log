@@ -144,7 +144,7 @@ describe('one port, two protocols', () => {
     expect(listeners!.secureReady).toBe(false)
     await expect(call(port, '/', { secure: true })).rejects.toThrow()
     await expect(call(port, '/', { secure: true })).rejects.toThrow()
-    expect(logs.filter((l) => l.includes('geen certificaat'))).toHaveLength(1)
+    expect(logs.filter((l) => l.includes('no certificate'))).toHaveLength(1)
     expect((await call(port, '/x')).text).toBe('http GET /x 0')
 
     listeners!.setTls({ key: material.key, cert: material.cert })
@@ -302,6 +302,6 @@ describe('one port, two protocols', () => {
     const port = await start()
     await expect(call(port, '/', { secure: true, ca: null })).rejects.toThrow()
     await new Promise((r) => setTimeout(r, 100))
-    expect(logs.filter((l) => l.startsWith('Beveiligde verbinding'))).toEqual([])
+    expect(logs.filter((l) => l.startsWith('Secure connection'))).toEqual([])
   })
 })

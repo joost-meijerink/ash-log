@@ -3,19 +3,19 @@
  * (scripts/desktop), for the Start menu shortcuts that `npm run app:install` makes (install.ts).
  *
  *   (no flag)       start the app server unless it already answers (building the app first when
- *                   the sources changed), then open the Logboek in its own window: Microsoft Edge
+ *                   the sources changed), then open Ash Log in its own window: Microsoft Edge
  *                   in app mode with a profile of its own, else Chrome, else the default browser
  *   --no-browser    only start the server; exit 0 once it answers (CI, debugging)
- *   --stop          stop the server and close the window (the 'Ash Log stoppen' shortcut)
+ *   --stop          stop the server and close the window (the 'Stop Ash Log' shortcut)
  *   --status        exit 0 while the server answers
  *   --gui           also report in dialogs, not only on stderr (the shortcuts pass it)
  *
  *   node --import tsx scripts/windows/launcher.ts [flag]
  *
  * Life cycle, as on the Mac: one server on a fixed port (APP_PORT from .env, default 5199),
- * running in the background without a console window and logging to .local/server.log. Live op
- * wifi is off after every start. Closing the window stops the server: on Windows nothing else
- * (like the Mac's Dock icon) would show that it still runs. With Live op wifi on, closing the
+ * running in the background without a console window and logging to .local/server.log. Live on
+ * Wi-Fi is off after every start. Closing the window stops the server: on Windows nothing else
+ * (like the Mac's Dock icon) would show that it still runs. With Live on Wi-Fi on, closing the
  * window asks first, because a phone may still be using it. Opening Ash Log while it runs opens
  * one more window. A server that was already running (npm run app) stops too, as on the Mac.
  *
@@ -69,15 +69,15 @@ export const HANDOFF_MS = 5000
 const WATCH_INTERVAL_MS = 1000
 
 export const USAGE = [
-  'Gebruik: node --import tsx scripts/windows/launcher.ts [optie]',
-  '  (geen optie)    server starten en Ash Log in een eigen venster openen',
-  '  --no-browser    alleen de server starten',
-  '  --stop          server stoppen en het venster sluiten',
-  '  --status        exit 0 zolang de server draait',
-  '  --gui           meldingen ook in een venster tonen',
+  'Usage: node --import tsx scripts/windows/launcher.ts [option]',
+  '  (no option)     start the server and open Ash Log in its own window',
+  '  --no-browser    only start the server',
+  '  --stop          stop the server and close the window',
+  '  --status        exit 0 while the server runs',
+  '  --gui           also show messages in a dialog',
 ].join('\n')
 
-/** A problem the user can act on, in Dutch, for the dialog and stderr. */
+/** A problem the user can act on, for the dialog and stderr. */
 export class LauncherError extends Error {}
 
 /* ------------------------------------------------------------------ */
@@ -227,7 +227,7 @@ export interface Dialog {
   text: string
   kind: 'error' | 'question' | 'info'
   buttons: 'ok' | 'yesno'
-  /** Nee is the default button. */
+  /** No is the default button. */
   defaultNo?: boolean
   /** Closes by itself after this many seconds (0: stays until answered). */
   seconds?: number
@@ -347,7 +347,7 @@ export function popupCommand(dialog: Dialog, env: NodeJS.ProcessEnv): { command:
   }
 }
 
-/** Popup returns 6 for Ja, 7 for Nee, 1 for OK and -1 when it closed by itself. */
+/** Popup returns 6 for Yes, 7 for No, 1 for OK and -1 when it closed by itself. */
 export function popupAnswer(code: number | null): DialogAnswer {
   if (code === 6) return 'yes'
   if (code === 7) return 'no'
@@ -593,7 +593,7 @@ export async function isHealthy(cfg: LauncherConfig, timeoutMs = 2000): Promise<
   return body?.ok === true && body.mode === 'app'
 }
 
-/** Live op wifi on (true) or off (false); null when the server does not say. */
+/** Live on Wi-Fi on (true) or off (false); null when the server does not say. */
 export async function liveStatus(cfg: LauncherConfig): Promise<boolean | null> {
   const res = await httpRequest(cfg, '/api/server', { timeoutMs: 3000 })
   if (res?.status !== 200) return null
@@ -707,11 +707,11 @@ async function waitUntilHealthy(cfg: LauncherConfig, sys: System, watch: StartWa
     if (watch.exited()) {
       const reason = lastServerMessage(cfg.logFile, watch.offset)
       removePid(cfg.pidFile)
-      throw new LauncherError(`De server is meteen gestopt${reason ? `: ${sentence(reason)}` : ''}. Kijk in ${logName} wat er misging.`)
+      throw new LauncherError(`The server stopped right away${reason ? `: ${sentence(reason)}` : ''}. See ${logName} for what went wrong.`)
     }
     if (sys.now() >= deadline) {
       await watch.kill?.()
-      throw new LauncherError(`De server reageert niet binnen ${Math.round(cfg.startTimeoutMs / 1000)} seconden. Kijk in ${logName} wat er misging.`)
+      throw new LauncherError(`The server didn't respond within ${Math.round(cfg.startTimeoutMs / 1000)} seconds. See ${logName} for what went wrong.`)
     }
     await sys.sleep(200)
   }
@@ -726,13 +726,13 @@ export async function ensureServer(cfg: LauncherConfig, sys: System): Promise<'r
   try {
     mkdirSync(cfg.localDir, { recursive: true })
   } catch {
-    throw new LauncherError(`Kan de map ${displayPath(cfg, cfg.localDir)} niet maken in ${cfg.projectDir}.`)
+    throw new LauncherError(`Can't create the folder ${displayPath(cfg, cfg.localDir)} in ${cfg.projectDir}.`)
   }
 
   const release = acquireStartLock(cfg, sys)
   if (!release) {
-    log(cfg, 'Een andere start is al bezig, even wachten')
-    sys.out('Ash Log wordt al gestart, even wachten...')
+    log(cfg, 'Another start is already in progress, waiting')
+    sys.out('Ash Log is already starting, hang on...')
     // Gives up when that launcher is done (lock gone) and no server process is left.
     const otherGaveUp = () => {
       const pid = readPid(cfg.pidFile)
@@ -749,7 +749,7 @@ export async function ensureServer(cfg: LauncherConfig, sys: System): Promise<'r
     const existing = await serverPid(cfg, sys)
     if (existing) {
       // Our own server that does not answer yet (still starting, or stuck): give it the usual time.
-      log(cfg, `Server (pid ${existing}) draait al maar antwoordt nog niet, even wachten`)
+      log(cfg, `Server (pid ${existing}) is already running but does not answer yet, waiting`)
       await waitUntilHealthy(cfg, sys, {
         offset: logSize(cfg),
         exited: () => !sys.isAlive(existing),
@@ -758,18 +758,18 @@ export async function ensureServer(cfg: LauncherConfig, sys: System): Promise<'r
       return 'started'
     }
 
-    if (!sys.exists(cfg.serverEntry)) throw new LauncherError(`Server niet gevonden: ${cfg.serverEntry}`)
+    if (!sys.exists(cfg.serverEntry)) throw new LauncherError(`Server not found: ${cfg.serverEntry}`)
     if (needsBuild(cfg.projectDir)) {
-      if (!sys.exists(cfg.vite)) throw new LauncherError(`Vite niet gevonden. Draai eerst npm install in ${cfg.projectDir}.`)
-      log(cfg, 'dist/ is ouder dan de bronbestanden, app bouwen')
-      sys.out('App bouwen, dat duurt even...')
+      if (!sys.exists(cfg.vite)) throw new LauncherError(`Vite not found. Run npm install in ${cfg.projectDir} first.`)
+      log(cfg, 'dist/ is older than the sources, building the app')
+      sys.out('Building the app, this takes a moment...')
       if ((await runToLog(cfg, sys, [cfg.vite, 'build'])) !== 0) {
-        throw new LauncherError(`Bouwen van de app is mislukt. Kijk in ${displayPath(cfg, cfg.logFile)} wat er misging.`)
+        throw new LauncherError(`Building the app failed. See ${displayPath(cfg, cfg.logFile)} for what went wrong.`)
       }
     }
 
     const { command, args } = serverCommand(cfg)
-    log(cfg, `Server starten op poort ${cfg.port} met ${command}`)
+    log(cfg, `Starting the server on port ${cfg.port} with ${command}`)
     const offset = logSize(cfg)
     const fd = openSync(cfg.logFile, 'a')
     let child: ChildProcess
@@ -783,7 +783,7 @@ export async function ensureServer(cfg: LauncherConfig, sys: System): Promise<'r
     const error = await started(child)
     const pid = child.pid
     if (error || pid === undefined) {
-      throw new LauncherError(`Node kon de server niet starten (${error?.message ?? 'geen pid'}). Installeer Ash Log opnieuw met: npm run app:install`)
+      throw new LauncherError(`Node couldn't start the server (${error?.message ?? 'no pid'}). Reinstall Ash Log with: npm run app:install`)
     }
     child.unref()
     writePid(cfg.pidFile, pid)
@@ -792,7 +792,7 @@ export async function ensureServer(cfg: LauncherConfig, sys: System): Promise<'r
       exited: () => child.exitCode !== null || child.signalCode !== null,
       kill: () => terminate(pid, cfg, sys).then(() => removePid(cfg.pidFile, pid)),
     })
-    log(cfg, `Server draait op poort ${cfg.port} (pid ${pid})`)
+    log(cfg, `Server running on port ${cfg.port} (pid ${pid})`)
     return 'started'
   } finally {
     release()
@@ -817,12 +817,12 @@ export async function stopServer(cfg: LauncherConfig, sys: System): Promise<'sto
   let requested = false
   if (answered) {
     requested = await requestStop(cfg)
-    log(cfg, requested ? 'Server gevraagd te stoppen' : 'Stopverzoek mislukt')
+    log(cfg, requested ? 'Asked the server to stop' : 'Stop request failed')
   }
   if (pid) {
     // Asked nicely: give it time to exit on its own. Otherwise end it right away.
     if (!requested || !(await waitWhile(() => sys.isAlive(pid), cfg.stopTimeoutMs, sys))) {
-      log(cfg, `Server (pid ${pid}) beeindigen`)
+      log(cfg, `Ending the server (pid ${pid})`)
       await terminate(pid, cfg, sys)
     }
   } else if (requested) {
@@ -831,10 +831,10 @@ export async function stopServer(cfg: LauncherConfig, sys: System): Promise<'sto
   }
   removePid(cfg.pidFile)
   if (await isHealthy(cfg, 1000)) {
-    const where = sys.platform === 'win32' ? 'Taakbeheer (proces Node.js JavaScript Runtime)' : 'Activiteitenweergave (proces node)'
-    throw new LauncherError(`De server op poort ${cfg.port} stopt niet. Stop hem zelf, bijvoorbeeld met ${where}.`)
+    const where = sys.platform === 'win32' ? 'Task Manager (process Node.js JavaScript Runtime)' : 'Activity Monitor (process node)'
+    throw new LauncherError(`The server on port ${cfg.port} won't stop. Stop it yourself, for example in ${where}.`)
   }
-  log(cfg, 'Server gestopt')
+  log(cfg, 'Server stopped')
   return 'stopped'
 }
 
@@ -868,7 +868,7 @@ export async function closeWindow(cfg: LauncherConfig, sys: System): Promise<boo
   }
   await waitWhile(() => sys.isAlive(pid), 5000, sys)
   removePid(cfg.windowPidFile, pid)
-  log(cfg, `Venster gesloten (pid ${pid})`)
+  log(cfg, `Window closed (pid ${pid})`)
   return true
 }
 
@@ -925,8 +925,8 @@ export function watcherCommand(cfg: LauncherConfig, browser: BrowserName, browse
 }
 
 export const DEFAULT_BROWSER_NOTE =
-  'Geen Edge of Chrome gevonden, dus Ash Log opent in je standaardbrowser.\n\n' +
-  'Sluit je dat tabblad, dan blijft Ash Log draaien. Stoppen doe je met Ash Log stoppen in het Startmenu.'
+  'No Edge or Chrome found, so Ash Log opens in your default browser.\n\n' +
+  'Closing that tab keeps Ash Log running. To stop it, use Stop Ash Log in the Start menu.'
 
 function openDefaultBrowser(cfg: LauncherConfig, sys: System): void {
   const command = sys.platform === 'win32' ? win32.join(systemRoot(cfg.env), 'explorer.exe') : sys.platform === 'darwin' ? 'open' : 'xdg-open'
@@ -943,7 +943,7 @@ function openDefaultBrowser(cfg: LauncherConfig, sys: System): void {
 export async function openWindow(cfg: LauncherConfig, sys: System, opts: { gui: boolean; launcherFile?: string }): Promise<void> {
   const browser = findBrowser(cfg, sys)
   if (!browser) {
-    log(cfg, 'Geen Edge of Chrome gevonden, Ash Log opent in de standaardbrowser')
+    log(cfg, 'No Edge or Chrome found, Ash Log opens in the default browser')
     openDefaultBrowser(cfg, sys)
     if (opts.gui) await sys.dialog({ kind: 'info', buttons: 'ok', seconds: 20, text: DEFAULT_BROWSER_NOTE }, cfg.env)
     else sys.out(DEFAULT_BROWSER_NOTE.replace('\n\n', ' '))
@@ -956,10 +956,10 @@ export async function openWindow(cfg: LauncherConfig, sys: System, opts: { gui: 
   const child = sys.spawn(browser.path, browserArgs(cfg.appUrl, profile), { detached: true, stdio: 'ignore' })
   const error = await started(child)
   const pid = child.pid
-  if (error || pid === undefined) throw new LauncherError(`${browser.label} starten lukt niet: ${error?.message ?? 'geen pid'}`)
+  if (error || pid === undefined) throw new LauncherError(`${browser.label} couldn't start: ${error?.message ?? 'no pid'}`)
   child.unref()
   if (alreadyOpen) {
-    log(cfg, `Nog een venster geopend in ${browser.label}`)
+    log(cfg, `Opened another window in ${browser.label}`)
     return
   }
 
@@ -967,20 +967,20 @@ export async function openWindow(cfg: LauncherConfig, sys: System, opts: { gui: 
   const watcher = watcherCommand(cfg, browser.name, pid, opts.gui, opts.launcherFile)
   const watch = sys.spawn(watcher.command, watcher.args, { cwd: cfg.projectDir, env: cfg.childEnv, detached: true, stdio: 'ignore', windowsHide: true })
   const watchError = await started(watch)
-  if (watchError) log(cfg, `Kan het venster niet volgen (${watchError.message}): stop Ash Log zelf met Ash Log stoppen`)
+  if (watchError) log(cfg, `Can't follow the window (${watchError.message}): stop Ash Log yourself with Stop Ash Log`)
   watch.unref()
-  log(cfg, `Venster geopend in ${browser.label} (pid ${pid})`)
+  log(cfg, `Window opened in ${browser.label} (pid ${pid})`)
 }
 
 export const LIVE_QUESTION =
-  'Live op wifi staat nog aan.\n\n' +
-  'Laat je Ash Log draaien voor je telefoon?\n\n' +
-  'Ja: Ash Log blijft draaien. Stoppen doe je later met Ash Log stoppen in het Startmenu.\n' +
-  'Nee: Ash Log stopt nu.'
+  'Live on Wi-Fi is still on.\n\n' +
+  'Keep Ash Log running for your phone?\n\n' +
+  'Yes: Ash Log keeps running. Stop it later with Stop Ash Log in the Start menu.\n' +
+  'No: Ash Log stops now.'
 
 /**
  * The watcher (--watch): waits until the window's browser is gone, then stops the server. With
- * Live op wifi on it asks first. Started detached by openWindow, without a console.
+ * Live on Wi-Fi on it asks first. Started detached by openWindow, without a console.
  */
 export async function watchWindow(cfg: LauncherConfig, sys: System, opts: { browser: BrowserName; browserPid: number; gui: boolean }): Promise<void> {
   const profile = browserProfile(cfg, opts.browser)
@@ -996,21 +996,21 @@ export async function watchWindow(cfg: LauncherConfig, sys: System, opts: { brow
 
   if (!seenLock && sys.now() - startedAt < HANDOFF_MS) {
     // It handed the window to a browser that already ran with this profile: that one's watcher waits.
-    log(cfg, 'De browser gaf het venster door aan een browser die al draaide')
+    log(cfg, 'The browser handed the window to a browser that was already running')
     return
   }
   if (!(await isHealthy(cfg))) {
-    log(cfg, 'Venster gesloten, de server draait al niet meer')
+    log(cfg, 'Window closed, the server had already stopped')
     return
   }
   if ((await liveStatus(cfg)) === true) {
     const answer = opts.gui ? await sys.dialog({ kind: 'question', buttons: 'yesno', defaultNo: true, text: LIVE_QUESTION }, cfg.env) : 'none'
     if (answer === 'yes') {
-      log(cfg, 'Venster gesloten, Live op wifi staat aan: de server blijft draaien')
+      log(cfg, 'Window closed, Live on Wi-Fi is on: the server keeps running')
       return
     }
   }
-  log(cfg, 'Venster gesloten, server stoppen')
+  log(cfg, 'Window closed, stopping the server')
   await stopServer(cfg, sys)
 }
 
@@ -1045,17 +1045,17 @@ export function parseLauncherArgs(argv: readonly string[]): LauncherCommand | { 
     else if (flagCommand && value === undefined) commands.add(flagCommand)
     else if (name === '--browser' && value) browser = value
     else if (name === '--browser-pid' && value && /^\d+$/.test(value)) browserPid = Number(value)
-    else return { error: `Onbekende optie: ${arg}` }
+    else return { error: `Unknown option: ${arg}` }
   }
-  if (commands.size > 1) return { error: 'Kies een van --no-browser, --stop, --status en --watch, niet meer dan een.' }
+  if (commands.size > 1) return { error: 'Pick one of --no-browser, --stop, --status and --watch, not more than one.' }
   const command = [...commands][0] ?? 'open'
   if (command === 'watch') {
     if ((browser !== 'edge' && browser !== 'chrome' && browser !== 'browser') || !browserPid) {
-      return { error: '--watch hoort bij --browser=edge|chrome|browser en --browser-pid=<pid>' }
+      return { error: '--watch goes with --browser=edge|chrome|browser and --browser-pid=<pid>' }
     }
     return { command, gui, browser, browserPid }
   }
-  if (browser !== undefined || browserPid !== undefined) return { error: '--browser en --browser-pid horen alleen bij --watch' }
+  if (browser !== undefined || browserPid !== undefined) return { error: '--browser and --browser-pid only go with --watch' }
   return { command, gui }
 }
 
@@ -1067,16 +1067,16 @@ export interface LauncherDeps {
 
 /** Reports a failure on stderr and in the log, and with --gui in a dialog that offers the log. */
 async function report(cfg: LauncherConfig | null, sys: System, gui: boolean, title: string, err: unknown): Promise<void> {
-  const message = err instanceof LauncherError ? err.message : `Er ging iets onverwachts mis: ${(err as Error)?.message ?? String(err)}`
+  const message = err instanceof LauncherError ? err.message : `Something unexpected went wrong: ${(err as Error)?.message ?? String(err)}`
   sys.err(message)
-  if (cfg) log(cfg, `FOUT: ${message}`)
+  if (cfg) log(cfg, `ERROR: ${message}`)
   if (!gui) return
   const env = cfg?.env ?? process.env
   if (!cfg) {
     await sys.dialog({ kind: 'error', buttons: 'ok', text: `${title}\n\n${message}` }, env)
     return
   }
-  const answer = await sys.dialog({ kind: 'error', buttons: 'yesno', text: `${title}\n\n${message}\n\nWil je het logbestand openen?` }, env)
+  const answer = await sys.dialog({ kind: 'error', buttons: 'yesno', text: `${title}\n\n${message}\n\nOpen the log file?` }, env)
   if (answer === 'yes' && sys.platform === 'win32') {
     const child = sys.spawn(system32(cfg.env, 'notepad.exe'), [cfg.logFile], { detached: true, stdio: 'ignore' })
     child.on('error', () => {})
@@ -1102,7 +1102,7 @@ export async function runLauncher(argv: readonly string[], deps: LauncherDeps = 
   try {
     cfg = resolveConfig({ platform: sys.platform, ...deps.config })
   } catch (err) {
-    await report(null, sys, gui, 'Ash Log kan niet starten.', err)
+    await report(null, sys, gui, "Ash Log can't start.", err)
     return 1
   }
 
@@ -1115,25 +1115,25 @@ export async function runLauncher(argv: readonly string[], deps: LauncherDeps = 
         running = await isHealthy(cfg, 3000)
       }
       if (running) {
-        sys.out(`Ash Log draait op ${cfg.appUrl}`)
+        sys.out(`Ash Log is running at ${cfg.appUrl}`)
         return 0
       }
-      sys.err('De server draait niet.')
+      sys.err('The server is not running.')
       return 1
     }
     case 'serve':
     case 'open': {
       try {
-        sys.out('Ash Log starten...')
+        sys.out('Starting Ash Log...')
         await ensureServer(cfg, sys)
         if (parsed.command === 'serve') {
-          sys.out(`Ash Log draait op ${cfg.appUrl}`)
+          sys.out(`Ash Log is running at ${cfg.appUrl}`)
           return 0
         }
         await openWindow(cfg, sys, { gui, launcherFile: deps.launcherFile })
         return 0
       } catch (err) {
-        await report(cfg, sys, gui, 'Ash Log kan niet starten.', err)
+        await report(cfg, sys, gui, "Ash Log can't start.", err)
         return 1
       }
     }
@@ -1141,12 +1141,12 @@ export async function runLauncher(argv: readonly string[], deps: LauncherDeps = 
       try {
         const result = await stopServer(cfg, sys)
         await closeWindow(cfg, sys)
-        const text = result === 'stopped' ? 'Ash Log is gestopt.' : 'Ash Log draaide niet.'
+        const text = result === 'stopped' ? 'Ash Log has stopped.' : "Ash Log wasn't running."
         sys.out(text)
         if (gui) await sys.dialog({ kind: 'info', buttons: 'ok', seconds: 4, text }, cfg.env)
         return 0
       } catch (err) {
-        await report(cfg, sys, gui, 'Ash Log stoppen lukt niet.', err)
+        await report(cfg, sys, gui, "Couldn't stop Ash Log.", err)
         return 1
       }
     }
@@ -1155,7 +1155,7 @@ export async function runLauncher(argv: readonly string[], deps: LauncherDeps = 
         await watchWindow(cfg, sys, parsed)
         return 0
       } catch (err) {
-        await report(cfg, sys, gui, 'Ash Log stoppen lukt niet.', err)
+        await report(cfg, sys, gui, "Couldn't stop Ash Log.", err)
         return 1
       }
     }

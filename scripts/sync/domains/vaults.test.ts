@@ -165,13 +165,13 @@ describe('parseVaults map matching', () => {
     // Two Manafem candidates: no guess, one warning.
     expect(byName('Manafem Kara')?.pointId).toBeUndefined()
     expect(warnings.filter((w) => w.page === 'Manafem Kara').map((w) => w.message)).toEqual([
-      'Meerdere kaartpunten mogelijk voor vault Manafem Kara, geen gekozen',
+      'More than one possible map point for vault Manafem Kara, none picked',
     ])
     // 'Near Uzzer' belongs to Takla Kara already, and 'Uzzering' is not the whole word.
     expect(byName('Takla Kara')?.pointId).toBe('vaults:3:3')
     expect(byName('Uzzer Kara')?.pointId).toBeUndefined()
     expect(warnings.filter((w) => w.page === 'Uzzer Kara').map((w) => w.message)).toEqual([
-      'Geen kaartpunt gevonden voor vault Uzzer Kara',
+      'No map point found for vault Uzzer Kara',
     ])
   })
 
@@ -180,7 +180,7 @@ describe('parseVaults map matching', () => {
     expect(vaults).toHaveLength(12)
     expect(vaults.every((v) => v.pointId === undefined)).toBe(true)
     expect(warnings).toHaveLength(1)
-    expect(warnings[0].message).toMatch(/kaart/)
+    expect(warnings[0].message).toMatch(/map/)
   })
 })
 
@@ -211,7 +211,7 @@ describe('parseVaults on changed pages', () => {
     const vaults = parseVaults(withNavbox('Nothing here'), noMap, warnCollector(warnings, 'vaults'))
     expect(vaults).toHaveLength(10)
     expect(vaults.every((v) => v.region === undefined)).toBe(true)
-    expect(warnings.some((w) => /Navbox niet herkend/.test(w.message))).toBe(true)
+    expect(warnings.some((w) => /Navbox not recognised/.test(w.message))).toBe(true)
   })
 
   it('throws when the progression table is gone, instead of writing an empty list', () => {

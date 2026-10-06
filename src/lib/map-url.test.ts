@@ -91,7 +91,7 @@ describe('parseMapQuery', () => {
 })
 
 describe('serializeMapQuery', () => {
-  it('writes nothing for the default state, so /kaart stays clean', () => {
+  it('writes nothing for the default state, so /map stays clean', () => {
     expect(serializeMapQuery({ ...defaults }, defaults)).toEqual({})
     expect(serializeMapQuery({ ...defaults, quest: 'Ratcatcher' }, defaults)).toEqual({ quest: 'Ratcatcher' })
   })

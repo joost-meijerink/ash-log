@@ -10,7 +10,7 @@ import { ICON_WIDTH, isSafeFileName, syncAssets, upstreamTileUrl } from './asset
 import { createContext, warnCollector, type SyncContext } from './context'
 import { WikiClient } from './wiki'
 
-const UA = 'AshenfallLogboek-test/0.1 (test@ash-log.test)'
+const UA = 'AshLog-test/0.1 (test@ash-log.test)'
 const IMAGE_BASE = 'https://dragonwilds.runescape.wiki/images/'
 
 interface FakeServer {
@@ -172,7 +172,7 @@ describe('syncAssets: icons', () => {
     const result = await syncAssets(context(), { icons: ['Gold_Ore.png', 'Nope.png'], tiles: false, dirs }, warnCollector(warnings, 'assets'))
     expect(result.iconsDownloaded).toBe(1)
     expect(result.iconsMissing).toEqual(['Nope.png'])
-    expect(warnings).toEqual([{ source: 'assets', page: 'File:Nope.png', message: 'Geen afbeelding gevonden voor icoon Nope.png' }])
+    expect(warnings).toEqual([{ source: 'assets', page: 'File:Nope.png', message: 'No image found for icon Nope.png' }])
     expect(await exists(join(dirs.icons, 'Nope.png'))).toBe(false)
   })
 
@@ -181,7 +181,7 @@ describe('syncAssets: icons', () => {
     const result = await syncAssets(context(), { icons: names, tiles: false, dirs }, warnCollector(warnings, 'assets'))
     expect(result.iconsMissing).toHaveLength(8)
     expect(warnings).toHaveLength(1)
-    expect(warnings[0]!.message).toContain('8 iconen')
+    expect(warnings[0]!.message).toContain('8 icons')
     expect(warnings[0]!.message).toContain('Missing_0.png')
     expect(warnings[0]!.message).toContain('Missing_7.png')
   })
@@ -210,7 +210,7 @@ describe('syncAssets: icons', () => {
     expect(result.iconsDownloaded).toBe(1)
     expect(result.failed).toBe(1)
     expect(warnings).toHaveLength(1)
-    expect(warnings[0]!.message).toContain('1 iconen downloaden mislukt')
+    expect(warnings[0]!.message).toContain('1 icon failed to download')
     expect(warnings[0]!.message).toContain('HTTP 500')
   })
 })
@@ -258,8 +258,8 @@ describe('syncAssets: tiles', () => {
     expect(await exists(join(dirs.tiles, '4', `${tilesPerSide(4) - 1}_0.png`))).toBe(false)
 
     // Progress every 100 tiles, plus a note about the 404s.
-    expect(logs.filter((l) => l.includes('tegels: '))).toHaveLength(Math.floor((tiles.length - 1) / 100))
-    expect(logs.some((l) => l.includes(`${edge.length} tegels bestaan niet`))).toBe(true)
+    expect(logs.filter((l) => l.includes('tiles: '))).toHaveLength(Math.floor((tiles.length - 1) / 100))
+    expect(logs.some((l) => l.includes(`${edge.length} tiles don't exist`))).toBe(true)
   })
 
   it('does nothing with tiles when tiles is false', async () => {
@@ -275,7 +275,7 @@ describe('syncAssets: tiles', () => {
     expect(result.tilesDownloaded).toBe(0)
     expect(result.failed).toBe(allTiles().length)
     expect(warnings).toHaveLength(1)
-    expect(warnings[0]!.message).toContain('Gestopt na 3 mislukte downloads op rij')
+    expect(warnings[0]!.message).toContain('Stopped after 3 failed downloads in a row')
   })
 })
 

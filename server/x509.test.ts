@@ -80,7 +80,7 @@ describe('DER building blocks', () => {
     expect(hex(oid('2.5.29.30'))).toBe('0603551d1e')
     expect(hex(oid('1.2.840.10045.4.3.2'))).toBe('06082a8648ce3d040302')
     expect(hex(oid('1.3.6.1.5.5.7.3.1'))).toBe('06082b06010505070301')
-    expect(() => oid('1')).toThrow(/Ongeldige OID/)
+    expect(() => oid('1')).toThrow(/Invalid OID/)
   })
 
   it('encodes short and long lengths', () => {
@@ -151,12 +151,12 @@ describe('CA certificate', () => {
 
   it('refuses keys it cannot sign certificates with, and bad serial numbers', () => {
     const ed = generateKeyPairSync('ed25519').privateKey
-    expect(() => makeCa(ed)).toThrow(/Sleuteltype ed25519 wordt niet ondersteund/)
+    expect(() => makeCa(ed)).toThrow(/Key type ed25519 is not supported/)
     const base = { key: ec(), commonName: 'x', organization: 'x', notBefore: NOT_BEFORE, notAfter: new Date(NOT_BEFORE.getTime() + DAY), permitted: PERMITTED }
     for (const serial of [Buffer.from([0x80, 1]), Buffer.alloc(0), Buffer.alloc(21, 1), Buffer.from([0, 0])]) {
-      expect(() => createCaCertificate({ ...base, serial }), hex(serial)).toThrow(/serienummer/)
+      expect(() => createCaCertificate({ ...base, serial }), hex(serial)).toThrow(/serial number/)
     }
-    expect(() => createCaCertificate({ ...base, serial: Buffer.from([1]), notAfter: NOT_BEFORE })).toThrow(/Geldigheid/)
+    expect(() => createCaCertificate({ ...base, serial: Buffer.from([1]), notAfter: NOT_BEFORE })).toThrow(/Validity/)
   })
 })
 
@@ -193,9 +193,9 @@ describe('server certificate', () => {
 
   it('refuses names that do not fit a certificate', () => {
     const ca = makeCa()
-    expect(() => makeLeaf(ca, ec(), { dns: ['a b.local'], ips: [] })).toThrow(/Ongeldige naam/)
-    expect(() => makeLeaf(ca, ec(), { dns: ['x.local'], ips: ['fe80::1'] })).toThrow(/Geen IPv4-adres/)
-    expect(() => makeLeaf(ca, ec(), { dns: [], ips: [] })).toThrow(/zonder namen/)
+    expect(() => makeLeaf(ca, ec(), { dns: ['a b.local'], ips: [] })).toThrow(/Invalid name/)
+    expect(() => makeLeaf(ca, ec(), { dns: ['x.local'], ips: ['fe80::1'] })).toThrow(/Not an IPv4 address/)
+    expect(() => makeLeaf(ca, ec(), { dns: [], ips: [] })).toThrow(/without names/)
   })
 
   it('reads the subject and key identifier of a CA certificate', () => {
@@ -203,8 +203,8 @@ describe('server certificate', () => {
     const info = issuerInfo(ca.der)
     expect(hex(info.subject)).toBe(hex(distinguishedName({ commonName: 'Ash Log', organization: 'Ash Log' })))
     expect(info.keyId).toHaveLength(20)
-    expect(() => issuerInfo(Buffer.from('3003020101', 'hex'))).toThrow(/Onverwachte opbouw/)
-    expect(() => issuerInfo(Buffer.from('30820100', 'hex'))).toThrow(/afgekapt/)
+    expect(() => issuerInfo(Buffer.from('3003020101', 'hex'))).toThrow(/Unexpected certificate structure/)
+    expect(() => issuerInfo(Buffer.from('30820100', 'hex'))).toThrow(/truncated/)
   })
 })
 

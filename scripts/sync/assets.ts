@@ -10,6 +10,7 @@ import { basename, join } from 'node:path'
 import { iconFileName } from '../../src/lib/ids'
 import { MAX_NATIVE_ZOOM, MIN_NATIVE_ZOOM, UPSTREAM_TILE_URL, tilesPerSide } from '../../src/lib/projection'
 import type { SyncContext, Warn } from './context'
+import { plural } from './diff'
 import { ICONS_DIR, TILES_DIR } from './paths'
 
 export interface AssetOptions {
@@ -77,7 +78,7 @@ async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: W
     if (isSafeFileName(local)) wanted.add(local)
     else invalid.push(name)
   }
-  if (invalid.length) warn(`Ongeldige icoonnamen overgeslagen: ${listNames(invalid)}`)
+  if (invalid.length) warn(`Skipped invalid icon names: ${listNames(invalid)}`)
 
   const todo: string[] = []
   for (const local of [...wanted].sort()) {
@@ -85,14 +86,14 @@ async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: W
     else todo.push(local)
   }
   if (!todo.length) return
-  ctx.log(`  ${todo.length} iconen ophalen (${result.iconsExisting} al aanwezig)`)
+  ctx.log(`  Fetching ${plural(todo.length, 'icon', 'icons')} (${result.iconsExisting} already there)`)
 
   let urls: Map<string, string>
   try {
     urls = await ctx.wiki.imageUrls(todo, { width: ICON_WIDTH })
   } catch (err) {
     result.failed += todo.length
-    warn(`Adressen van ${todo.length} iconen ophalen mislukt, iconen overgeslagen: ${(err as Error).message}`)
+    warn(`Couldn't fetch the addresses of ${todo.length} icons, icons skipped: ${(err as Error).message}`)
     return
   }
 
@@ -116,12 +117,12 @@ async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: W
 
   result.iconsMissing = missing
   if (missing.length > MISSING_ICONS_ONE_BY_ONE) {
-    warn(`Geen afbeelding gevonden voor ${missing.length} iconen: ${listNames(missing)}`)
+    warn(`No image found for ${missing.length} icons: ${listNames(missing)}`)
   } else {
-    for (const local of missing) warn(`Geen afbeelding gevonden voor icoon ${local}`, `File:${local}`)
+    for (const local of missing) warn(`No image found for icon ${local}`, `File:${local}`)
   }
   result.failed += failures.count + skipped
-  reportFailures(warn, 'iconen', failures, skipped)
+  reportFailures(warn, ['icon', 'icons'], failures, skipped)
 }
 
 async function syncTiles(ctx: SyncContext, dir: string, warn: Warn, result: AssetResult): Promise<void> {
@@ -137,7 +138,7 @@ async function syncTiles(ctx: SyncContext, dir: string, warn: Warn, result: Asse
     }
   }
   if (!todo.length) return
-  ctx.log(`  ${todo.length} kaarttegels ophalen (${result.tilesExisting} al aanwezig)`)
+  ctx.log(`  Fetching ${plural(todo.length, 'map tile', 'map tiles')} (${result.tilesExisting} already there)`)
 
   const failures = newFailures()
   let skipped = 0
@@ -150,11 +151,13 @@ async function syncTiles(ctx: SyncContext, dir: string, warn: Warn, result: Asse
     const outcome = await tryDownload(ctx, tile.url, tile.dest, failures)
     if (outcome === 'ok') result.tilesDownloaded++
     else if (outcome === 'not-found') result.tilesNotFound++
-    if ((i + 1) % PROGRESS_EVERY === 0) ctx.log(`  tegels: ${i + 1} van ${todo.length}`)
+    if ((i + 1) % PROGRESS_EVERY === 0) ctx.log(`  tiles: ${i + 1} of ${todo.length}`)
   }
-  if (result.tilesNotFound) ctx.log(`  ${result.tilesNotFound} tegels bestaan niet op de server (404), overgeslagen`)
+  if (result.tilesNotFound) {
+    ctx.log(`  ${plural(result.tilesNotFound, "tile doesn't", "tiles don't")} exist on the server (404), skipped`)
+  }
   result.failed += failures.count + skipped
-  reportFailures(warn, 'kaarttegels', failures, skipped)
+  reportFailures(warn, ['map tile', 'map tiles'], failures, skipped)
 }
 
 interface Failures {
@@ -182,10 +185,11 @@ async function tryDownload(ctx: SyncContext, url: string, dest: string, f: Failu
 }
 
 /** One warning per batch, never one per file. */
-function reportFailures(warn: Warn, what: string, f: Failures, skipped: number): void {
+function reportFailures(warn: Warn, what: [one: string, many: string], f: Failures, skipped: number): void {
   if (!f.count) return
-  const stop = skipped ? ` Gestopt na ${MAX_FAILURE_STREAK} mislukte downloads op rij, ${skipped} ${what} overgeslagen.` : ''
-  warn(`${f.count} ${what} downloaden mislukt.${stop} Eerste fout: ${f.first}. Een volgende sync probeert het opnieuw.`)
+  const noun = (n: number) => `${n} ${n === 1 ? what[0] : what[1]}`
+  const stop = skipped ? ` Stopped after ${MAX_FAILURE_STREAK} failed downloads in a row, ${noun(skipped)} skipped.` : ''
+  warn(`${noun(f.count)} failed to download.${stop} First error: ${f.first}. The next sync tries again.`)
 }
 
 /** A zero-byte file counts as missing (interrupted download). */
@@ -214,5 +218,5 @@ export function isSafeFileName(name: string, platform: NodeJS.Platform = process
 
 function listNames(names: string[], max = 20): string {
   const shown = names.slice(0, max).join(', ')
-  return names.length > max ? `${shown} en ${names.length - max} meer` : shown
+  return names.length > max ? `${shown} and ${names.length - max} more` : shown
 }

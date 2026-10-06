@@ -48,7 +48,7 @@ export function buildManifest(startUrl: string, icons: ManifestIcon[] = DEFAULT_
     id: '/',
     name: 'Ash Log',
     short_name: 'Ash Log',
-    lang: 'nl',
+    lang: 'en',
     start_url: startUrl,
     scope: '/',
     display: 'standalone',

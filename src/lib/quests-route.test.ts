@@ -13,14 +13,15 @@ import {
 const IDS = ['Ratcatcher', "Black Knight's Fortress", 'Mirror, Mirror', 'Contact!']
 
 describe('list state in the URL', () => {
-  it('reads search and status with Dutch status values', () => {
-    expect(readListState({ q: 'vannaka', status: 'bezig' })).toEqual({ q: 'vannaka', status: 'active' })
-    expect(readListState({ status: 'Voltooid' })).toEqual({ q: '', status: 'done' })
+  it('reads search and status, the status in any case', () => {
+    expect(readListState({ q: 'vannaka', status: 'active' })).toEqual({ q: 'vannaka', status: 'active' })
+    expect(readListState({ status: 'Done' })).toEqual({ q: '', status: 'done' })
     expect(readListState({ q: ['a', 'b'], status: null })).toEqual({ q: 'a', status: 'all' })
   })
 
   it('falls back to all for unknown statuses', () => {
-    expect(readListState({ status: 'done' }).status).toBe('all')
+    expect(readListState({ status: 'bezig' }).status).toBe('all')
+    expect(readListState({ status: 'finished' }).status).toBe('all')
     expect(readListState({}).status).toBe('all')
   })
 
@@ -42,9 +43,9 @@ describe('list state for a link from another view', () => {
   })
 
   it('takes over what the link names, one filter at a time', () => {
-    expect(readArrivalListState({ status: 'voltooid' }, kept)).toEqual({ q: 'temple', status: 'done' })
+    expect(readArrivalListState({ status: 'done' }, kept)).toEqual({ q: 'temple', status: 'done' })
     expect(readArrivalListState({ q: 'rats' }, kept)).toEqual({ q: 'rats', status: 'open' })
-    expect(readArrivalListState({ q: 'rats', status: 'bezig' }, kept)).toEqual({ q: 'rats', status: 'active' })
+    expect(readArrivalListState({ q: 'rats', status: 'active' }, kept)).toEqual({ q: 'rats', status: 'active' })
   })
 
   it('reads a named filter like any other: empty or unknown means the default', () => {
@@ -54,7 +55,7 @@ describe('list state for a link from another view', () => {
   })
 
   it('does not change the kept state', () => {
-    readArrivalListState({ q: 'rats', status: 'bezig' }, kept)
+    readArrivalListState({ q: 'rats', status: 'active' }, kept)
     expect(kept).toEqual({ q: 'temple', status: 'open' })
   })
 })
@@ -66,8 +67,8 @@ describe('links', () => {
   })
 
   it('builds the map links from the shared contract', () => {
-    expect(mapQuestLink('Ratcatcher')).toEqual({ path: '/kaart', query: { quest: 'Ratcatcher' } })
-    expect(mapPinLink('Contact!')).toEqual({ path: '/kaart', query: { pin: 'Contact!' } })
+    expect(mapQuestLink('Ratcatcher')).toEqual({ path: '/map', query: { quest: 'Ratcatcher' } })
+    expect(mapPinLink('Contact!')).toEqual({ path: '/map', query: { pin: 'Contact!' } })
   })
 })
 

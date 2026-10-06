@@ -52,7 +52,7 @@ export function readBands(svg: string): Band[] {
   return bands
 }
 
-const BAND_LAYER: Record<string, string> = { outer: 'Rand_buiten', inner: 'Rand_binnen', gold: 'Rand_goud' }
+const BAND_LAYER: Record<string, string> = { outer: 'Border_outer', inner: 'Border_inner', gold: 'Border_gold' }
 
 /** A Figma-friendly SVG of one icon variant. */
 export function figmaSvg(variant: FigmaVariant): string {
@@ -68,10 +68,10 @@ export function figmaSvg(variant: FigmaVariant): string {
       const s = shape.size - 2 * band.inset
       const d = continuousRect(shape.x + band.inset, shape.y + band.inset, s, s, shape.radius - band.inset)
       const opacity = band.opacity === undefined ? '' : ` opacity="${band.opacity}"`
-      return `    <path id="${BAND_LAYER[band.name] ?? `Rand_${band.name}`}" d="${d}" fill="none" stroke="${band.color}" stroke-width="${num(band.width)}"${opacity}/>`
+      return `    <path id="${BAND_LAYER[band.name] ?? `Border_${band.name}`}" d="${d}" fill="none" stroke="${band.color}" stroke-width="${num(band.width)}"${opacity}/>`
     })
     .join('\n')
-  svg = svg.replace(/<g clip-path="url\(#(?:inside|clip)\)">\s*(?:<rect [^>]*mask="url\(#band-[\w-]+\)"\/>\s*)+<\/g>/, `<g id="Randen">\n${borders}\n  </g>`)
+  svg = svg.replace(/<g clip-path="url\(#(?:inside|clip)\)">\s*(?:<rect [^>]*mask="url\(#band-[\w-]+\)"\/>\s*)+<\/g>/, `<g id="Borders">\n${borders}\n  </g>`)
 
   // No masks, filters or unused paint servers.
   svg = svg
@@ -88,21 +88,21 @@ export function figmaSvg(variant: FigmaVariant): string {
 
   // Layer names.
   svg = svg
-    .replace(/<rect width="1024" height="1024" fill="url\(#leather\)"\/>/, '<rect id="Leer" width="1024" height="1024" fill="url(#leather)"/>')
-    .replace(/<g fill="none" stroke="#0d0b08"/, '<g id="Kompasroos" fill="none" stroke="#0d0b08"')
-    .replace(/<g fill="#c9a24a" opacity="0.95">/, '<g id="Ruitjes" fill="#c9a24a" opacity="0.95">')
+    .replace(/<rect width="1024" height="1024" fill="url\(#leather\)"\/>/, '<rect id="Leather" width="1024" height="1024" fill="url(#leather)"/>')
+    .replace(/<g fill="none" stroke="#0d0b08"/, '<g id="Compass_rose" fill="none" stroke="#0d0b08"')
+    .replace(/<g fill="#c9a24a" opacity="0.95">/, '<g id="Diamonds" fill="#c9a24a" opacity="0.95">')
     .replace(/<image href=/, '<image id="Ash_Logs" xlink:href=')
     .replace(/<svg xmlns="http:\/\/www.w3.org\/2000\/svg"/, '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"')
   if (variant === 'macos') {
     svg = svg
-      .replace(/<path d="([^"]+)" fill="#15120e"\/>/, '<path id="Vorm" d="$1" fill="#15120e"/>')
+      .replace(/<path d="([^"]+)" fill="#15120e"\/>/, '<path id="Shape" d="$1" fill="#15120e"/>')
       .replace(/<g clip-path="url\(#clip\)">/, '<g id="Body" clip-path="url(#clip)">')
-      .replace(/<path d="([^"]+)" fill="none" stroke="url\(#rim\)"/, '<path id="Randlicht" d="$1" fill="none" stroke="url(#rim)"')
+      .replace(/<path d="([^"]+)" fill="none" stroke="url\(#rim\)"/, '<path id="Rim_light" d="$1" fill="none" stroke="url(#rim)"')
   } else {
     // Guide only: iOS applies this mask itself. Hide the layer before exporting.
     svg = svg.replace(
       '</svg>',
-      `  <path id="iOS-masker_hulplijn_verbergen_bij_export" d="${shapePath}" fill="none" stroke="#ff4fd8" stroke-width="2" stroke-dasharray="12 8" opacity="0.8"/>\n</svg>`,
+      `  <path id="iOS_mask_guide_hide_on_export" d="${shapePath}" fill="none" stroke="#ff4fd8" stroke-width="2" stroke-dasharray="12 8" opacity="0.8"/>\n</svg>`,
     )
   }
 
@@ -126,5 +126,5 @@ export function writeFigmaSvgs(dir = FIGMA_DIR): string[] {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  for (const file of writeFigmaSvgs()) console.log(`geschreven: ${file}`)
+  for (const file of writeFigmaSvgs()) console.log(`written: ${file}`)
 }

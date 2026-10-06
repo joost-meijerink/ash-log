@@ -19,7 +19,7 @@ const more = computed(() => props.total - props.hits.length)
 
 <template>
   <section aria-labelledby="map-search-results" class="px-3 pt-2 pb-3">
-    <SectionHeading id="map-search-results" as="h2" title="Plekken" :count="total" />
+    <SectionHeading id="map-search-results" as="h2" title="Spots" :count="total" />
     <ul v-if="hits.length" class="mt-1 flex flex-col" role="list">
       <li v-for="hit in hits" :key="hit.point.id">
         <button
@@ -42,7 +42,7 @@ const more = computed(() => props.total - props.hits.length)
         </button>
       </li>
     </ul>
-    <p v-if="more > 0" class="px-2 pt-1 text-sm text-muted-light">Nog {{ more }} meer. Typ verder om te verfijnen.</p>
-    <p v-if="total === 0" class="px-2 pt-1 text-sm text-muted-light">Geen losse plekken met deze naam.</p>
+    <p v-if="more > 0" class="px-2 pt-1 text-sm text-muted-light">{{ more }} more. Keep typing to narrow it down.</p>
+    <p v-if="total === 0" class="px-2 pt-1 text-sm text-muted-light">No spots with this name.</p>
   </section>
 </template>

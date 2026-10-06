@@ -4,7 +4,7 @@
 //           OR a reward linked to the point (Reward.pointIds) is owned (progress.rewards)
 //
 // Aliases are twin points the sync merged into this one; ticks on them still count. A point with
-// linked rewards is ticked through the reward, so the map and Verzamelingen never disagree.
+// linked rewards is ticked through the reward, so the map and Collections never disagree.
 // Pure, no DOM: this file is also type-checked by the Node config.
 
 import type { MapPoint, Reward } from './types'

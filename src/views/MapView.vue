@@ -208,7 +208,7 @@ async function placePin(pos: { x: number; y: number }, inWorld: boolean) {
   const id = state.pin.value
   if (!id || pinSaving.value) return
   if (!inWorld) {
-    pinError.value = 'Die plek ligt buiten de kaart. Klik binnen de kaart.'
+    pinError.value = "That spot is outside the map. Click inside the map."
     return
   }
   pinSaving.value = true
@@ -220,7 +220,7 @@ async function placePin(pos: { x: number; y: number }, inWorld: boolean) {
     }))
     state.finishPin(id)
   } catch (err) {
-    pinError.value = `Opslaan lukt niet: ${(err as Error).message}`
+    pinError.value = `Couldn't save: ${(err as Error).message}`
   } finally {
     pinSaving.value = false
   }
@@ -239,7 +239,7 @@ async function removePin() {
     })
     state.finishPin(id)
   } catch (err) {
-    pinError.value = `Verwijderen lukt niet: ${(err as Error).message}`
+    pinError.value = `Couldn't remove: ${(err as Error).message}`
   } finally {
     pinSaving.value = false
   }
@@ -272,7 +272,7 @@ const emptyHint = computed<'nothing' | 'filtered' | null>(() => {
     <aside
       v-show="isWide ? sidebarOpen : true"
       id="map-filters"
-      aria-label="Kaartfilters"
+      aria-label="Map filters"
       :inert="!isWide && !sidebarOpen"
       :class="
         cn(
@@ -308,7 +308,7 @@ const emptyHint = computed<'nothing' | 'filtered' | null>(() => {
         ref="mapEl"
         class="ash-map absolute inset-0 isolate z-0"
         role="region"
-        aria-label="Kaart. Pijltjes verschuiven, plus en min zoomen."
+        aria-label="Map. Arrow keys pan, plus and minus zoom."
       />
       <!-- Soft vignette for depth at the edges of the view -->
       <div aria-hidden="true" class="pointer-events-none absolute inset-0 z-[1] shadow-[inset_0_0_90px_rgba(0,0,0,0.35)]" />
@@ -331,7 +331,7 @@ const emptyHint = computed<'nothing' | 'filtered' | null>(() => {
             class="rounded-full bg-gold/15 px-1.5 py-0.5 text-xs text-gold tabular-nums"
           >
             {{ state.filters.categories.length }}
-            <span class="sr-only">categorieën aan</span>
+            <span class="sr-only">{{ state.filters.categories.length === 1 ? 'category on' : 'categories on' }}</span>
           </span>
         </Button>
 
@@ -352,13 +352,13 @@ const emptyHint = computed<'nothing' | 'filtered' | null>(() => {
             class="pointer-events-auto flex max-w-md flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-line-dark bg-leather/95 px-4 py-2.5 shadow-[0_12px_30px_-12px_rgba(0,0,0,0.9)]"
           >
             <p class="min-w-0 flex-1 basis-52 leading-snug">
-              <template v-if="emptyHint === 'nothing'">Nog niets op de kaart. Kies bij de filters wat je wilt zien.</template>
-              <template v-else>Je filters verbergen alle punten van deze categorieën.</template>
+              <template v-if="emptyHint === 'nothing'">Nothing on the map yet. Pick what you want to see in the filters.</template>
+              <template v-else>Your filters hide every point in these categories.</template>
             </p>
             <Button v-if="emptyHint === 'nothing'" variant="outline" size="sm" @click="state.resetFilters()">
-              Toon vaults en queststarts
+              Show vaults and quest starts
             </Button>
-            <Button v-else variant="outline" size="sm" @click="state.clearRefinements()">Wis level en regio</Button>
+            <Button v-else variant="outline" size="sm" @click="state.clearRefinements()">Clear level and region</Button>
           </div>
         </div>
       </div>

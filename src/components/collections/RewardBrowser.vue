@@ -27,10 +27,10 @@ import RewardNoteText from './RewardNoteText.vue'
 import RewardRow from './RewardRow.vue'
 
 /**
- * The unique unlocks: kind chips with counts, search, 'Verberg wat ik al heb' and the list
+ * The unique unlocks: kind chips with counts, search, 'Hide what I have' and the list
  * grouped by kind and wiki sub-heading. What a group's rewards share (via, a long source) is
  * shown once under its heading instead of on every row. Kind and the hide switch are in the
- * URL too (?soort=<kind>&verberg=1), the search text is not.
+ * URL too (?kind=<kind>&hide=1), the search text is not.
  */
 const props = defineProps<{
   owned: ReadonlySet<string>
@@ -42,8 +42,8 @@ const props = defineProps<{
 const data = useDataStore()
 /** Plans are not tracked (see REWARD_KINDS). */
 const tracked = computed(() => trackedRewards(data.rewards))
-// The route of the Verzamelingen view itself: while another view is on screen it keeps its last
-// value, so a ?soort= or a hash of the map or the quests never gets in here.
+// The route of the Collections view itself: while another view is on screen it keeps its last
+// value, so a ?kind= or a hash of the map or the quests never gets in here.
 const view = useViewRoute()
 const route = view.route
 
@@ -82,22 +82,22 @@ watch([() => route.query, view.arrival], ([q, arrival], [, before]) => {
   // where the view was left changes nothing.
   if (arrival?.kind === 'fresh') {
     // A link to the unlocks themselves (from a map card) must show what it points at: the search
-    // text cannot be named by a link and would hide it, and so would a kept 'Verberg wat ik al heb'.
+    // text cannot be named by a link and would hide it, and so would a kept 'Hide what I have'.
     const toList = targetsUnlockList(q, route.hash)
     if (toList) query.value = ''
     const next = mergeCollectionQuery(q, state.value, toList)
     if (!sameCollectionState(next, state.value)) state.value = next
   }
   // The address has to say what is on screen: a link that left them out, or a write that was cut
-  // off by leaving. After a link also in the usual words ('?soort=all' is how a link asks for
-  // 'Alles'; the address of 'Alles' has no ?soort).
+  // off by leaving. After a link also in the usual words ('?kind=all' is how a link asks for
+  // 'All'; the address of 'All' has no ?kind).
   const written = collectionQuery(state.value, q)
-  const tidy = arrival?.kind !== 'fresh' || (written.soort === q.soort && written.verberg === q.verberg)
+  const tidy = arrival?.kind !== 'fresh' || (written.kind === q.kind && written.hide === q.hide)
   if (!tidy || !sameCollectionState(named, state.value)) writeUrl()
 })
 
 const tallies = computed(() => kindTallies(tracked.value, props.owned))
-/** Alles, plus every kind that has rewards (and the selected one, so it never vanishes). */
+/** All, plus every kind that has rewards (and the selected one, so it never vanishes). */
 const kindOptions = computed(() => KIND_FILTERS.filter((k) => k === 'all' || k === kind.value || (tallies.value[k]?.total ?? 0) > 0))
 const list = computed(() =>
   buildRewardList(tracked.value, props.owned, { kind: kind.value, query: query.value, hideOwned: hideOwned.value }, props.haystacks),
@@ -107,7 +107,7 @@ const filtering = computed(() => !!query.value.trim() || hideOwned.value)
 const resultText = computed(() => {
   const { visible, total } = list.value
   if (!filtering.value) return `${total} ${total === 1 ? 'unlock' : 'unlocks'}`
-  return `${visible} van ${total} zichtbaar`
+  return `${visible} of ${total} shown`
 })
 
 const questName = (id?: string) => (id ? data.questById.get(id)?.name : undefined)
@@ -124,14 +124,14 @@ function resetFilters() {
     <!-- Controls, on leather -->
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
-        <SearchInput v-model="query" placeholder="Zoek op naam, recept, bron of groep" class="sm:max-w-md" />
+        <SearchInput v-model="query" placeholder="Search by name, recipe, source or group" class="sm:max-w-md" />
         <Label for="hide-owned" class="min-h-11 cursor-pointer gap-3 text-text-light">
           <Switch id="hide-owned" :model-value="hideOwned" @update:model-value="(v) => setUrlState({ hideOwned: !!v })" />
-          Verberg wat ik al heb
+          Hide what I have
         </Label>
       </div>
 
-      <div role="group" aria-label="Soort unlock" class="flex flex-wrap gap-x-2 gap-y-2.5">
+      <div role="group" aria-label="Kind of unlock" class="flex flex-wrap gap-x-2 gap-y-2.5">
         <ToggleChip
           v-for="k in kindOptions"
           :key="k"
@@ -157,7 +157,7 @@ function resetFilters() {
           {{ block.label }}
         </h3>
         <span v-if="kind === 'all'" class="text-sm text-text-parchment/65 tabular-nums">
-          {{ tallyText(block.tally) }}<span class="sr-only"> afgevinkt</span>
+          {{ tallyText(block.tally) }}<span class="sr-only"> ticked off</span>
         </span>
       </div>
 
@@ -180,7 +180,7 @@ function resetFilters() {
             <RewardNoteText
               v-if="group.note.shared"
               :note="group.note.shared"
-              :prefix="group.note.shared.count < group.note.total ? `Bij ${group.note.shared.count} van de ${group.note.total}:` : undefined"
+              :prefix="group.note.shared.count < group.note.total ? `For ${group.note.shared.count} of the ${group.note.total}:` : undefined"
             />
           </p>
           <ul>
@@ -205,22 +205,22 @@ function resetFilters() {
         <EmptyState
           compact
           :icon="Sparkles"
-          title="Nog geen unlocks"
-          text="De lijst komt van de wiki-pagina Consumable Recipes. Draai een sync om hem op te halen."
+          title="No unlocks yet"
+          text="The list comes from the Consumable Recipes wiki page. Run a sync to fetch it."
         />
       </ParchmentPanel>
       <ParchmentPanel v-else-if="hideOwned && !query.trim()">
-        <EmptyState compact :icon="Sparkles" title="Alles binnen" :text="`Je hebt alle ${kind === 'all' ? 'unlocks' : kindLabel(kind).toLowerCase()} al.`">
+        <EmptyState compact :icon="Sparkles" title="Got them all" :text="`You already have all ${kind === 'all' ? 'unlocks' : kindLabel(kind).toLowerCase()}.`">
           <template #action>
-            <Button variant="outline" size="sm" @click="setUrlState({ hideOwned: false })">Toon ze weer</Button>
+            <Button variant="outline" size="sm" @click="setUrlState({ hideOwned: false })">Show them again</Button>
           </template>
         </EmptyState>
       </ParchmentPanel>
       <ParchmentPanel v-else>
-        <EmptyState compact :icon="SearchX" title="Niets gevonden" :text="kind === 'all' ? 'Probeer een ander woord.' : 'Probeer een ander woord, of kijk onder Alles.'">
+        <EmptyState compact :icon="SearchX" title="Nothing found" :text="kind === 'all' ? 'Try another word.' : 'Try another word, or look under All.'">
           <template #action>
-            <Button variant="outline" size="sm" @click="resetFilters">Wis zoeken en filters</Button>
-            <Button v-if="kind !== 'all'" variant="ghost" size="sm" @click="setUrlState({ kind: 'all' })">Toon alles</Button>
+            <Button variant="outline" size="sm" @click="resetFilters">Clear search and filters</Button>
+            <Button v-if="kind !== 'all'" variant="ghost" size="sm" @click="setUrlState({ kind: 'all' })">Show all</Button>
           </template>
         </EmptyState>
       </ParchmentPanel>

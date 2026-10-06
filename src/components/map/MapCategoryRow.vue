@@ -10,7 +10,7 @@ import MapGlyph from './MapGlyph.vue'
 
 /**
  * One category in a filter group: a 44px row around a native checkbox, the wiki icon (or the
- * marker glyph), the label and a counter. Lore and unique show 'gevonden / totaal'.
+ * marker glyph), the label and a counter. Lore and unique show 'found / total'.
  */
 const props = defineProps<{
   category: MapCategory
@@ -27,9 +27,9 @@ const total = computed(() => props.count?.total ?? 0)
 const found = computed(() => props.count?.found ?? 0)
 const complete = computed(() => trackable.value && total.value > 0 && found.value === total.value)
 
-const countText = computed(() => (trackable.value ? `${found.value} / ${total.value}` : total.value.toLocaleString('nl-NL')))
+const countText = computed(() => (trackable.value ? `${found.value} / ${total.value}` : total.value.toLocaleString('en-GB')))
 const countLabel = computed(() =>
-  trackable.value ? `${found.value} van ${total.value} gevonden` : `${total.value} ${total.value === 1 ? 'punt' : 'punten'}`,
+  trackable.value ? `${found.value} of ${total.value} found` : `${total.value} ${total.value === 1 ? 'point' : 'points'}`,
 )
 </script>
 
@@ -72,9 +72,9 @@ const countLabel = computed(() =>
       <span
         v-if="skipped > 0"
         class="truncate text-xs text-muted-light/80"
-        title="Deze punten liggen in vaults of andere instanced gebieden, buiten de overworld-kaart."
+        title="These points are in vaults or other instanced areas, off the overworld map."
       >
-        {{ skipped }} in instanced gebieden
+        {{ skipped }} in instanced areas
       </span>
     </span>
 

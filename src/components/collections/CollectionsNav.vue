@@ -2,7 +2,7 @@
 import type { Component } from 'vue'
 import AnchorLink from './AnchorLink.vue'
 
-/** Sticky section links at the top of the Verzamelingen page. */
+/** Sticky section links at the top of the Collections page. */
 defineProps<{
   items: { id: string; label: string; short: string; icon: Component; count?: string }[]
 }>()
@@ -10,7 +10,7 @@ defineProps<{
 
 <template>
   <nav
-    aria-label="Secties"
+    aria-label="Sections"
     class="sticky top-0 z-10 border-y border-line-dark bg-ink/92 backdrop-blur-sm supports-[backdrop-filter]:bg-ink/80"
   >
     <ul class="mx-auto flex w-full max-w-6xl items-stretch gap-1 px-2 sm:gap-2 sm:px-4">

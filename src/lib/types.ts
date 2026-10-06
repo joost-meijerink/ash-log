@@ -374,7 +374,7 @@ export type PhoneKind = 'iphone' | 'android'
 export interface ServerStatus {
   /** 'dev' under `npm run dev` (no live mode), 'app' under the app server. */
   mode: 'dev' | 'app'
-  /** The computer the server runs on, so texts can say 'je Mac' or 'je pc'. Missing from older servers. */
+  /** The computer the server runs on, so texts can say 'your Mac' or 'your PC'. Missing from older servers. */
   platform?: ServerPlatform
   /** The request came from this computer itself (loopback). Only then can live mode and pairing be managed. */
   local: boolean
@@ -398,7 +398,7 @@ export interface ServerStatus {
 export interface PairingCode {
   /** Six digits, also typeable on the phone's pairing page. */
   code: string
-  /** URL in the QR code: https://<address for the phone>:<port>/koppel?code=<code>. */
+  /** URL in the QR code: https://<address for the phone>:<port>/pair?code=<code>. */
   url: string
   /** The QR code as an SVG string. */
   qrSvg: string

@@ -52,7 +52,7 @@ function testRouter(): Router {
     history: createMemoryHistory(),
     routes: [
       { path: '/quests/:questId?', name: 'quests', component: dummyView('quests') },
-      { path: '/kaart', name: 'map', component: dummyView('map') },
+      { path: '/map', name: 'map', component: dummyView('map') },
     ],
   })
 }
@@ -109,21 +109,21 @@ describe('useViewRoute in kept-alive views', () => {
 
   it('freezes the route while another view is on screen: no watcher of the view ever sees the other route', async () => {
     const { router, wrapper } = await setup('/quests/A?q=rune')
-    await router.push('/kaart?focus=p1')
-    await router.replace('/kaart?focus=p1&c=vaults')
+    await router.push('/map?focus=p1')
+    await router.replace('/map?focus=p1&c=vaults')
     await flushPromises()
 
     expect(views.quests!.route.fullPath).toBe('/quests/A?q=rune')
     expect(views.quests!.route.query).toEqual({ q: 'rune' })
     expect(views.quests!.route.params).toEqual({ questId: 'A' })
     expect(views.quests!.active.value).toBe(false)
-    expect(views.map!.route.fullPath).toBe('/kaart?focus=p1&c=vaults')
+    expect(views.map!.route.fullPath).toBe('/map?focus=p1&c=vaults')
     expect(views.map!.active.value).toBe(true)
     expect(wrapper.find('[data-view="quests"]').exists()).toBe(false)
 
     const quests = log.filter((l) => l.startsWith('quests '))
     // The global route did show the map to the quests view; its own route never did.
-    expect(quests).toEqual(['quests global /kaart?focus=p1', 'quests deactivated', 'quests global /kaart?focus=p1&c=vaults'])
+    expect(quests).toEqual(['quests global /map?focus=p1', 'quests deactivated', 'quests global /map?focus=p1&c=vaults'])
     wrapper.unmount()
   })
 
@@ -144,7 +144,7 @@ describe('useViewRoute in kept-alive views', () => {
   it('a return fires no route watcher; the arrival is known in watchers and in onActivated', async () => {
     const { router, wrapper } = await setup('/quests/A?q=rune')
     const questsRoute = useViewMemoryStore().routes.quests
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     await flushPromises()
     log = []
 
@@ -166,7 +166,7 @@ describe('useViewRoute in kept-alive views', () => {
 
   it('a fresh navigation updates the route before the arrival watcher and the activation hook run', async () => {
     const { router, wrapper } = await setup('/quests/A?q=rune')
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     await flushPromises()
     log = []
 
@@ -198,7 +198,7 @@ describe('useViewRoute in kept-alive views', () => {
 
   it('back to the remembered location is a return as well', async () => {
     const { router, wrapper } = await setup('/quests/A')
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     await flushPromises()
     log = []
     router.back()
@@ -210,17 +210,17 @@ describe('useViewRoute in kept-alive views', () => {
 
   it('does not navigate for a view that is not on screen', async () => {
     const { router, wrapper } = await setup('/quests/A')
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     await flushPromises()
 
     // A query-only location would rewrite the address of the map.
     await expect(views.quests!.replace({ query: { q: 'late' } })).resolves.toBeUndefined()
     await expect(views.quests!.push('/quests/B')).resolves.toBeUndefined()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?focus=p1')
+    expect(router.currentRoute.value.fullPath).toBe('/map?focus=p1')
     expect(useViewMemoryStore().locations.quests).toBe('/quests/A')
 
     await views.map!.replace({ query: { focus: 'p2' } })
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?focus=p2')
+    expect(router.currentRoute.value.fullPath).toBe('/map?focus=p2')
     await views.map!.push('/quests/C')
     expect(router.currentRoute.value.fullPath).toBe('/quests/C')
     wrapper.unmount()
@@ -230,12 +230,12 @@ describe('useViewRoute in kept-alive views', () => {
     const { router, wrapper } = await setup('/quests/A')
     let loaded!: () => void
     router.addRoute({
-      path: '/traag',
+      path: '/slow',
       name: 'collections',
-      component: () => new Promise((resolve) => (loaded = () => resolve({ render: () => h('p', 'traag') }))),
+      component: () => new Promise((resolve) => (loaded = () => resolve({ render: () => h('p', 'slow') }))),
     })
     // The header tab was clicked; the code of that view is still loading.
-    const going = router.push('/traag')
+    const going = router.push('/slow')
     await flushPromises()
     expect(views.quests!.active.value).toBe(true)
     // A write of the view that lands in that gap (a debounce, data that came in).
@@ -244,7 +244,7 @@ describe('useViewRoute in kept-alive views', () => {
     loaded()
     await going
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/traag')
+    expect(router.currentRoute.value.fullPath).toBe('/slow')
     expect(useViewMemoryStore().locations.quests).toBe('/quests/A')
 
     // Back on screen the view can write again.
@@ -262,7 +262,7 @@ describe('useViewRoute in kept-alive views', () => {
     field.focus()
     expect(document.activeElement).toBe(field)
     // Back or forward: no click that moves the focus first.
-    await router.push('/kaart')
+    await router.push('/map')
     expect(blurs).toEqual([true])
     await flushPromises()
     expect(document.activeElement).toBe(document.body)
@@ -275,13 +275,13 @@ describe('useViewRoute in kept-alive views', () => {
     const tabLink = document.createElement('button')
     document.body.appendChild(tabLink)
     tabLink.focus()
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     expect(document.activeElement).toBe(tabLink)
     // Navigation inside the view does not touch the focus either.
     const field = wrapper.get('[data-field="map"]').element as HTMLInputElement
     field.focus()
-    await router.replace('/kaart?focus=p1')
+    await router.replace('/map?focus=p1')
     await flushPromises()
     expect(document.activeElement).toBe(field)
     wrapper.unmount()
@@ -291,7 +291,7 @@ describe('useViewRoute in kept-alive views', () => {
     const { router, wrapper } = await setup('/quests/A')
     expect(childActive.quests!.value).toBe(true)
     expect(childActive.quests).toBe(views.quests!.active)
-    await router.push('/kaart')
+    await router.push('/map')
     expect(childActive.quests!.value).toBe(false)
     await flushPromises()
     expect(childActive.map!.value).toBe(true)
@@ -303,7 +303,7 @@ describe('useViewRoute in kept-alive views', () => {
     const el = wrapper.get('[data-view="quests"]').element
     const seen: string[] = []
     views.quests!.onLeave(() => seen.push(`connected=${el.isConnected} active=${views.quests!.active.value}`))
-    const leaving = router.push('/kaart')
+    const leaving = router.push('/map')
     expect(seen).toEqual([])
     await leaving
     // Straight after the navigation, before the render that detaches the view.
@@ -315,14 +315,14 @@ describe('useViewRoute in kept-alive views', () => {
     wrapper.unmount()
     memory.attach(router)
     await router.push('/quests/A')
-    await router.push('/kaart')
+    await router.push('/map')
     expect(seen).toHaveLength(1)
   })
 
   it('counts the mounted views, so a view that is gone is not returned to', async () => {
     const Plain = defineComponent({ setup: () => () => h(RouterView) })
     const { router, memory, wrapper } = await setup('/quests/A', Plain)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     // Without KeepAlive the quests view was unmounted.
     await tab(router, 'quests')
@@ -337,7 +337,7 @@ describe('useViewRoute in kept-alive views', () => {
     memory.setMain(main)
     views.quests!.scrollMain(120)
     expect(main.scrollTop).toBe(120)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     memory.settleMain()
     views.quests!.scrollMain(999)
@@ -355,11 +355,11 @@ describe('useViewRoute outside the views', () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
-        { path: '/verzamelingen', component: { render: () => null } },
-        { path: '/kaart', component: { render: () => null } },
+        { path: '/collections', component: { render: () => null } },
+        { path: '/map', component: { render: () => null } },
       ],
     })
-    await router.push('/verzamelingen?soort=spell')
+    await router.push('/collections?kind=spell')
     let view!: ViewRoute
     const Lone = defineComponent({
       setup() {
@@ -371,14 +371,14 @@ describe('useViewRoute outside the views', () => {
     expect(view.name).toBeNull()
     expect(view.active.value).toBe(true)
     expect(view.arrival.value).toBeNull()
-    expect(wrapper.text()).toBe('/verzamelingen?soort=spell')
+    expect(wrapper.text()).toBe('/collections?kind=spell')
 
-    await view.replace({ query: { soort: 'weapon' } })
+    await view.replace({ query: { kind: 'weapon' } })
     await flushPromises()
-    expect(wrapper.text()).toBe('/verzamelingen?soort=weapon')
-    await router.push('/kaart')
+    expect(wrapper.text()).toBe('/collections?kind=weapon')
+    await router.push('/map')
     await flushPromises()
-    expect(wrapper.text()).toBe('/kaart')
+    expect(wrapper.text()).toBe('/map')
     // No store involved.
     expect(useViewMemoryStore().active).toBeNull()
     view.onLeave(() => undefined)
@@ -404,7 +404,7 @@ describe('useViewRoute outside the views', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/quests', component: dummyView('quests') },
-        { path: '/kaart', component: { render: () => null } },
+        { path: '/map', component: { render: () => null } },
       ],
     })
     await router.push('/quests?q=a')
@@ -413,8 +413,8 @@ describe('useViewRoute outside the views', () => {
     expect(views.quests!.name).toBe('quests')
     expect(views.quests!.route.fullPath).toBe('/quests?q=a')
     expect(views.quests!.active.value).toBe(true)
-    await router.push('/kaart')
-    expect(views.quests!.route.fullPath).toBe('/kaart')
+    await router.push('/map')
+    expect(views.quests!.route.fullPath).toBe('/map')
     expect(views.quests!.active.value).toBe(true)
     wrapper.unmount()
   })

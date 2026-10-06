@@ -13,10 +13,10 @@ const linkClass =
 <template>
   <div class="min-w-0 text-[0.78rem] leading-snug text-muted-light">
     <p>
-      Bron:
+      Source:
       <a :href="WIKI" target="_blank" rel="noopener noreferrer" lang="en" :class="linkClass">RuneScape: Dragonwilds Wiki</a>,
       <a :href="LICENSE" target="_blank" rel="noopener noreferrer license" lang="en" :class="linkClass">CC BY-NC-SA 3.0</a>.
-      <span class="whitespace-nowrap">Onofficiële fantool, niet verbonden aan Jagex.</span>
+      <span class="whitespace-nowrap">Unofficial fan tool, not affiliated with Jagex.</span>
     </p>
   </div>
 </template>

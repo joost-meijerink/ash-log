@@ -14,8 +14,8 @@ interface Stat {
 }
 
 const stats = computed<Stat[]>(() => [
-  { key: 'rewards', label: 'Unieke unlocks', tally: props.summary.rewards },
-  { key: 'vaults', label: 'Vaults voltooid', tally: props.summary.vaults },
+  { key: 'rewards', label: 'Unique unlocks', tally: props.summary.rewards },
+  { key: 'vaults', label: 'Vaults done', tally: props.summary.vaults },
 ])
 </script>
 

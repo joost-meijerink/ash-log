@@ -13,3 +13,8 @@ dist
 # Half-written files of an atomic write or download that was cut off (sync stopped, crash).
 *.tmp
 *.part
+
+# Private working notes, kept out of the public repo
+/CLAUDE.md
+/docs/
+/.claude/

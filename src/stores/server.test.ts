@@ -24,7 +24,7 @@ function status(partial: Partial<ServerStatus> = {}): ServerStatus {
 const phone: ServerDevice = { id: 'd1', name: 'iPhone (Safari)', pairedAt: '2026-09-28T10:00:00Z' }
 const code: PairingCode = {
   code: '123456',
-  url: 'http://MacBook-Pro-van-Joost.local:5199/koppel?code=123456',
+  url: 'http://MacBook-Pro-van-Joost.local:5199/pair?code=123456',
   qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
   expiresAt: '2026-09-28T10:10:00Z',
 }
@@ -122,11 +122,11 @@ describe('server store: live switch', () => {
     expect(api.setLive).toHaveBeenCalledWith(true)
   })
 
-  it("shows the server's Dutch error when switching fails", async () => {
+  it("shows the server's error when switching fails", async () => {
     const store = useServerStore()
-    vi.mocked(api.setLive).mockRejectedValueOnce(new Error('Poort 5199 is al in gebruik'))
+    vi.mocked(api.setLive).mockRejectedValueOnce(new Error('Port 5199 is already in use'))
     await store.setLive(true)
-    expect(store.liveError).toBe('Poort 5199 is al in gebruik')
+    expect(store.liveError).toBe('Port 5199 is already in use')
     expect(store.live).toBe(false)
     expect(store.switching).toBe(false)
   })
@@ -157,7 +157,7 @@ describe('server store: live switch', () => {
     expect(store.liveError).toBeNull()
     await vi.advanceTimersByTimeAsync(VERIFY_DELAY_MS)
     expect(store.live).toBe(false)
-    expect(store.liveError).toBe('Live aanzetten is niet gelukt. Probeer het nog eens.')
+    expect(store.liveError).toBe("Couldn't turn Live on. Try again.")
   })
 
   it('stays quiet when the check agrees', async () => {
@@ -217,10 +217,10 @@ describe('server store: pairing and devices', () => {
 
   it('reports a failed code request', async () => {
     const store = await liveStore()
-    vi.mocked(api.createPairing).mockRejectedValueOnce(new Error('Zet eerst Live op wifi aan'))
+    vi.mocked(api.createPairing).mockRejectedValueOnce(new Error('Turn on Live on Wi-Fi first'))
     await store.createPairing()
     expect(store.pairing).toBeNull()
-    expect(store.pairingError).toBe('Zet eerst Live op wifi aan')
+    expect(store.pairingError).toBe('Turn on Live on Wi-Fi first')
     expect(store.pairingBusy).toBe(false)
   })
 
@@ -232,14 +232,14 @@ describe('server store: pairing and devices', () => {
     expect(store.devices).toEqual([])
     expect(store.revoking).toBeNull()
 
-    vi.mocked(api.revokeDevice).mockRejectedValueOnce(new Error('Onbekend apparaat'))
+    vi.mocked(api.revokeDevice).mockRejectedValueOnce(new Error('Unknown device'))
     await store.revoke('d9')
-    expect(store.deviceError).toBe('Onbekend apparaat')
+    expect(store.deviceError).toBe('Unknown device')
   })
 })
 
 describe('server store: certificate QR', () => {
-  const CERT_URL = 'http://MacBook-Pro-van-Joost.local:5199/certificaat'
+  const CERT_URL = 'http://MacBook-Pro-van-Joost.local:5199/certificate'
   const qr = { url: CERT_URL, qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"></svg>' }
 
   async function storeWith(partial: Partial<ServerStatus>) {
@@ -270,7 +270,7 @@ describe('server store: certificate QR', () => {
     expect(api.certificateQr).toHaveBeenCalledTimes(1)
 
     // Another address (the Mac got a new name): a new QR.
-    vi.mocked(api.serverStatus).mockResolvedValueOnce(status({ live: true, urls: URLS, certificateUrl: 'http://Mac.local:5199/certificaat' }))
+    vi.mocked(api.serverStatus).mockResolvedValueOnce(status({ live: true, urls: URLS, certificateUrl: 'http://Mac.local:5199/certificate' }))
     await store.load()
     await store.loadCertificate()
     expect(api.certificateQr).toHaveBeenCalledTimes(2)
@@ -358,9 +358,9 @@ describe('server store: address order', () => {
 })
 
 describe('server store: iPhone or Android', () => {
-  const CERT_URL = 'http://MacBook-Pro-van-Joost.local:5199/certificaat'
+  const CERT_URL = 'http://MacBook-Pro-van-Joost.local:5199/certificate'
   const qr = { url: CERT_URL, qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"></svg>' }
-  const androidQr = { ...qr, url: 'http://192.168.1.20:5199/certificaat' }
+  const androidQr = { ...qr, url: 'http://192.168.1.20:5199/certificate' }
 
   async function liveStore() {
     const store = useServerStore()
@@ -387,7 +387,7 @@ describe('server store: iPhone or Android', () => {
     vi.mocked(api.createPairing).mockResolvedValueOnce(code)
     await store.createPairing()
 
-    const fresh = { ...code, code: '654321', url: 'https://192.168.1.20:5199/koppel?code=654321' }
+    const fresh = { ...code, code: '654321', url: 'https://192.168.1.20:5199/pair?code=654321' }
     vi.mocked(api.createPairing).mockResolvedValueOnce(fresh)
     store.setPhone('android')
     expect(store.phone).toBe('android')
@@ -419,7 +419,7 @@ describe('server store: iPhone or Android', () => {
   it('names the computer after the platform the server reports', async () => {
     const store = useServerStore()
     expect(store.computer).toBe('computer')
-    for (const [platform, noun] of [['mac', 'Mac'], ['windows', 'pc'], ['linux', 'computer'], ['other', 'computer']] as const) {
+    for (const [platform, noun] of [['mac', 'Mac'], ['windows', 'PC'], ['linux', 'computer'], ['other', 'computer']] as const) {
       vi.mocked(api.serverStatus).mockResolvedValueOnce(status({ platform }))
       await store.load()
       expect(store.computer, platform).toBe(noun)

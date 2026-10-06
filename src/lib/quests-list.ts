@@ -19,20 +19,20 @@ export interface QuestEntry<Q extends Quest = Quest> {
 export type StatusFilter = 'all' | QuestState
 
 export const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: 'all', label: 'Alle' },
+  { value: 'all', label: 'All' },
   { value: 'open', label: QUEST_STATE_LABEL.open },
   { value: 'active', label: QUEST_STATE_LABEL.active },
   { value: 'done', label: QUEST_STATE_LABEL.done },
 ]
 
 export const KIND_TITLE: Record<QuestKind, string> = {
-  primary: 'Hoofdverhaal',
-  secondary: 'Zijquests',
-  tertiary: 'Tertiair',
+  primary: 'Main story',
+  secondary: 'Side quests',
+  tertiary: 'Tertiary',
 }
 
 /** Label for side quests without a region on the wiki. */
-export const NO_REGION_LABEL = 'Overige'
+export const NO_REGION_LABEL = 'Other'
 
 const KIND_RANK: Record<QuestKind, number> = { primary: 0, secondary: 1, tertiary: 2 }
 
@@ -74,7 +74,7 @@ export interface QuestSection<Q extends Quest = Quest> {
 /**
  * Splits entries into sections: main story by order, side quests grouped by region
  * (regions in order of first appearance, quests without a region last), tertiary by order.
- * Kinds without entries are left out, so 'Tertiair' only shows up when there is one.
+ * Kinds without entries are left out, so 'Tertiary' only shows up when there is one.
  */
 export function buildSections<Q extends Quest>(entries: QuestEntry<Q>[]): QuestSection<Q>[] {
   const sorted = [...entries].sort((a, b) => compareQuests(a.quest, b.quest))

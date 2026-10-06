@@ -26,7 +26,7 @@ const locked = computed(() => !progress.canEdit)
 
 const sections = computed(() => [
   { id: 'vaults', label: 'Dragonkin Vaults', short: 'Vaults', icon: VaultIcon, count: tallyText(summary.value.vaults) },
-  { id: 'unlocks', label: 'Unieke unlocks', short: 'Unlocks', icon: Sparkles, count: tallyText(summary.value.rewards) },
+  { id: 'unlocks', label: 'Unique unlocks', short: 'Unlocks', icon: Sparkles, count: tallyText(summary.value.rewards) },
   { id: 'chests', label: 'Treasure chests', short: 'Chests', icon: Package },
 ])
 </script>
@@ -35,10 +35,10 @@ const sections = computed(() => [
   <div class="relative pb-16">
     <div class="mx-auto w-full max-w-6xl px-4 pt-6 pb-5 sm:px-6 sm:pt-8">
       <h1 class="font-display text-2xl font-semibold tracking-[0.08em] text-text-light uppercase sm:text-[1.7rem]">
-        Verzamelingen
+        Collections
       </h1>
       <p class="mt-1.5 max-w-prose text-muted-light">
-        Wat je één keer vrijspeelt, vink je hier af. De kisten staan erbij zodat je ze terugvindt.
+        Tick off what you unlock once. The chests are here too, so you can find them again.
       </p>
       <CollectionsSummary :summary="summary" class="mt-5" />
     </div>
@@ -51,7 +51,7 @@ const sections = computed(() => [
         <SectionHeading :count="tallyText(summary.vaults)">
           <span id="vaults-title">Dragonkin Vaults</span>
         </SectionHeading>
-        <p class="mt-1 mb-4 text-sm text-muted-light">In de standaardvolgorde.</p>
+        <p class="mt-1 mb-4 text-sm text-muted-light">In the wiki's standard progression order.</p>
 
         <div v-if="vaultCards.length" class="grid items-stretch gap-4 lg:grid-cols-2">
           <VaultCard
@@ -67,8 +67,8 @@ const sections = computed(() => [
           <EmptyState
             compact
             :icon="VaultIcon"
-            title="Nog geen vaults"
-            text="De vaults komen van de wiki-pagina Dragonkin Vault. Draai een sync om ze op te halen."
+            title="No vaults yet"
+            text="The vaults come from the Dragonkin Vault wiki page. Run a sync to fetch them."
           />
         </ParchmentPanel>
       </section>
@@ -76,7 +76,7 @@ const sections = computed(() => [
       <!-- Unique unlocks -->
       <section id="unlocks" tabindex="-1" class="scroll-mt-16 outline-none" aria-labelledby="unlocks-title">
         <SectionHeading :count="tallyText(summary.rewards)" class="mb-4">
-          <span id="unlocks-title">Unieke unlocks</span>
+          <span id="unlocks-title">Unique unlocks</span>
         </SectionHeading>
         <RewardBrowser :owned="owned" :haystacks="haystacks" :disabled="locked" />
       </section>

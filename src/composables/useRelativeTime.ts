@@ -1,10 +1,11 @@
-// Dutch date formatting: 'zojuist', '5 min geleden', 'vandaag 14:02', 'gisteren 09:15', '28 sep 14:02'.
-// A compact variant ('5 min', '14:02', 'gisteren', '28 sep') is for tight spots like the header.
+// English date formatting (day month, 24-hour clock, as en-GB): 'just now', '5 minutes ago',
+// 'today 14:02', 'yesterday 09:15', '28 Sep 14:02'. A compact variant ('5 min', '14:02',
+// 'yesterday', '28 Sep') is for tight spots like the header.
 
 import { useIntervalFn, useNow } from '@vueuse/core'
 import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from 'vue'
 
-const MONTHS = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 type DateInput = string | number | Date | null | undefined
 
@@ -20,7 +21,7 @@ const sameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 
 /**
- * Absolute Dutch date: '28 sep 14:02', or '28 sep 2025 14:02' outside the current year.
+ * Absolute date: '28 Sep 14:02', or '28 Sep 2025 14:02' outside the current year.
  * Returns '' for missing or invalid input.
  */
 export function formatDateTime(input: DateInput, now: Date = new Date()): string {
@@ -31,42 +32,45 @@ export function formatDateTime(input: DateInput, now: Date = new Date()): string
 }
 
 /**
- * Relative Dutch time. Under a minute (or in the future): 'zojuist'. Under an hour: 'N min geleden'.
- * Same day: 'vandaag 14:02'. Day before: 'gisteren 14:02'. Older: formatDateTime().
+ * Relative time. Under a minute (or in the future): 'just now'. Under an hour: 'N minutes ago'.
+ * Same day: 'today 14:02'. Day before: 'yesterday 14:02'. Older: formatDateTime().
  * Returns '' for missing or invalid input.
  */
 export function formatRelative(input: DateInput, now: Date = new Date()): string {
   const d = toDate(input)
   if (!d) return ''
   const diff = now.getTime() - d.getTime()
-  if (diff < 60_000) return 'zojuist'
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} min geleden`
-  if (sameDay(d, now)) return `vandaag ${clock(d)}`
+  if (diff < 60_000) return 'just now'
+  if (diff < 3_600_000) {
+    const minutes = Math.floor(diff / 60_000)
+    return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`
+  }
+  if (sameDay(d, now)) return `today ${clock(d)}`
   const yesterday = new Date(now)
   yesterday.setDate(now.getDate() - 1)
-  if (sameDay(d, yesterday)) return `gisteren ${clock(d)}`
+  if (sameDay(d, yesterday)) return `yesterday ${clock(d)}`
   return formatDateTime(d, now)
 }
 
 /**
- * Compact relative time for tight spots: 'zojuist', '5 min', '14:02' (today), 'gisteren',
- * '28 sep' (this year), 'sep 2025'. Returns '' for missing or invalid input.
+ * Compact relative time for tight spots: 'just now', '5 min', '14:02' (today), 'yesterday',
+ * '28 Sep' (this year), 'Sep 2025'. Returns '' for missing or invalid input.
  */
 export function formatRelativeShort(input: DateInput, now: Date = new Date()): string {
   const d = toDate(input)
   if (!d) return ''
   const diff = now.getTime() - d.getTime()
-  if (diff < 60_000) return 'zojuist'
+  if (diff < 60_000) return 'just now'
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} min`
   if (sameDay(d, now)) return clock(d)
   const yesterday = new Date(now)
   yesterday.setDate(now.getDate() - 1)
-  if (sameDay(d, yesterday)) return 'gisteren'
+  if (sameDay(d, yesterday)) return 'yesterday'
   if (d.getFullYear() === now.getFullYear()) return `${d.getDate()} ${MONTHS[d.getMonth()]}`
   return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`
 }
 
-/** Duration in Dutch: '850 ms', '12 s', '3 min 5 s'. */
+/** Duration: '850 ms', '12 s', '3 min 5 s'. */
 export function formatDuration(ms: number | null | undefined): string {
   if (ms === null || ms === undefined || !Number.isFinite(ms) || ms < 0) return ''
   if (ms < 1000) return `${Math.round(ms)} ms`

@@ -24,9 +24,9 @@ const hasProgress = computed(() => !!qp.value && (!!qp.value.done || qp.value.st
 
 const stepsDetail = computed(() => {
   const { stepsDone, stepsTotal } = entry.value
-  if (!stepsTotal) return 'Geen stappen'
+  if (!stepsTotal) return 'No steps'
   const base = `${stepsDone} / ${stepsTotal}`
-  return manualDone.value && stepsDone < stepsTotal ? `${base}, met de hand voltooid` : base
+  return manualDone.value && stepsDone < stepsTotal ? `${base}, marked done by hand` : base
 })
 
 const confirmReset = ref(false)
@@ -56,7 +56,7 @@ defineExpose({ focusTitle: () => title.value?.focus({ preventScroll: true }) })
     <p class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[0.95rem]">
       <LocationText v-if="quest.region" lang="en">{{ quest.region }}</LocationText>
       <span v-if="quest.region" aria-hidden="true" class="text-text-parchment/35">·</span>
-      <WikiLink :href="quest.wikiUrl">Op de wiki</WikiLink>
+      <WikiLink :href="quest.wikiUrl">On the wiki</WikiLink>
     </p>
 
     <LocationText
@@ -71,18 +71,18 @@ defineExpose({ focusTitle: () => title.value?.focus({ preventScroll: true }) })
     <div
       class="mt-2 flex flex-col gap-3 rounded-md border border-gold-ink/15 bg-parchment-deep/55 p-3 sm:flex-row sm:items-center sm:gap-5 sm:p-4"
     >
-      <ProgressBar class="sm:flex-1" size="md" label="Stappen" :value="entry.fraction" :detail="stepsDetail" />
+      <ProgressBar class="sm:flex-1" size="md" label="Steps" :value="entry.fraction" :detail="stepsDetail" />
       <div class="flex items-center gap-2">
         <Button v-if="entry.state !== 'done'" :disabled="!progress.canEdit" @click="progress.setQuestDone(quest.id, true)">
           <Check aria-hidden="true" />
-          Markeer als voltooid
+          Mark as done
         </Button>
         <Button v-else-if="manualDone" variant="outline" :disabled="!progress.canEdit" @click="progress.setQuestDone(quest.id, false)">
           <Undo2 aria-hidden="true" />
-          Toch nog niet voltooid
+          Not done after all
         </Button>
-        <p v-else class="px-1 text-sm text-text-parchment/70">Alle stappen afgevinkt</p>
-        <IconButton label="Voortgang wissen" :disabled="!hasProgress || !progress.canEdit" @click="confirmReset = true">
+        <p v-else class="px-1 text-sm text-text-parchment/70">All steps ticked off</p>
+        <IconButton label="Clear progress" :disabled="!hasProgress || !progress.canEdit" @click="confirmReset = true">
           <RotateCcw aria-hidden="true" />
         </IconButton>
       </div>
@@ -90,9 +90,9 @@ defineExpose({ focusTitle: () => title.value?.focus({ preventScroll: true }) })
 
     <QuestConfirmDialog
       v-model:open="confirmReset"
-      :title="`Voortgang van ${quest.name} wissen?`"
-      description="Alle vinkjes bij de stappen en benodigdheden gaan weg, en de quest staat weer open. Unieke unlocks blijven staan."
-      confirm-label="Voortgang wissen"
+      :title="`Clear progress for ${quest.name}?`"
+      description="All ticks on the steps and items go away, and the quest is back to not started. Unique unlocks stay."
+      confirm-label="Clear progress"
       @confirm="progress.resetQuest(quest.id)"
     />
   </header>

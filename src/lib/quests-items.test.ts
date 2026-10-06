@@ -73,13 +73,13 @@ describe('validateDrafts', () => {
     const d = draft('', '3', 'for the net')
     const result = validateDrafts('Q', [d])
     expect(result.valid).toBe(false)
-    expect(result.errors[d.key]).toEqual({ name: 'Vul een naam in' })
+    expect(result.errors[d.key]).toEqual({ name: 'Fill in a name' })
     expect(result.items).toEqual([])
   })
 
   it('flags a bad quantity', () => {
     const d = draft('Stone', 'lots')
-    expect(validateDrafts('Q', [d]).errors[d.key]).toEqual({ qty: 'Een heel getal vanaf 1' })
+    expect(validateDrafts('Q', [d]).errors[d.key]).toEqual({ qty: 'A whole number from 1' })
   })
 
   it('flags names that would give the same id', () => {
@@ -87,9 +87,9 @@ describe('validateDrafts', () => {
     const b = draft('ash-log')
     const c = draft('!!!')
     const result = validateDrafts('Q', [a, b, c])
-    expect(result.errors[a.key]).toEqual({ qty: 'Een heel getal vanaf 1' })
-    expect(result.errors[b.key]).toEqual({ name: 'Dit item staat er al' })
-    expect(result.errors[c.key]).toEqual({ name: 'Gebruik letters of cijfers' })
+    expect(result.errors[a.key]).toEqual({ qty: 'A whole number from 1' })
+    expect(result.errors[b.key]).toEqual({ name: "This item's already on the list" })
+    expect(result.errors[c.key]).toEqual({ name: 'Use letters or digits' })
   })
 
   it('allows an empty list (the quest needs nothing)', () => {

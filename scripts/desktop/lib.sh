@@ -25,9 +25,9 @@ log() {
     printf '[%s] %s\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$LOG_FILE"
 }
 
-# Prints a Dutch message for the dialog on stderr, logs it and exits 1.
+# Prints a message for the dialog on stderr, logs it and exits 1.
 fail() {
-  log "FOUT: $*"
+  log "ERROR: $*"
   printf '%s\n' "$*" >&2
   exit 1
 }
@@ -42,10 +42,10 @@ env_port() {
 PORT=${ASHENFALL_PORT:-$(env_port)}
 PORT=${PORT:-$DEFAULT_PORT}
 case $PORT in
-  '' | *[!0-9]*) fail "APP_PORT in .env is geen poortnummer: $PORT" ;;
+  '' | *[!0-9]*) fail "APP_PORT in .env isn't a port number: $PORT" ;;
 esac
 if [ "$PORT" -lt 1 ] || [ "$PORT" -gt 65535 ]; then
-  fail "APP_PORT in .env is geen poortnummer: $PORT"
+  fail "APP_PORT in .env isn't a port number: $PORT"
 fi
 BASE_URL="http://127.0.0.1:$PORT"
 
@@ -70,7 +70,7 @@ resolve_node() {
     fi
   done
   if [ -z "$NODE" ]; then
-    fail "Node niet gevonden${ASHENFALL_NODE:+ (verwacht op $ASHENFALL_NODE)}. Installeer de app opnieuw met: npm run app:install"
+    fail "Node not found${ASHENFALL_NODE:+ (expected at $ASHENFALL_NODE)}. Reinstall the app with: npm run app:install"
   fi
   PATH="$(/usr/bin/dirname -- "$NODE"):$PATH"
   export PATH

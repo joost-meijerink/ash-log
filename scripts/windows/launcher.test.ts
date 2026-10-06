@@ -121,10 +121,10 @@ describe('resolveConfig', () => {
     expect(resolvePort(project, {})).toBe(5305)
   })
 
-  it('turns a bad port into a Dutch launcher error', () => {
-    writeFileSync(join(project, '.env'), 'APP_PORT=vijf\n')
+  it('turns a bad port into a launcher error', () => {
+    writeFileSync(join(project, '.env'), 'APP_PORT=five\n')
     expect(() => resolveConfig({ projectDir: project, env: {} })).toThrow(LauncherError)
-    expect(() => resolveConfig({ projectDir: project, env: {} })).toThrow(/APP_PORT in .env is geen geldige poort: vijf/)
+    expect(() => resolveConfig({ projectDir: project, env: {} })).toThrow(/APP_PORT in \.env.*: five/)
   })
 
   it('builds the Windows paths, the child environment and the timeouts', () => {
@@ -177,6 +177,7 @@ describe('parseTasklist', () => {
   })
 
   it('treats the localized no-match notice as nothing', () => {
+    expect(parseTasklist('INFO: No tasks are running which match the specified criteria.\r\n', 4242)).toBeNull()
     expect(parseTasklist('INFO: Er worden geen taken uitgevoerd die voldoen aan de opgegeven criteria.\r\n', 4242)).toBeNull()
     expect(parseTasklist('', 4242)).toBeNull()
   })
@@ -192,7 +193,7 @@ describe('dialogs', () => {
   })
 
   it('runs Windows PowerShell with the text in the environment, never on the command line', () => {
-    const text = 'Ash Log kan niet starten.\n\n"C:\\Users\\Jan de Vries" & %PATH% $(kwaad)'
+    const text = "Ash Log can't start.\n\n\"C:\\Users\\Jan de Vries\" & %PATH% $(evil)"
     const popup = popupCommand({ text, kind: 'error', buttons: 'yesno', seconds: 4 }, env)
     expect(popup.command).toBe('C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
     expect(popup.args).toEqual(['-NoProfile', '-NonInteractive', '-Command', POPUP_SCRIPT])
@@ -290,7 +291,7 @@ describe('parseLauncherArgs', () => {
   })
 
   it('refuses what it does not know or what does not go together', () => {
-    expect(parseLauncherArgs(['--NoBrowser'])).toEqual({ error: 'Onbekende optie: --NoBrowser' })
+    expect(parseLauncherArgs(['--NoBrowser'])).toEqual({ error: 'Unknown option: --NoBrowser' })
     expect(parseLauncherArgs(['--stop=1'])).toHaveProperty('error')
     expect(parseLauncherArgs(['--stop', '--no-browser'])).toHaveProperty('error')
     expect(parseLauncherArgs(['--watch', '--browser=firefox', '--browser-pid=1'])).toHaveProperty('error')
@@ -350,16 +351,16 @@ describe('log helpers', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ash-log-log-'))
     const file = join(dir, 'server.log')
     try {
-      const before = '[2026-09-28 16:05:12] Server starten\nOude fout van gisteren\n'
+      const before = "[2026-09-28 16:05:12] Starting the server\nYesterday's old error\n"
       writeFileSync(
         file,
         before +
-          'Poort 5199 is bezet door een ander programma.\r\n' +
+          'Port 5199 is in use by another program.\r\n' +
           '    at Server.listen (node:net:1)\r\n\r\n' +
-          '[2026-09-28 16:05:13] FOUT: iets\n' +
+          '[2026-09-28 16:05:13] ERROR: something\n' +
           'Node.js v24.15.0\n',
       )
-      expect(lastServerMessage(file, Buffer.byteLength(before))).toBe('Poort 5199 is bezet door een ander programma.')
+      expect(lastServerMessage(file, Buffer.byteLength(before))).toBe('Port 5199 is in use by another program.')
       expect(lastServerMessage(file, 1e6)).toBe('')
       expect(lastServerMessage(join(dir, 'missing.log'), 0)).toBe('')
     } finally {
@@ -460,7 +461,7 @@ function fakeWindows(): FakeWindows {
       if (command.endsWith('tasklist.exe')) {
         const pid = Number(String(args[1]).replace('PID eq ', ''))
         const image = sys.alive.has(pid) ? sys.images.get(pid) : undefined
-        return { code: 0, stdout: image ? `"${image}","${pid}","Console","1","1.000 K"\r\n` : 'INFO: geen taken\r\n' }
+        return { code: 0, stdout: image ? `"${image}","${pid}","Console","1","1.000 K"\r\n` : 'INFO: no tasks\r\n' }
       }
       if (command.endsWith('taskkill.exe')) {
         sys.alive.delete(Number(args[1]))
@@ -550,7 +551,7 @@ describe('on Windows (stand-in system)', () => {
     ])
   })
 
-  it('says so when nothing runs, and fails in Dutch when the server keeps answering', async () => {
+  it('says so when nothing runs, and fails with a clear message when the server keeps answering', async () => {
     state.healthy = false
     sys.alive.delete(SERVER_PID)
     expect(await stopServer(config(), sys)).toBe('not-running')
@@ -560,7 +561,7 @@ describe('on Windows (stand-in system)', () => {
       state.healthy = true // a server that ignores the request and survives taskkill
     }
     sys.alive.add(SERVER_PID)
-    await expect(stopServer(config(), sys)).rejects.toThrow(/stopt niet\. Stop hem zelf, bijvoorbeeld met Taakbeheer \(proces Node\.js JavaScript Runtime\)/)
+    await expect(stopServer(config(), sys)).rejects.toThrow(/won't stop\. Stop it yourself, for example in Task Manager \(process Node\.js JavaScript Runtime\)/)
   })
 
   it('opens Edge as an app window with its own profile, and leaves a watcher behind', async () => {
@@ -593,7 +594,7 @@ describe('on Windows (stand-in system)', () => {
   it('falls back to the default browser and says how to stop', async () => {
     await openWindow(config(), sys, { gui: true })
     expect(sys.spawns.map((s) => [s.command, s.args])).toEqual([['C:\\WINDOWS\\explorer.exe', [config().appUrl]]])
-    expect(sys.dialogs).toEqual([expect.objectContaining({ kind: 'info', buttons: 'ok', text: expect.stringContaining('Ash Log stoppen in het Startmenu') })])
+    expect(sys.dialogs).toEqual([expect.objectContaining({ kind: 'info', buttons: 'ok', text: expect.stringContaining('Stop Ash Log in the Start menu') })])
   })
 
   it('reports a browser that will not start', async () => {
@@ -603,7 +604,7 @@ describe('on Windows (stand-in system)', () => {
       sys.spawns.push({ command, args, options, child })
       return child as unknown as ChildProcess
     }
-    await expect(openWindow(config(), sys, { gui: false })).rejects.toThrow(/Microsoft Edge starten lukt niet: ENOENT/)
+    await expect(openWindow(config(), sys, { gui: false })).rejects.toThrow(/Microsoft Edge couldn't start: ENOENT/)
   })
 
   describe('the watcher', () => {
@@ -632,7 +633,7 @@ describe('on Windows (stand-in system)', () => {
       expect(existsSync(join(project, '.local', 'window.pid'))).toBe(false)
     })
 
-    it('asks first with Live op wifi on, and keeps the server on Ja', async () => {
+    it('asks first with Live on Wi-Fi on, and keeps the server on Yes', async () => {
       state.live = true
       sys.answers.push('yes')
       browserFor(3000)
@@ -641,7 +642,7 @@ describe('on Windows (stand-in system)', () => {
       expect(state.stops).toBe(0)
     })
 
-    it('stops on Nee, and without a dialog when there is no --gui', async () => {
+    it('stops on No, and without a dialog when there is no --gui', async () => {
       state.live = true
       sys.answers.push('no')
       browserFor(3000)
@@ -672,7 +673,7 @@ describe('on Windows (stand-in system)', () => {
       expect(state.stops).toBe(1)
     })
 
-    it('does nothing when the server is gone already (stopped with Ash Log stoppen)', async () => {
+    it('does nothing when the server is gone already (stopped with Stop Ash Log)', async () => {
       state.healthy = false
       browserFor(3000)
       await watch()
@@ -704,7 +705,7 @@ describe('on Windows (stand-in system)', () => {
     expect(code).toBe(0)
     expect(state.stops).toBe(1)
     expect(sys.alive.has(4321)).toBe(false)
-    expect(sys.dialogs).toEqual([{ kind: 'info', buttons: 'ok', seconds: 4, text: 'Ash Log is gestopt.' }])
+    expect(sys.dialogs).toEqual([{ kind: 'info', buttons: 'ok', seconds: 4, text: 'Ash Log has stopped.' }])
   })
 
   it('reports a failed start in a dialog that offers the log in Notepad', async () => {
@@ -715,14 +716,14 @@ describe('on Windows (stand-in system)', () => {
     expect(code).toBe(1)
     expect(sys.dialogs).toHaveLength(1)
     expect(sys.dialogs[0]).toMatchObject({ kind: 'error', buttons: 'yesno' })
-    expect(sys.dialogs[0]!.text).toMatch(/^Ash Log kan niet starten\.\n\nServer niet gevonden: .*app\.ts\n\nWil je het logbestand openen\?$/)
+    expect(sys.dialogs[0]!.text).toMatch(/^Ash Log can't start\.\n\nServer not found: .*app\.ts\n\nOpen the log file\?$/)
     expect(sys.spawns.map((s) => [s.command, s.args])).toEqual([['C:\\WINDOWS\\System32\\notepad.exe', [join(project, '.local', 'server.log')]]])
-    expect(readFileSync(join(project, '.local', 'server.log'), 'utf8')).toMatch(/\] FOUT: Server niet gevonden/)
+    expect(readFileSync(join(project, '.local', 'server.log'), 'utf8')).toMatch(/\] ERROR: Server not found/)
   })
 
   it('prints the usage for an unknown option', async () => {
     expect(await runLauncher(['-NoBrowser'], { sys })).toBe(2)
-    expect(sys.lines[0]).toBe('ERR Onbekende optie: -NoBrowser')
+    expect(sys.lines[0]).toBe('ERR Unknown option: -NoBrowser')
   })
 })
 
@@ -786,21 +787,21 @@ describe.skipIf(process.platform === 'win32')('whole runs with a stand-in server
 
   it('starts the server once, reports it and stops it cleanly', { timeout: 20_000 }, async () => {
     expect(await launch(['--no-browser'])).toBe(0)
-    expect(lines).toEqual(['Ash Log starten...', `Ash Log draait op http://localhost:${port}/`])
+    expect(lines).toEqual(['Starting Ash Log...', `Ash Log is running at http://localhost:${port}/`])
     const pid = Number(readFileSync(pidFile(), 'utf8').trim())
     expect(isAlive(pid)).toBe(true)
     expect(await health()).toBe(200)
 
     expect(await launch(['--no-browser'])).toBe(0)
     expect(Number(readFileSync(pidFile(), 'utf8').trim())).toBe(pid)
-    expect(log().match(/Server starten/g)).toHaveLength(1)
+    expect(log().match(/Starting the server/g)).toHaveLength(1)
     // The server's own output lands in the log too.
-    expect(log()).toContain(`fixture server op poort ${port}`)
+    expect(log()).toContain(`fixture server on port ${port}`)
 
     expect(await launch(['--status'])).toBe(0)
     lines = []
     expect(await launch(['--stop'])).toBe(0)
-    expect(lines).toEqual(['Ash Log is gestopt.'])
+    expect(lines).toEqual(['Ash Log has stopped.'])
     await waitFor(() => !isAlive(pid))
     expect(existsSync(pidFile())).toBe(false)
     const requests = readFileSync(String(env.FIXTURE_RECORD), 'utf8').trim().split('\n').map((line) => JSON.parse(line) as unknown)
@@ -808,15 +809,15 @@ describe.skipIf(process.platform === 'win32')('whole runs with a stand-in server
 
     lines = []
     expect(await launch(['--status'])).toBe(1)
-    expect(lines).toEqual(['ERR De server draait niet.'])
+    expect(lines).toEqual(['ERR The server is not running.'])
     expect(await launch(['--stop'])).toBe(0)
-    expect(lines.at(-1)).toBe('Ash Log draaide niet.')
+    expect(lines.at(-1)).toBe("Ash Log wasn't running.")
   })
 
   it('reports a server that stops right away, with its last message', { timeout: 20_000 }, async () => {
     expect(await launch(['--no-browser'], { FIXTURE_MODE: 'crash' })).toBe(1)
     expect(lines.at(-1)).toBe(
-      `ERR De server is meteen gestopt: Poort 1234 is bezet door een ander programma (fixture). Kijk in ${join('local state', 'server.log')} wat er misging.`,
+      `ERR The server stopped right away: Port 1234 is in use by another program (fixture). See ${join('local state', 'server.log')} for what went wrong.`,
     )
     expect(existsSync(pidFile())).toBe(false)
   })
@@ -828,12 +829,12 @@ describe.skipIf(process.platform === 'win32')('whole runs with a stand-in server
     const later = new Date(Date.now() + 60_000)
     utimesSync(join(project, 'src', 'main.ts'), later, later)
     expect(await launch(['--no-browser'], { FIXTURE_BUILD_FAIL: '1' })).toBe(1)
-    expect(lines.at(-1)).toMatch(/^ERR Bouwen van de app is mislukt\. Kijk in .*server\.log wat er misging\.$/)
+    expect(lines.at(-1)).toMatch(/^ERR Building the app failed\. See .*server\.log for what went wrong\.$/)
     expect(log()).toContain('build failed (fixture)')
 
     lines = []
     expect(await launch(['--no-browser'])).toBe(0)
-    expect(lines).toContain('App bouwen, dat duurt even...')
+    expect(lines).toContain('Building the app, this takes a moment...')
     expect(readFileSync(join(project, 'dist', 'build-count'), 'utf8')).toBe('1')
   })
 
@@ -842,14 +843,14 @@ describe.skipIf(process.platform === 'win32')('whole runs with a stand-in server
     const pid = Number(readFileSync(pidFile(), 'utf8').trim())
     expect(await launch(['--stop'])).toBe(0)
     expect(isAlive(pid)).toBe(false)
-    expect(log()).toMatch(/Server \(pid \d+\) beeindigen/)
+    expect(log()).toMatch(/Ending the server \(pid \d+\)/)
   })
 
   it('starts one server when two launchers start at the same moment', { timeout: 20_000 }, async () => {
     // Two launchers in this process: give them pids of their own that both live.
     const [a, b] = await Promise.all([launch(['--no-browser'], {}, system(process.pid)), launch(['--no-browser'], {}, system(process.ppid))])
     expect([a, b]).toEqual([0, 0])
-    expect(log().match(/Server starten/g)).toHaveLength(1)
+    expect(log().match(/Starting the server/g)).toHaveLength(1)
     expect(existsSync(join(local, 'launcher.lock'))).toBe(false)
   })
 
@@ -884,14 +885,14 @@ describe.skipIf(process.platform === 'win32')('whole runs with a stand-in server
     // Opening it again gives one more window in the running browser, and keeps the server.
     expect(await launch([], { ASHENFALL_BROWSER: browser })).toBe(0)
     await waitFor(() => existsSync(join(profile, 'handed-off')))
-    expect(log().match(/Server starten/g)).toHaveLength(1)
+    expect(log().match(/Starting the server/g)).toHaveLength(1)
 
     // Wait well past the handoff window, so the watcher has surely seen the lock.
     await new Promise((r) => setTimeout(r, 1500))
     expect(isAlive(serverPidNow)).toBe(true)
     writeFileSync(closeFile, '')
-    await waitFor(() => !isAlive(serverPidNow) && log().includes('Server gestopt'), 15_000)
-    expect(log()).toContain('Venster gesloten, server stoppen')
+    await waitFor(() => !isAlive(serverPidNow) && log().includes('Server stopped'), 15_000)
+    expect(log()).toContain('Window closed, stopping the server')
     expect(existsSync(join(local, 'window.pid'))).toBe(false)
   })
 })

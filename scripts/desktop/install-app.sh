@@ -16,14 +16,14 @@ TARGET_DIR=${ASHENFALL_INSTALL_DIR:-"$HOME/Applications"}
 TARGET="$TARGET_DIR/$APP_NAME"
 
 NODE=$(command -v node) || {
-  echo "Node niet gevonden in PATH. Draai dit via: npm run app:install" >&2
+  echo "Node not found in PATH. Run this with: npm run app:install" >&2
   exit 1
 }
 
 # The executable of this app (Contents/MacOS/AshLog), or of the older AppleScript version
 # (Contents/MacOS/applet): replacing a running app breaks it.
 if /usr/bin/pgrep -f "$TARGET/Contents/MacOS/" >/dev/null 2>&1; then
-  echo "Ash Log draait nog. Stop de app eerst (rechtsklik op het Dock-icoon, Stop) en probeer het opnieuw." >&2
+  echo "Ash Log is still running. Quit the app first (right-click its Dock icon, Quit) and try again." >&2
   exit 1
 fi
 
@@ -44,5 +44,5 @@ if [ -x "$LSREGISTER" ]; then
   "$LSREGISTER" -f "$TARGET" || true
 fi
 
-echo "Geinstalleerd: $TARGET"
-echo "Open de app via Spotlight of Launchpad, of sleep hem vanuit Finder naar je Dock."
+echo "Installed: $TARGET"
+echo "Open the app from Spotlight or Launchpad, or drag it from Finder to your Dock."

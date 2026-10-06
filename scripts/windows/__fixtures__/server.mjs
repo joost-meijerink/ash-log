@@ -3,7 +3,7 @@
 // and writes its pid to $ASH_LOG_LOCAL_DIR/server.pid once it listens (the real server does too).
 //
 // FIXTURE_MODE: 'ok' (default), 'crash' (exits right away with a message), 'ignore-stop'
-// (accepts the stop request but keeps running). FIXTURE_LIVE=1: Live op wifi is on.
+// (accepts the stop request but keeps running). FIXTURE_LIVE=1: Live on Wi-Fi is on.
 // FIXTURE_RECORD: a file that gets one JSON line per stop request ({ method, contentType, body }).
 import { appendFileSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -13,7 +13,7 @@ const port = Number(process.env.APP_PORT)
 const mode = process.env.FIXTURE_MODE ?? 'ok'
 
 if (mode === 'crash') {
-  console.error('Poort 1234 is bezet door een ander programma (fixture).')
+  console.error('Port 1234 is in use by another program (fixture).')
   console.error('    at stack frame that should not show')
   process.exit(1)
 }
@@ -43,10 +43,10 @@ const server = createServer((req, res) => {
     })
     return
   }
-  json(res, 404, { error: 'Onbekend' })
+  json(res, 404, { error: 'Unknown' })
 })
 
 server.listen(port, '127.0.0.1', () => {
   if (process.env.ASH_LOG_LOCAL_DIR) writeFileSync(join(process.env.ASH_LOG_LOCAL_DIR, 'server.pid'), `${process.pid}\n`)
-  console.log(`fixture server op poort ${port}`)
+  console.log(`fixture server on port ${port}`)
 })

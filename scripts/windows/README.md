@@ -1,85 +1,87 @@
-# Ash Log op Windows
+# Ash Log on Windows
 
-Ash Log in je Startmenu, met eigen icoon: één klik start de server en opent het Logboek in een eigen venster. Met Live op wifi gebruik je het ook op je telefoon. Werkt op Windows 10 en 11, zonder beheerdersrechten.
+Ash Log in your Start menu, with its own icon: one click starts the server and opens Ash Log in its own window. With Live on Wi-Fi you can use it on your phone too. Works on Windows 10 and 11, without admin rights.
 
-## Wat je nodig hebt
+## What you need
 
-- Node.js 22.12 of nieuwer (de LTS-versie van nodejs.org is prima).
-- Microsoft Edge (zit in Windows) of Google Chrome, voor het venster.
-- Het project met `npm install` erin.
+- Node.js 22.12 or later (the LTS version from nodejs.org is fine).
+- Microsoft Edge (built into Windows) or Google Chrome, for the window.
+- The project, with `npm install` done.
 
-## Installeren
+## Installing
 
 ```
 npm run app:install
 ```
 
-Dit zet **Ash Log** en **Ash Log stoppen** in je Startmenu. Wil je ook een icoon op je bureaublad: `npm run app:install -- --desktop`. Op de taakbalk zetten kan via rechtsklik op Ash Log in Start.
+This puts **Ash Log** and **Stop Ash Log** in your Start menu. Want an icon on your desktop too: `npm run app:install -- --desktop`. To pin it to the taskbar, right-click Ash Log in Start.
 
-De snelkoppelingen onthouden waar het project en Node staan. Verplaats je de projectmap of gebruik je een andere Node? Draai `npm run app:install` dan opnieuw. De poort (5199, of `APP_PORT` uit `.env`) leest Ash Log bij elke start.
+The shortcuts remember where the project and Node are. Moved the project folder or using a different Node? Run `npm run app:install` again. The port (5199, or `APP_PORT` from `.env`) is read on every start.
 
-Weghalen: `npm run app:uninstall`. Dat stopt Ash Log, haalt de snelkoppelingen weg en ook `%LOCALAPPDATA%\Ash Log` (het browserprofiel van het venster). Je voortgang in `data\progress.json` blijft staan.
+To remove it: `npm run app:uninstall`. That stops Ash Log and removes the shortcuts, and also `%LOCALAPPDATA%\Ash Log` (the browser profile of the window). Your progress in `data\progress.json` stays.
 
-## Starten en stoppen
+An older version called the stop shortcut "Ash Log stoppen". Installing or uninstalling removes that old shortcut too.
 
-- **Starten**: klik op Ash Log. Even zie je een klein consolevenster (of alleen een knop op de taakbalk); dat gaat vanzelf dicht zodra het venster open is. De eerste keer, en na een wijziging in de broncode, bouwt Ash Log eerst de app. Dat duurt even.
-- **Het venster** is Edge in app-modus, met een eigen profiel. Het staat dus los van je gewone browser: geen tabbladen, geen extensies. Geen Edge? Dan Chrome. Geen van beide? Dan je standaardbrowser, maar die kan Ash Log niet zien sluiten: stop dan zelf met Ash Log stoppen.
-- **Venster sluiten**: Ash Log stopt. Staat Live op wifi aan, dan vraagt hij eerst of hij moet blijven draaien voor je telefoon.
-- **Nog eens op Ash Log klikken** terwijl hij draait: je krijgt er een venster bij.
-- **Stoppen**: sluit het venster, of kies Ash Log stoppen in het Startmenu. Dat stopt de server en sluit ook het venster.
-- Na een herstart van je pc draait er niets, tot je Ash Log weer start.
+## Starting and stopping
 
-## Live op wifi
+- **Start**: click Ash Log. For a moment you see a small console window (or just a button on the taskbar); it closes by itself once the window is open. The first time, and after a change to the source code, Ash Log builds the app first. That takes a moment.
+- **The window** is Edge in app mode, with its own profile. So it's separate from your normal browser: no tabs, no extensions. No Edge? Then Chrome. Neither? Then your default browser, but Ash Log can't tell when you close that: stop it yourself with Stop Ash Log.
+- **Close the window**: Ash Log stops. If Live on Wi-Fi is on, it first asks whether it should keep running for your phone.
+- **Click Ash Log again** while it's running: you get another window.
+- **Stop**: close the window, or pick Stop Ash Log in the Start menu. That stops the server and closes the window too.
+- After a restart of your PC nothing runs, until you start Ash Log again.
 
-Live op wifi staat na elke start uit: dan kan alleen je pc erbij. Doe dit thuis, op je eigen wifi.
+## Live on Wi-Fi
 
-1. **Wifi op privé**: open Instellingen > Netwerk en internet > Wi-Fi en kies je netwerk. Zet onder **Netwerkprofieltype** de optie **Privénetwerk** aan (niet Openbaar netwerk). Op een openbaar netwerk laat de firewall je telefoon er niet bij.
-2. Zet in Ash Log op je pc **Live op wifi** aan.
-3. **Firewall**: de eerste keer vraagt Windows of Node.js JavaScript Runtime verbindingen mag ontvangen. Vink alleen privénetwerken aan en sta het toe.
-4. Volg op je pc de stappen in het Live-venster: je telefoon installeert één keer het certificaat van Ash Log en wordt gekoppeld met een QR-code.
+Live on Wi-Fi is off after every start: then only your PC can reach Ash Log. Do this at home, on your own Wi-Fi.
 
-Per ongeluk geweigerd, of komt je telefoon er niet bij? Open Windows-beveiliging > **Firewall- en netwerkbeveiliging** > **Een app doorlaten door de firewall**, kies Instellingen wijzigen, zoek Node.js JavaScript Runtime en vink Privé aan. Kijk ook of je wifi echt op Privénetwerk staat.
+1. **Wi-Fi set to private**: open Settings > Network & internet > Wi-Fi and pick your network. Under **Network profile type**, choose **Private network** (not Public network). On a public network, the firewall won't let your phone in.
+2. In Ash Log on your PC, turn on **Live on Wi-Fi**.
+3. **Firewall**: the first time, Windows asks whether Node.js JavaScript Runtime may accept connections. Tick only private networks and allow it.
+4. On your PC, follow the steps in the Live on Wi-Fi window: your phone installs Ash Log's certificate once and gets paired with a QR code.
 
-Zolang Live op wifi aan staat, gaat je pc niet vanzelf slapen (het scherm wel). Je telefoon kan er alleen bij als je pc aan staat, Ash Log draait en jullie op hetzelfde wifi zitten.
+Refused it by accident, or can't your phone get in? Open Windows Security > **Firewall & network protection** > **Allow an app through firewall**, choose Change settings, find Node.js JavaScript Runtime and tick Private. Also check that your Wi-Fi really is set to Private network.
 
-## Problemen
+While Live on Wi-Fi is on, your PC won't go to sleep by itself (the screen will). Your phone can only reach it while your PC is on, Ash Log is running and both are on the same Wi-Fi.
 
-- Alles wat de server doet staat in `.local\server.log`. Bij een foutmelding biedt Ash Log aan dat bestand in Kladblok te openen.
-- **Poort bezet**: een ander programma gebruikt de poort. Sluit dat, of zet een andere poort in `.env`, bijvoorbeeld `APP_PORT=5200`.
-- **Node niet gevonden** of **Projectmap niet gevonden**: draai `npm run app:install` opnieuw.
-- **Er blijft een consolevenster open met een foutmelding**: lees de melding, die staat ook in `.local\server.log`.
+## Problems
 
-## Zonder snelkoppelingen
+- Everything the server does is in `.local\server.log`. When something goes wrong, Ash Log offers to open that file in Notepad.
+- **Port in use**: another program uses the port. Close it, or set a different port in `.env`, for example `APP_PORT=5200`.
+- **Ash Log won't start after you moved the project folder or updated Node**: run `npm run app:install` again.
+- **A console window stays open with an error**: read the message; it's in `.local\server.log` too.
 
-```
-npm run app         bouwt en start de server in de terminal (Ctrl+C stopt hem)
-npm run app:serve   start de server zonder te bouwen
-```
-
-Open daarna `http://localhost:5199`. De launcher zelf kan ook vanuit een terminal:
+## Without shortcuts
 
 ```
-node --import tsx scripts/windows/launcher.ts               starten en venster openen
-node --import tsx scripts/windows/launcher.ts --no-browser  alleen de server starten
-node --import tsx scripts/windows/launcher.ts --status      draait hij? (exit 0 of 1)
-node --import tsx scripts/windows/launcher.ts --stop        stoppen
+npm run app         builds and starts the server in the terminal (Ctrl+C stops it)
+npm run app:serve   starts the server without building
 ```
 
-## Voor ontwikkelaars
+Then open `http://localhost:5199`. The launcher itself also works from a terminal:
 
-| Bestand | Wat het doet |
+```
+node --import tsx scripts/windows/launcher.ts               start and open the window
+node --import tsx scripts/windows/launcher.ts --no-browser  start only the server
+node --import tsx scripts/windows/launcher.ts --status      is it running? (exit 0 or 1)
+node --import tsx scripts/windows/launcher.ts --stop        stop
+```
+
+## For developers
+
+| File | What it does |
 |---|---|
-| `launcher.ts` | starten (eerst bouwen als dat moet), venster openen, wachten tot het dicht is, stoppen; met `--gui` ook meldingen in een venster |
-| `install.ts` | maakt de snelkoppelingen (via `npm run app:install`, zie `scripts/install.ts`) |
-| `shortcuts.ps1` | maakt of verwijdert de snelkoppelingen met WScript.Shell; alleen ASCII, want Windows PowerShell 5.1 leest een bestand zonder BOM als ANSI |
-| `ash-log.ico` | het icoon, gemaakt door `npx tsx scripts/desktop/make-icons.ts --ico` |
-| `__fixtures__/` | nep-server en nep-vite voor de tests |
+| `launcher.ts` | starts (building first when needed), opens the window, waits until it's closed, stops; with `--gui` it also shows messages in a dialog |
+| `install.ts` | makes the shortcuts (through `npm run app:install`, see `scripts/install.ts`) |
+| `shortcuts.ps1` | creates or removes the shortcuts with WScript.Shell; ASCII only, because Windows PowerShell 5.1 reads a file without a BOM as ANSI |
+| `ash-log.ico` | the icon, made by `npx tsx scripts/desktop/make-icons.ts --ico` |
+| `__fixtures__/` | fake server and fake vite for the tests |
 
-Hoe het werkt:
+How it works:
 
-- De snelkoppeling start `node.exe` zelf, geminimaliseerd, met `launcher.ts --gui`. Geen PowerShell-venster: Windows Terminal (de standaardconsole van Windows 11) negeert `-WindowStyle Hidden` ([microsoft/terminal#12464](https://github.com/microsoft/terminal/issues/12464)). Geen eigen .exe: Smart App Control blokkeert programma's zonder handtekening.
-- De launcher start de server los van zichzelf (zonder console, uitvoer naar `.local\server.log`) en opent het venster. Het wachten tot het venster dicht is doet een kopie van de launcher (`--watch`), ook zonder console. Zo blijft er geen consolevenster open staan.
-- Het venster is Edge of Chrome met `--app` en een eigen `--user-data-dir` in `%LOCALAPPDATA%\Ash Log`. Zolang die browser draait, houdt hij het bestand `lockfile` in dat profiel vast; daaraan ziet de launcher dat het laatste venster dicht is.
-- Meldingen (fouten, de vraag over Live op wifi) zijn een `WScript.Shell`-popup uit Windows PowerShell. De tekst gaat via een omgevingsvariabele, nooit via de opdrachtregel.
+- The shortcut starts `node.exe` itself, minimized, with `launcher.ts --gui`. No PowerShell window: Windows Terminal (the default console of Windows 11) ignores `-WindowStyle Hidden` ([microsoft/terminal#12464](https://github.com/microsoft/terminal/issues/12464)). No .exe of its own: Smart App Control blocks unsigned programs.
+- The launcher starts the server detached from itself (without a console, output to `.local\server.log`) and opens the window. Waiting for the window to close is done by a copy of the launcher (`--watch`), also without a console. That way no console window stays open.
+- The window is Edge or Chrome with `--app` and its own `--user-data-dir` in `%LOCALAPPDATA%\Ash Log`. As long as that browser runs, it holds the `lockfile` in that profile; that's how the launcher knows the last window is closed.
+- Messages (errors, the question about Live on Wi-Fi) are a `WScript.Shell` popup from Windows PowerShell. The text goes through an environment variable, never through the command line.
 
-Testen zonder Windows: `npx vitest run scripts/windows scripts/install.test.ts`. De Windows-kant draait daar met een nagebootst systeem; de hele keten (server starten, venster, stoppen) draait echt, met een nep-browser. Overrides voor tests en CI: `ASHENFALL_PORT`, `ASHENFALL_START_TIMEOUT`, `ASHENFALL_STOP_TIMEOUT`, `ASHENFALL_SERVER_ENTRY`, `ASHENFALL_VITE`, `ASHENFALL_BROWSER` en `ASH_LOG_LOCAL_DIR` (een andere map dan `.local`, zodat een test nooit je echte gekoppelde apparaten of certificaat raakt).
+Testing without Windows: `npx vitest run scripts/windows scripts/install.test.ts`. The Windows side runs there on a simulated system; the whole chain (starting the server, the window, stopping) runs for real, with a fake browser. Overrides for tests and CI: `ASHENFALL_PORT`, `ASHENFALL_START_TIMEOUT`, `ASHENFALL_STOP_TIMEOUT`, `ASHENFALL_SERVER_ENTRY`, `ASHENFALL_VITE`, `ASHENFALL_BROWSER` and `ASH_LOG_LOCAL_DIR` (a folder other than `.local`, so a test never touches your real paired devices or certificate).

@@ -6,8 +6,8 @@ import { useTone, type Tone } from '@/composables/useTone'
 
 /**
  * Wiki locations and quotes in Alegreya italic (English wiki text, never translated).
- * With `pin` it gets a small ember map pin in front. Marked lang="en" so screen readers
- * pronounce it as English inside the Dutch page; pass `lang="nl"` for Dutch fallback text.
+ * With `pin` it gets a small ember map pin in front. Marked lang="en" by default (wiki text);
+ * pass another `lang` for text in another language.
  */
 const props = withDefaults(
   defineProps<{

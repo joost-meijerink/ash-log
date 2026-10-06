@@ -11,7 +11,7 @@ const props = withDefaults(
   defineProps<{
     /** Fraction 0..1. Clamped; NaN counts as 0. */
     value: number
-    /** Text left above the bar, e.g. 'Stappen'. Also used as accessible name. */
+    /** Text left above the bar, e.g. 'Steps'. Also used as accessible name. */
     label?: string
     /** Text right above the bar, e.g. '3 / 8'. When omitted and `showPercent` is set, the percentage. */
     detail?: string
@@ -47,7 +47,7 @@ const detailText = computed(() => props.detail ?? (props.showPercent ? `${percen
       aria-valuemin="0"
       aria-valuemax="100"
       :aria-valuenow="percent"
-      :aria-label="label ?? 'Voortgang'"
+      :aria-label="label ?? 'Progress'"
       :class="
         cn(
           'relative w-full overflow-hidden rounded-full',

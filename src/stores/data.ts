@@ -11,7 +11,7 @@ import type { AppData, AppQuest, MapCategory, MapPoint, Overrides, Reward, Vault
 import { useConnectionStore } from './connection'
 
 /** Why a change is refused while the Mac cannot be reached. */
-export const READ_ONLY_MESSAGE = 'Je computer is niet bereikbaar. Wijzigingen kunnen weer zodra hij terug is'
+export const READ_ONLY_MESSAGE = "Your computer can't be reached. Changes can wait until it's back"
 
 /**
  * What can change without a sync (overrides, a hand-fixed overrides.json) plus the sync itself.

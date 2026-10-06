@@ -63,7 +63,7 @@ async function setup() {
     history: createMemoryHistory(),
     routes: [
       { path: '/quests/:questId?', name: 'quests', component: Quests },
-      { path: '/kaart', name: 'map', component: Map },
+      { path: '/map', name: 'map', component: Map },
     ],
   })
   useViewMemoryStore().attach(router)
@@ -113,7 +113,7 @@ describe('useKeptScroll', () => {
     expect(list.position()).toEqual({ top: 240, left: 12 })
     expect(side.position()).toEqual({ top: 90, left: 0 })
 
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     expect(listEl.isConnected).toBe(false)
     lose(listEl, sideEl)
@@ -130,7 +130,7 @@ describe('useKeptScroll', () => {
     const listEl = scroller('list')
     // Scrolled by code in the same frame as the navigation: no event yet.
     listEl.scrollTop = 515
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     expect(list.position()).toEqual({ top: 515, left: 0 })
     lose(listEl)
@@ -143,7 +143,7 @@ describe('useKeptScroll', () => {
     const { router, wrapper } = await setup()
     const listEl = scroller('list')
     scrollTo(listEl, 240)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     scrollTo(listEl, 0)
     scrollTo(listEl, 33)
@@ -164,7 +164,7 @@ describe('useKeptScroll', () => {
     expect([listEl.scrollTop, listEl.scrollLeft]).toEqual([0, 0])
 
     scrollTo(listEl, 240)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     // jsdom still has 240 on the detached element: reset must not touch it, only the memory.
     list.reset()
@@ -178,7 +178,7 @@ describe('useKeptScroll', () => {
     const { router, wrapper } = await setup()
     const listEl = scroller('list')
     scrollTo(listEl, 240)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     lose(listEl)
     // A watcher of the view runs when the route is back but the view is not in the page yet.
@@ -220,7 +220,7 @@ describe('useKeptScroll', () => {
     scrollTo(scroller('card'), 70)
 
     // Replaced while the view is away (a data reload): the new element gets the position.
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     cardKey.value = 3
     await nextTick()
@@ -234,7 +234,7 @@ describe('useKeptScroll', () => {
   it('forgets the position when the element is gone on the return', async () => {
     const { router, wrapper } = await setup()
     scrollTo(scroller('card'), 70)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     showCard.value = false
     await nextTick()
@@ -252,7 +252,7 @@ describe('useKeptScroll', () => {
     const { router, wrapper } = await setup()
     showCard.value = false
     await nextTick()
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
 
     // The view opens a card for the target of a link and wants it at a given place.
@@ -276,7 +276,7 @@ describe('useKeptScroll', () => {
     const { router, wrapper } = await setup()
     const listEl = scroller('list')
     scrollTo(listEl, 800)
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     // The list got shorter while away: the browser clamps.
     let top = 0
@@ -315,11 +315,11 @@ describe('useKeptScroll', () => {
       const state = box(sideEl)
       scrollTo(sideEl, 140)
       expect(side.position().top).toBe(140)
-      // 'Filters verbergen'. The browser drops the position of an element without a box.
+      // 'Hide filters'. The browser drops the position of an element without a box.
       state.shown = false
       state.real = 0
 
-      await router.push('/kaart')
+      await router.push('/map')
       await flushPromises()
       // Nothing was read from the hidden element in the navigation that left.
       expect(side.position().top).toBe(140)
@@ -340,14 +340,14 @@ describe('useKeptScroll', () => {
       scrollTo(sideEl, 140)
       state.shown = false
       state.real = 0
-      await router.push('/kaart')
+      await router.push('/map')
       await flushPromises()
       await tab(router, 'quests')
 
       state.shown = true
       scrollTo(sideEl, 60)
       expect(side.position().top).toBe(60)
-      await router.push('/kaart')
+      await router.push('/map')
       await flushPromises()
       state.real = 0
       await tab(router, 'quests')

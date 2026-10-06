@@ -90,7 +90,7 @@ export function useQuestRoute(options: {
    * The quest the address should name instead: the default one when it has none, the exact id
    * after a loose match. `gone`: the view came back to a quest that a sync removed or renamed in
    * the meantime; that gets the default quest too, like the Quests tab always did, instead of
-   * 'Deze quest ken ik niet' (which stays for an address that was asked for).
+   * 'I don't know this quest' (which stays for an address that was asked for).
    */
   function questToWrite(gone = false): string | undefined {
     if (!requestedId.value || gone) return options.canPickDefault.value ? pickDefaultQuestId(options.entries.value) : undefined

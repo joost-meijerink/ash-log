@@ -3,7 +3,7 @@
  * scripts/install.ts). Two shortcuts with the Ash Log icon, for this user only (no admin rights):
  *
  *   Ash Log           starts the server when needed and opens the window (launcher.ts --gui)
- *   Ash Log stoppen   stops the server and closes the window (launcher.ts --gui --stop)
+ *   Stop Ash Log      stops the server and closes the window (launcher.ts --gui --stop)
  *
  *   npm run app:install -- --desktop   also an Ash Log shortcut on the desktop
  *   npm run app:uninstall              stops Ash Log, removes the shortcuts and the browser
@@ -28,7 +28,12 @@ export const WINDOWS_DIR = dirname(fileURLToPath(import.meta.url))
 export const SHORTCUTS_SCRIPT = join(WINDOWS_DIR, 'shortcuts.ps1')
 export const ICON_FILE = join(WINDOWS_DIR, 'ash-log.ico')
 
-export const SHORTCUT_NAMES = { open: 'Ash Log', stop: 'Ash Log stoppen' } as const
+export const SHORTCUT_NAMES = { open: 'Ash Log', stop: 'Stop Ash Log' } as const
+/**
+ * Start menu shortcuts of earlier versions (the Dutch name of the stop shortcut). Install and
+ * uninstall remove them while they still start launcher.ts, so a reinstall leaves no duplicate.
+ */
+export const OBSOLETE_SHORTCUTS: readonly { folder: 'Programs'; name: string }[] = [{ folder: 'Programs', name: 'Ash Log stoppen' }]
 /** SW_SHOWMINNOACTIVE: the console of node.exe starts minimized and closes once the window is open. */
 export const WINDOW_MINIMIZED = 7
 
@@ -90,10 +95,10 @@ export function shortcutSpecs(opts: { projectDir: string; nodePath: string; desk
     icon: opts.iconFile ?? join(opts.projectDir, 'scripts', 'windows', 'ash-log.ico'),
     windowStyle: WINDOW_MINIMIZED,
   }
-  const open = { ...base, name: SHORTCUT_NAMES.open, arguments: launcherArguments(launcher), description: 'Ash Log: je logboek voor RuneScape: Dragonwilds' }
+  const open = { ...base, name: SHORTCUT_NAMES.open, arguments: launcherArguments(launcher), description: 'Ash Log: your progress log for RuneScape: Dragonwilds' }
   const specs: ShortcutSpec[] = [
     { ...open, folder: 'Programs' },
-    { ...base, folder: 'Programs', name: SHORTCUT_NAMES.stop, arguments: launcherArguments(launcher, ['--stop']), description: 'Ash Log stoppen: de server en het venster' },
+    { ...base, folder: 'Programs', name: SHORTCUT_NAMES.stop, arguments: launcherArguments(launcher, ['--stop']), description: 'Stop Ash Log: the server and the window' },
   ]
   if (opts.desktop) specs.push({ ...open, folder: 'Desktop' })
   return specs
@@ -108,7 +113,7 @@ export function shortcutsCommand(
   return {
     command: powershellPath(env),
     args: ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, '-Action', action],
-    env: { ...env, ASH_LOG_SHORTCUTS: JSON.stringify(specs) },
+    env: { ...env, ASH_LOG_SHORTCUTS: JSON.stringify(specs), ASH_LOG_OBSOLETE_SHORTCUTS: JSON.stringify(OBSOLETE_SHORTCUTS) },
   }
 }
 
@@ -154,10 +159,10 @@ export async function installWindows(opts: { desktop: boolean }, deps: WindowsIn
   const icon = join(projectDir, 'scripts', 'windows', 'ash-log.ico')
   const powershell = powershellPath(deps.env)
   const problems: [boolean, string][] = [
-    [deps.exists(join(projectDir, 'node_modules', 'tsx')), `tsx ontbreekt. Draai eerst npm install in ${projectDir}.`],
-    [deps.exists(launcher), `Launcher niet gevonden: ${launcher}`],
-    [deps.exists(icon), `Icoon niet gevonden: ${icon}`],
-    [deps.exists(powershell), `Windows PowerShell niet gevonden op ${powershell}. Die hoort bij Windows 10 en 11.`],
+    [deps.exists(join(projectDir, 'node_modules', 'tsx')), `tsx is missing. Run npm install in ${projectDir} first.`],
+    [deps.exists(launcher), `Launcher not found: ${launcher}`],
+    [deps.exists(icon), `Icon not found: ${icon}`],
+    [deps.exists(powershell), `Windows PowerShell not found at ${powershell}. It comes with Windows 10 and 11.`],
   ]
   const problem = problems.find(([ok]) => !ok)
   if (problem) {
@@ -170,17 +175,17 @@ export async function installWindows(opts: { desktop: boolean }, deps: WindowsIn
   const { command, args, env } = shortcutsCommand('Install', specs, deps.env)
   const code = deps.run(command, args, env)
   if (code !== 0) {
-    deps.err('Snelkoppelingen maken is mislukt (zie hierboven).')
-    deps.err('Starten kan ook zonder: npm run app, en open dan http://localhost:5199 in je browser.')
+    deps.err("Couldn't create the shortcuts (see above).")
+    deps.err('You can also start without them: npm run app, then open http://localhost:5199 in your browser.')
     return 1
   }
   deps.out('')
-  deps.out(`Ash Log staat in je Startmenu${opts.desktop ? ' en op je bureaublad' : ''}.`)
-  deps.out('  Starten: klik op Ash Log. Het venster opent, de eerste keer na even bouwen.')
-  deps.out('  Stoppen: sluit het venster, of kies Ash Log stoppen in het Startmenu.')
+  deps.out(`Ash Log is in your Start menu${opts.desktop ? ' and on your desktop' : ''}.`)
+  deps.out('  Start:   click Ash Log. The window opens (the first time after a short build).')
+  deps.out('  Stop:    close the window, or choose Stop Ash Log in the Start menu.')
   deps.out(`  Node:    ${nodePath}`)
   deps.out(`  Project: ${projectDir}`)
-  deps.out('Verplaats je de projectmap of gebruik je een andere Node? Draai dan npm run app:install opnieuw.')
+  deps.out('Moved the project folder or switched to another Node? Then run npm run app:install again.')
   return 0
 }
 
@@ -189,7 +194,7 @@ export async function uninstallWindows(deps: WindowsInstallDeps = realInstallDep
   try {
     await deps.stop()
   } catch (err) {
-    deps.err(err instanceof LauncherError ? err.message : `Ash Log stoppen lukte niet: ${(err as Error).message}`)
+    deps.err(err instanceof LauncherError ? err.message : `Couldn't stop Ash Log: ${(err as Error).message}`)
   }
 
   let failed = false
@@ -199,11 +204,11 @@ export async function uninstallWindows(deps: WindowsInstallDeps = realInstallDep
     const specs = shortcutSpecs({ projectDir: deps.projectDir, nodePath: deps.execPath, desktop: true })
     const { command, args, env } = shortcutsCommand('Uninstall', specs, deps.env)
     if (deps.run(command, args, env) !== 0) {
-      deps.err('Snelkoppelingen weghalen is mislukt (zie hierboven). Haal Ash Log en Ash Log stoppen zelf uit het Startmenu.')
+      deps.err("Couldn't remove the shortcuts (see above). Remove Ash Log and Stop Ash Log from the Start menu yourself.")
       failed = true
     }
   } else {
-    deps.err(`Windows PowerShell niet gevonden op ${powershell}. Haal Ash Log en Ash Log stoppen zelf uit het Startmenu.`)
+    deps.err(`Windows PowerShell not found at ${powershell}. Remove Ash Log and Stop Ash Log from the Start menu yourself.`)
     failed = true
   }
 
@@ -212,14 +217,14 @@ export async function uninstallWindows(deps: WindowsInstallDeps = realInstallDep
   if (appData && deps.exists(appData)) {
     try {
       deps.removeDir(appData)
-      deps.out(`Weggehaald: ${appData}`)
+      deps.out(`Removed: ${appData}`)
     } catch (err) {
-      deps.err(`Kan ${appData} niet weghalen (${(err as Error).message}). Sluit het Ash Log-venster en probeer het opnieuw.`)
+      deps.err(`Can't remove ${appData} (${(err as Error).message}). Close the Ash Log window and try again.`)
       failed = true
     }
   }
 
   deps.out('')
-  deps.out('Ash Log is van deze pc gehaald. Je voortgang staat nog in data\\progress.json in de projectmap.')
+  deps.out('Ash Log is removed from this PC. Your progress is still in data\\progress.json in the project folder.')
   return failed ? 1 : 0
 }

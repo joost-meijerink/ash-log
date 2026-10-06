@@ -63,7 +63,7 @@ beforeEach(() => {
       const fail = failPut?.(n)
       if (fail) return reply(500, { error: fail })
       if (headers['If-Match'] && headers['If-Match'] !== etag()) {
-        return reply(409, { error: 'Voortgang is elders gewijzigd', progress: disk.progress }, { ETag: etag() })
+        return reply(409, { error: 'Progress was changed elsewhere', progress: disk.progress }, { ETag: etag() })
       }
       disk.progress = normalizeProgress(body)
       disk.rev++
@@ -114,10 +114,10 @@ describe('saving', () => {
 
   it('reports a failed save and keeps the change for the next try', async () => {
     const store = await loadedStore()
-    failPut = (n) => (n === 0 ? 'Schijf vol' : undefined)
+    failPut = (n) => (n === 0 ? 'Disk full' : undefined)
     store.togglePoint('lore:1:2')
     await settle()
-    expect(store.error).toBe('Opslaan mislukt: Schijf vol')
+    expect(store.error).toBe("Couldn't save: Disk full")
     expect(store.conflict).toBe(false)
     await store.flush()
     expect(store.error).toBeNull()
@@ -212,11 +212,11 @@ describe('conflicts', () => {
   it('keeps the merged state when the retry fails for another reason, and saves it later', async () => {
     const store = await loadedStore()
     editOnDisk((p) => (p.points['a:1:1'] = { foundAt: 'other tab' }))
-    failPut = (n) => (n === 1 ? 'Schijf vol' : undefined)
+    failPut = (n) => (n === 1 ? 'Disk full' : undefined)
 
     store.togglePoint('mine:3:3')
     await settle()
-    expect(store.error).toBe('Opslaan mislukt: Schijf vol')
+    expect(store.error).toBe("Couldn't save: Disk full")
     expect(Object.keys(store.state.points).sort()).toEqual(['a:1:1', 'mine:3:3'])
 
     await store.flush()

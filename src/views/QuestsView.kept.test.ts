@@ -94,7 +94,7 @@ const MapStub = defineComponent({
       h('div', { 'data-view': 'map' }, [
         link('mirror', '/quests/Mirror%2C%20Mirror'),
         link('rune', '/quests/Rune%20Mysteries'),
-        link('ghost-done', '/quests/Restless%20Ghost?status=voltooid'),
+        link('ghost-done', '/quests/Restless%20Ghost?status=done'),
         link('ghost-loose', '/quests/restless_ghost'),
       ])
   },
@@ -106,8 +106,8 @@ function testRouter(): Router {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests/:questId?', name: 'quests', component: QuestsView },
-      { path: '/kaart', name: 'map', component: MapStub },
-      { path: '/verzamelingen', name: 'collections', component: { render: () => h('p', 'verzamelingen') } },
+      { path: '/map', name: 'map', component: MapStub },
+      { path: '/collections', name: 'collections', component: { render: () => h('p', 'collections') } },
     ],
   })
 }
@@ -196,7 +196,7 @@ const searchText = (wrapper: VueWrapper) => (searchField(wrapper).element as HTM
 const chip = (wrapper: VueWrapper, label: string) =>
   wrapper.findAll('button[aria-pressed]').filter((b) => b.text().startsWith(label))[0]!
 const pressed = (wrapper: VueWrapper, label: string) => chip(wrapper, label).attributes('aria-pressed')
-const listShown = (wrapper: VueWrapper) => !wrapper.get('aside[aria-label="Questlijst"]').classes().includes('hidden')
+const listShown = (wrapper: VueWrapper) => !wrapper.get('aside[aria-label="Quest list"]').classes().includes('hidden')
 const detailScroller = (wrapper: VueWrapper) => wrapper.get('article').element.parentElement!.parentElement!
 const listScroller = (wrapper: VueWrapper) => wrapper.get('nav[aria-label="Quests"]').element as HTMLElement
 
@@ -227,29 +227,29 @@ describe('QuestsView while another view is on screen', () => {
   it('keeps the quest, the filters and what is open in the quest, and writes nothing on the way back', async () => {
     const { wrapper, router, replaced, pushed, reset } = await mountApp('/quests/Rune%20Mysteries')
     await searchField(wrapper).setValue('r')
-    await chip(wrapper, 'Bezig').trigger('click')
-    await chip(wrapper, 'Verberg afgevinkt').trigger('click')
+    await chip(wrapper, 'In progress').trigger('click')
+    await chip(wrapper, 'Hide ticked').trigger('click')
     await wrapper.get('[data-edit-items]').trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=r&status=bezig')
+    expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=r&status=active')
     const heading = wrapper.get('h1').element
     reset()
 
-    await clickTab(wrapper, 'Kaart')
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    await clickTab(wrapper, 'Map')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     expect(heading.isConnected).toBe(false)
-    expect(wrapper.find('aside[aria-label="Questlijst"]').exists()).toBe(false)
+    expect(wrapper.find('aside[aria-label="Quest list"]').exists()).toBe(false)
 
     await clickTab(wrapper, 'Quests')
-    expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=r&status=bezig')
+    expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=r&status=active')
     // The same quest sheet, not a new one: what was open in it is still open.
     expect(wrapper.get('h1').element).toBe(heading)
     expect(searchText(wrapper)).toBe('r')
-    expect(pressed(wrapper, 'Bezig')).toBe('true')
-    expect(pressed(wrapper, 'Verberg afgevinkt')).toBe('true')
-    expect(wrapper.find('form[aria-label="Benodigdheden aanpassen"]').exists()).toBe(true)
+    expect(pressed(wrapper, 'In progress')).toBe('true')
+    expect(pressed(wrapper, 'Hide ticked')).toBe('true')
+    expect(wrapper.find('form[aria-label="Edit items needed"]').exists()).toBe(true)
     // Two tab clicks and nothing else: the view itself did not navigate.
-    expect(pushed()).toEqual(['/kaart', '/quests/Rune%20Mysteries?q=r&status=bezig'])
+    expect(pushed()).toEqual(['/map', '/quests/Rune%20Mysteries?q=r&status=active'])
     expect(replaced()).toEqual([])
   })
 
@@ -258,25 +258,25 @@ describe('QuestsView while another view is on screen', () => {
     // A chip inside the quest links to another quest with the list filters of this view.
     const relation = wrapper.get('[data-slot="quest-chip"]').element
     expect(relation.getAttribute('href')).toBe('/quests/First%20Steps?q=rune')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     // The map has a ?q= and a ?status= of its own.
-    await router.replace('/kaart?q=vault&status=open')
+    await router.replace('/map?q=vault&status=open')
     await flushPromises()
-    expect(replaced()).toEqual(['/kaart?q=vault&status=open'])
+    expect(replaced()).toEqual(['/map?q=vault&status=open'])
     expect(relation.getAttribute('href')).toBe('/quests/First%20Steps?q=rune')
 
     await clickTab(wrapper, 'Quests')
     expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=rune')
     expect(searchText(wrapper)).toBe('rune')
-    expect(pressed(wrapper, 'Alle')).toBe('true')
+    expect(pressed(wrapper, 'All')).toBe('true')
     expect(title(wrapper)).toBe('Rune Mysteries')
   })
 
   it('does not navigate when the data changes while it is away, and shows the new data when it is back', async () => {
     const { wrapper, router, replaced, pushed, reset } = await mountApp('/quests/Rune%20Mysteries')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     // A sync that finished: one quest more, and the selected one got another name.
@@ -285,7 +285,7 @@ describe('QuestsView while another view is on screen', () => {
       quest('Lost Cat', { kind: 'secondary' }),
     ])
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     expect([...replaced(), ...pushed()]).toEqual([])
 
     await clickTab(wrapper, 'Quests')
@@ -301,12 +301,12 @@ describe('QuestsView while another view is on screen', () => {
     const { wrapper, router, replaced, reset } = await mountApp('/quests', { progress: later })
     // No progress yet: no pick, the address stays bare.
     expect(router.currentRoute.value.fullPath).toBe('/quests')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     arrive(someProgress())
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     expect(replaced()).toEqual([])
 
     await clickTab(wrapper, 'Quests')
@@ -319,7 +319,7 @@ describe('QuestsView while another view is on screen', () => {
     const { wrapper, router, replaced, reset } = await mountApp('/quests/Mirror%2C%20Mirror')
     await searchField(wrapper).setValue('r')
     await flushPromises()
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     // The wiki renamed the quest: the old id is gone.
@@ -333,17 +333,17 @@ describe('QuestsView while another view is on screen', () => {
     expect(router.currentRoute.value.fullPath).toBe('/quests/Rune%20Mysteries?q=r')
     expect(replaced()).toEqual(['/quests/Rune%20Mysteries?q=r'])
     expect(title(wrapper)).toBe('Rune Mysteries')
-    expect(wrapper.text()).not.toContain('Deze quest ken ik niet')
+    expect(wrapper.text()).not.toContain("I don't know this quest")
     expect(searchText(wrapper)).toBe('r')
   })
 
   it('still says so when a link asks for a quest that does not exist', async () => {
     const { wrapper, router } = await mountApp('/quests/Rune%20Mysteries')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     await router.push('/quests/No%20Such%20Quest')
     await flushPromises()
     expect(router.currentRoute.value.fullPath).toBe('/quests/No%20Such%20Quest')
-    expect(wrapper.text()).toContain('Deze quest ken ik niet')
+    expect(wrapper.text()).toContain("I don't know this quest")
   })
 
   it('treats back and forward to where it was left as a return', async () => {
@@ -351,7 +351,7 @@ describe('QuestsView while another view is on screen', () => {
     await searchField(wrapper).setValue('r')
     await flushPromises()
     const heading = wrapper.get('h1').element
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     router.back()
@@ -368,15 +368,15 @@ describe('QuestsView: a link from another view', () => {
   it('opens the quest it names and keeps the list filters, which go back into the address with a replace', async () => {
     const { wrapper, router, replaced, pushed, reset } = await mountApp('/quests/Rune%20Mysteries')
     await searchField(wrapper).setValue('r')
-    await chip(wrapper, 'Open').trigger('click')
+    await chip(wrapper, 'Not started').trigger('click')
     await flushPromises()
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
 
     await clickLink(wrapper, 'mirror')
     expect(title(wrapper)).toBe('Mirror, Mirror')
     expect(searchText(wrapper)).toBe('r')
-    expect(pressed(wrapper, 'Open')).toBe('true')
+    expect(pressed(wrapper, 'Not started')).toBe('true')
     expect(router.currentRoute.value.params).toEqual({ questId: 'Mirror, Mirror' })
     expect(router.currentRoute.value.query).toEqual({ q: 'r', status: 'open' })
     // One history entry for the link; the filters were added to it with one replace.
@@ -390,20 +390,20 @@ describe('QuestsView: a link from another view', () => {
 
   it('lets a filter that the link names win, and keeps the other one', async () => {
     const { wrapper, router, replaced, reset } = await mountApp('/quests/Rune%20Mysteries?q=s&status=open')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
     await clickLink(wrapper, 'ghost-done')
     expect(title(wrapper)).toBe('Restless Ghost')
     expect(searchText(wrapper)).toBe('s')
-    expect(pressed(wrapper, 'Voltooid')).toBe('true')
-    expect(router.currentRoute.value.query).toEqual({ q: 's', status: 'voltooid' })
+    expect(pressed(wrapper, 'Done')).toBe('true')
+    expect(router.currentRoute.value.query).toEqual({ q: 's', status: 'done' })
     // One write, although the filters changed on the way.
     expect(replaced()).toEqual([router.currentRoute.value.fullPath])
   })
 
   it('rewrites a loose match to the exact id together with the kept filters, in one replace', async () => {
     const { wrapper, router, replaced, reset } = await mountApp('/quests/Rune%20Mysteries?status=open')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     reset()
     await clickLink(wrapper, 'ghost-loose')
     expect(title(wrapper)).toBe('Restless Ghost')
@@ -419,7 +419,7 @@ describe('QuestsView: a link from another view', () => {
     const list = listScroller(wrapper)
     scrollTo(detail, 400)
     scrollTo(list, 150)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     lose(detail, list)
     reset()
 
@@ -437,10 +437,10 @@ describe('QuestsView: a link from another view', () => {
   it('to exactly the address it was left at is still a link: the quest starts at its top, nothing is written', async () => {
     screen(true)
     const { wrapper, router, replaced, reset } = await mountApp('/quests/Rune%20Mysteries')
-    await chip(wrapper, 'Verberg afgevinkt').trigger('click')
+    await chip(wrapper, 'Hide ticked').trigger('click')
     const detail = detailScroller(wrapper)
     scrollTo(detail, 400)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     lose(detail)
     reset()
 
@@ -450,7 +450,7 @@ describe('QuestsView: a link from another view', () => {
     expect(replaced()).toEqual([])
     expect(detail.scrollTop).toBe(0)
     // Still the same sheet with what was set in it.
-    expect(pressed(wrapper, 'Verberg afgevinkt')).toBe('true')
+    expect(pressed(wrapper, 'Hide ticked')).toBe('true')
   })
 })
 
@@ -462,13 +462,13 @@ describe('QuestsView inside the view', () => {
     await router.push('/quests/First%20Steps?q=mirror&status=open')
     await flushPromises()
     expect(searchText(wrapper)).toBe('mirror')
-    expect(pressed(wrapper, 'Open')).toBe('true')
+    expect(pressed(wrapper, 'Not started')).toBe('true')
 
     router.back()
     await flushPromises()
     expect(title(wrapper)).toBe('Restless Ghost')
     expect(searchText(wrapper)).toBe('')
-    expect(pressed(wrapper, 'Alle')).toBe('true')
+    expect(pressed(wrapper, 'All')).toBe('true')
     router.back()
     await flushPromises()
     expect(title(wrapper)).toBe('Rune Mysteries')
@@ -486,7 +486,7 @@ describe('QuestsView on a phone (the list or the quest)', () => {
   it('still shows the quest after a visit to the map, not the list', async () => {
     const { wrapper } = await mountApp('/quests/Rune%20Mysteries')
     expect(listShown(wrapper)).toBe(false)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     await clickTab(wrapper, 'Quests')
     expect(listShown(wrapper)).toBe(false)
     expect(title(wrapper)).toBe('Rune Mysteries')
@@ -496,7 +496,7 @@ describe('QuestsView on a phone (the list or the quest)', () => {
     const { wrapper, main } = await mountApp('/quests')
     expect(listShown(wrapper)).toBe(true)
     main.scrollTop = 640
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(main.scrollTop).toBe(0)
     await clickTab(wrapper, 'Quests')
     expect(listShown(wrapper)).toBe(true)
@@ -507,20 +507,20 @@ describe('QuestsView on a phone (the list or the quest)', () => {
     const { wrapper, main } = await mountApp('/quests')
     expect(listShown(wrapper)).toBe(true)
     main.scrollTop = 640
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     await clickLink(wrapper, 'mirror')
     expect(listShown(wrapper)).toBe(false)
     expect(title(wrapper)).toBe('Mirror, Mirror')
     expect(main.scrollTop).toBe(0)
 
     // The list is still where it was left before the map.
-    await wrapper.findAll('button').filter((b) => b.text() === 'Terug naar lijst')[0]!.trigger('click')
+    await wrapper.findAll('button').filter((b) => b.text() === 'Back to list')[0]!.trigger('click')
     await flushPromises()
     expect(listShown(wrapper)).toBe(true)
     expect(main.scrollTop).toBe(640)
   })
 
-  it('brings the list back where it was with Terug naar lijst, and opens a quest at its top', async () => {
+  it('brings the list back where it was with Back to list, and opens a quest at its top', async () => {
     const { wrapper, main } = await mountApp('/quests')
     main.scrollTop = 700
     await clickRow(wrapper, 'Restless Ghost')
@@ -529,7 +529,7 @@ describe('QuestsView on a phone (the list or the quest)', () => {
     expect(main.scrollTop).toBe(0)
 
     main.scrollTop = 300
-    await wrapper.findAll('button').filter((b) => b.text() === 'Terug naar lijst')[0]!.trigger('click')
+    await wrapper.findAll('button').filter((b) => b.text() === 'Back to list')[0]!.trigger('click')
     await flushPromises()
     expect(listShown(wrapper)).toBe(true)
     expect(main.scrollTop).toBe(700)
@@ -551,7 +551,7 @@ describe('QuestsView from lg up (list and quest side by side)', () => {
     scrollTo(detail, 420)
     scrollTo(list, 180)
 
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(detail.isConnected).toBe(false)
     lose(detail, list)
     await clickTab(wrapper, 'Quests')
@@ -567,7 +567,7 @@ describe('QuestsView from lg up (list and quest side by side)', () => {
     scrollTo(detail, 420)
     scrollTo(list, 180)
 
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     lose(detail, list)
     await clickLink(wrapper, 'mirror')
     expect(title(wrapper)).toBe('Mirror, Mirror')
@@ -582,14 +582,14 @@ describe('QuestsView from lg up (list and quest side by side)', () => {
       const { wrapper } = await mountApp('/quests/Rune%20Mysteries')
       // jsdom has no stylesheet: say by hand that the list scrolls on its own.
       listScroller(wrapper).style.overflowY = 'auto'
-      await clickTab(wrapper, 'Kaart')
+      await clickTab(wrapper, 'Map')
       into.mockClear()
 
       await clickTab(wrapper, 'Quests')
       await flushPromises()
       expect(into).not.toHaveBeenCalled()
 
-      await clickTab(wrapper, 'Kaart')
+      await clickTab(wrapper, 'Map')
       await clickLink(wrapper, 'mirror')
       await flushPromises()
       expect(into).toHaveBeenCalled()
@@ -597,7 +597,7 @@ describe('QuestsView from lg up (list and quest side by side)', () => {
       expect(into.mock.calls.every(([options]) => (options as ScrollIntoViewOptions).block === 'nearest')).toBe(true)
 
       // A link to the quest that is open already: no other quest to react to, the row is still checked.
-      await clickTab(wrapper, 'Kaart')
+      await clickTab(wrapper, 'Map')
       into.mockClear()
       await clickLink(wrapper, 'mirror')
       await flushPromises()
@@ -619,7 +619,7 @@ describe('QuestsView from lg up: the list position and the row of a link', () =>
     // jsdom has no stylesheet: say by hand that the list scrolls on its own.
     list.style.overflowY = 'auto'
     scrollTo(list, 300)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     lose(list)
 
     // Where the list stood at the moment the row was scrolled into view.
@@ -660,7 +660,7 @@ describe('QuestsView does nothing while it is not on screen', () => {
     expect(document.activeElement).toBe(field)
     field.blur()
 
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     // The list is detached, which a browser reports as offsetParent null: the guard under test
     // is the one on the view, so pretend the list is still laid out.
     vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get').mockReturnValue(document.body)
@@ -674,12 +674,12 @@ describe('QuestsView does nothing while it is not on screen', () => {
 
   it('closes a confirm dialog that was left open, so it does not hang over the other view', async () => {
     const { wrapper, router } = await mountApp('/quests/Rune%20Mysteries')
-    await wrapper.get('button[aria-label="Voortgang wissen"]').trigger('click')
+    await wrapper.get('button[aria-label="Clear progress"]').trigger('click')
     await flushPromises()
     expect(document.body.querySelector('[role="dialog"]')).not.toBeNull()
 
     // Back or forward in the browser: the header cannot be reached behind a dialog.
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     expect(document.body.querySelector('[role="dialog"]')).toBeNull()
 
@@ -690,7 +690,7 @@ describe('QuestsView does nothing while it is not on screen', () => {
 
   it('does not move focus when it returns', async () => {
     const { wrapper } = await mountApp('/quests/Rune%20Mysteries')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     const tab = wrapper.findAll('nav a').filter((a) => a.text() === 'Quests')[0]!
     ;(tab.element as HTMLElement).focus()
     await tab.trigger('click')

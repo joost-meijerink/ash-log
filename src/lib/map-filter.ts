@@ -91,7 +91,7 @@ export function matchesRegion(region: string | undefined, regions: ReadonlySet<s
   return regions.size === 0 || (region !== undefined && regions.has(region))
 }
 
-/** 'Verberg wat ik al gevonden heb' only hides lore and unique points; chests reset. */
+/** 'Hide what I've found' only hides lore and unique points; chests reset. */
 export function hiddenAsFound(pointId: string, group: MapGroup | undefined, filter: Pick<VisibilityFilter, 'hideFound' | 'found'>): boolean {
   return filter.hideFound && isTrackableGroup(group) && filter.found.has(pointId)
 }
@@ -198,7 +198,7 @@ export interface CategoryCount {
 
 /**
  * Per category: how many drawable points pass the power and region filters, and how many of
- * those are found. Hide-found is ignored on purpose: the counter shows 'gevonden / totaal'.
+ * those are found. Hide-found is ignored on purpose: the counter shows 'found / total'.
  */
 export function countCategories(
   categories: readonly MapCategory[],

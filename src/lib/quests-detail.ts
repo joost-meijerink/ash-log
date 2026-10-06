@@ -4,15 +4,15 @@
 import { compareQuests } from './quests-list'
 import type { Quest, QuestNeed, QuestStep, RewardKind } from './types'
 
-/** 'Hoofdverhaal · 3', 'Hoofdverhaal' (no order on the wiki), 'Zijquest' or 'Tertiair'. */
+/** 'Main story · 3', 'Main story' (no order on the wiki), 'Side quest' or 'Tertiary'. */
 export function questKindLabel(quest: Pick<Quest, 'kind' | 'order'>): string {
-  if (quest.kind === 'primary') return quest.order ? `Hoofdverhaal · ${quest.order}` : 'Hoofdverhaal'
-  if (quest.kind === 'secondary') return 'Zijquest'
-  return 'Tertiair'
+  if (quest.kind === 'primary') return quest.order ? `Main story · ${quest.order}` : 'Main story'
+  if (quest.kind === 'secondary') return 'Side quest'
+  return 'Tertiary'
 }
 
 export function stepsSourceLabel(source: Quest['stepsSource']): string {
-  return source === 'quick-guide' ? 'Uit de Quick guide' : 'Uit de walkthrough op de wiki'
+  return source === 'quick-guide' ? 'From the Quick guide' : 'From the walkthrough on the wiki'
 }
 
 export interface StepGroup {
@@ -128,13 +128,13 @@ export function dependentsOf<Q extends Quest>(questId: string, quests: Q[]): Q[]
   return quests.filter((q) => q.id !== questId && q.requires.includes(questId)).sort(compareQuests)
 }
 
-/** Short Dutch label per reward kind, for the unlocks on a quest. */
+/** Short label per reward kind, for the unlocks on a quest. */
 export const REWARD_KIND_LABEL: Record<RewardKind, string> = {
   plan: 'Plan',
-  pattern: 'Patroon',
+  pattern: 'Pattern',
   vestige: 'Vestige',
-  quest: 'Questbeloning',
+  quest: 'Quest reward',
   effigy: 'Effigy',
-  'recipe-book': 'Receptenboek',
-  'fishing-trophy': 'Vistrofee',
+  'recipe-book': 'Recipe book',
+  'fishing-trophy': 'Fishing trophy',
 }

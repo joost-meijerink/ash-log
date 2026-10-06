@@ -77,8 +77,8 @@ function testRouter() {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests', component: page('quests') },
-      { path: '/kaart', component: page('kaart') },
-      { path: '/verzamelingen', component: page('verzamelingen') },
+      { path: '/map', component: page('map') },
+      { path: '/collections', component: page('collections') },
     ],
   })
 }
@@ -111,10 +111,10 @@ afterEach(() => {
 
 describe('retryHint', () => {
   it('says what happens next', () => {
-    expect(retryHint({ checking: true, secondsLeft: 4 })).toBe('Even kijken of je computer er weer is...')
-    expect(retryHint({ checking: false, secondsLeft: 12 })).toBe('Ash Log probeert het over 12 s vanzelf opnieuw.')
-    expect(retryHint({ checking: false, secondsLeft: 0 })).toBe('Ash Log probeert het zo opnieuw.')
-    expect(retryHint({ checking: false, secondsLeft: null })).toBe('Ash Log probeert het vanzelf opnieuw.')
+    expect(retryHint({ checking: true, secondsLeft: 4 })).toBe('Checking whether your computer is back...')
+    expect(retryHint({ checking: false, secondsLeft: 12 })).toBe('Ash Log will try again in 12 s.')
+    expect(retryHint({ checking: false, secondsLeft: 0 })).toBe('Ash Log will try again in a moment.')
+    expect(retryHint({ checking: false, secondsLeft: null })).toBe('Ash Log will try again on its own.')
   })
 })
 
@@ -126,7 +126,7 @@ describe('OfflineScreen', () => {
     expect(w.get('h1').text()).toBe(OFFLINE_TITLE)
     expect(w.text()).toContain(OFFLINE_TEXT)
     expect(w.find('[data-slot="browse"]').exists()).toBe(false)
-    expect(w.get('[data-slot="retry-hint"]').text()).toBe('Ash Log probeert het over 12 s vanzelf opnieuw.')
+    expect(w.get('[data-slot="retry-hint"]').text()).toBe('Ash Log will try again in 12 s.')
     // The screen takes focus, so a screen reader announces it.
     expect(document.activeElement).toBe(w.get('h1').element)
     expect(w.get('img').attributes('alt')).toBe('')
@@ -136,7 +136,7 @@ describe('OfflineScreen', () => {
     await w.get('[data-slot="retry"]').trigger('click')
     expect(health).toHaveBeenCalledWith('/api/health', expect.objectContaining({ cache: 'no-store' }))
     expect(w.get('[data-slot="retry"]').attributes('disabled')).toBeDefined()
-    expect(w.get('[data-slot="retry-hint"]').text()).toBe('Even kijken of je computer er weer is...')
+    expect(w.get('[data-slot="retry-hint"]').text()).toBe('Checking whether your computer is back...')
     fail(new TypeError('Load failed'))
     await flushPromises()
     expect(w.get('[data-slot="retry"]').attributes('disabled')).toBeUndefined()
@@ -148,8 +148,8 @@ describe('OfflineScreen', () => {
     useDataStore().data = appData()
     const w = mount(OfflineScreen)
     const browse = w.get('[data-slot="browse"]')
-    expect(browse.text()).toContain('Laatst bekende gegevens bekijken')
-    expect(browse.text()).toContain('bijgewerkt 5 min geleden')
+    expect(browse.text()).toContain('View last known data')
+    expect(browse.text()).toContain('updated 5 minutes ago')
     await browse.trigger('click')
     expect(connection.browsing).toBe(true)
     w.unmount()
@@ -187,16 +187,16 @@ describe('App on a phone without its Mac', () => {
     expect(w.find('[data-offline-screen]').exists()).toBe(false)
     expect(w.find('[inert]').exists()).toBe(false)
     const banner = w.get('[data-slot="offline-banner"]')
-    expect(banner.text()).toContain('Offline: alleen lezen, laatst bijgewerkt 2 min geleden.')
-    expect(banner.text()).toContain('Wijzigingen kunnen weer zodra je computer bereikbaar is.')
+    expect(banner.text()).toContain("Offline: you're looking at the last known data, updated 2 minutes ago.")
+    expect(banner.text()).toContain('Changes can wait until your computer is back.')
     // Sync waits.
-    expect(w.get('button[aria-label="Wiki bijwerken"]').attributes('disabled')).toBeDefined()
+    expect(w.get('button[aria-label="Update from wiki"]').attributes('disabled')).toBeDefined()
 
     // The Mac is back: read-only ends on its own.
     connection.state = 'online'
     await flushPromises()
     expect(w.find('[data-slot="offline-banner"]').exists()).toBe(false)
-    expect(w.get('button[aria-label="Wiki bijwerken"]').attributes('disabled')).toBeUndefined()
+    expect(w.get('button[aria-label="Update from wiki"]').attributes('disabled')).toBeUndefined()
     w.unmount()
   })
 
@@ -228,7 +228,7 @@ describe('App on a phone without its Mac', () => {
     useConnectionStore().state = 'offline'
     await flushPromises()
     expect(w.find('[data-offline-screen]').exists()).toBe(false)
-    expect(w.text()).toContain('Het logboek is niet bereikbaar')
+    expect(w.text()).toContain("Ash Log can't be reached")
     w.unmount()
   })
 })
@@ -262,16 +262,16 @@ describe('read-only', () => {
     useDataStore().data = appData()
     offlinePhone()
     const header = mount(withTooltips(QuestDetailHeader, { quest }))
-    expect(header.get('button:not([aria-label])').text()).toContain('Markeer als voltooid')
+    expect(header.get('button:not([aria-label])').text()).toContain('Mark as done')
     expect(header.get('button:not([aria-label])').attributes('disabled')).toBeDefined()
-    expect(header.get('button[aria-label="Voortgang wissen"]').attributes('disabled')).toBeDefined()
+    expect(header.get('button[aria-label="Clear progress"]').attributes('disabled')).toBeDefined()
     header.unmount()
 
     const items = mount(withTooltips(QuestItems, { quest }))
     expect((items.get('input[type="checkbox"]').element as HTMLInputElement).disabled).toBe(true)
     const edit = items.get('[data-edit-items]')
     expect(edit.attributes('disabled')).toBeDefined()
-    expect(edit.attributes('aria-label')).toBe('Lijst aanpassen kan weer zodra je computer bereikbaar is')
+    expect(edit.attributes('aria-label')).toBe('You can edit the list again once your computer is back')
     items.unmount()
   })
 
@@ -283,8 +283,8 @@ describe('read-only', () => {
     await router.push('/quests')
     const w = mount(withTooltips(AppHeader), { global: { plugins: [router] } })
     await flushPromises()
-    expect(w.get('button[aria-label="Wiki bijwerken"]').attributes('disabled')).toBeDefined()
-    expect(w.get('[data-slot="progress-offline"]').text()).toContain('Offline, alleen lezen')
+    expect(w.get('button[aria-label="Update from wiki"]').attributes('disabled')).toBeDefined()
+    expect(w.get('[data-slot="progress-offline"]').text()).toContain('Offline, read-only')
     w.unmount()
   })
 })

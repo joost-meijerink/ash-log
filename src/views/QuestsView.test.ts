@@ -62,7 +62,7 @@ async function setup(path: string, progressLoaded = true) {
     history: createMemoryHistory(),
     routes: [
       { path: '/quests/:questId?', name: 'quests', component: QuestsView },
-      { path: '/kaart', name: 'map', component: { render: () => h('p', 'kaart') } },
+      { path: '/map', name: 'map', component: { render: () => h('p', 'map') } },
     ],
   })
   await router.push(path)
@@ -100,7 +100,7 @@ describe('QuestsView routing', () => {
   it('shows a friendly message and the list for an unknown quest', async () => {
     const { wrapper, router } = await setup('/quests/Dragon%20Slayer%20II')
     expect(router.currentRoute.value.params.questId).toBe('Dragon Slayer II')
-    expect(wrapper.text()).toContain('Deze quest ken ik niet')
+    expect(wrapper.text()).toContain("I don't know this quest")
     expect(wrapper.text()).toContain('Dragon Slayer II')
     expect(wrapper.findAll('[data-quest-row]')).toHaveLength(3)
     wrapper.unmount()
@@ -126,15 +126,15 @@ describe('QuestsView routing', () => {
 
   it('does not pull you back when you leave for another view', async () => {
     const { wrapper, router } = await setup('/quests/First%20Steps')
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     wrapper.unmount()
   })
 })
 
 describe('QuestsView languages', () => {
-  it('marks wiki text as English and the Dutch fallback group as Dutch', async () => {
+  it('marks wiki text and the region groups as English', async () => {
     const { wrapper } = await setup('/quests/First%20Steps')
     useDataStore().data = { ...appData(), quests: [...QUESTS, quest('Lost Cat', { kind: 'secondary' })] }
     await flushPromises()
@@ -143,7 +143,7 @@ describe('QuestsView languages', () => {
     const groups = wrapper.findAll('nav h3').map((h) => [h.text(), h.attributes('lang')])
     expect(groups).toEqual([
       ['Fellhollow', 'en'],
-      ['Overige', 'nl'],
+      ['Other', 'en'],
     ])
     expect(wrapper.findAll('[data-quest-row] span[lang="en"]').map((s) => s.text())).toEqual([
       'First Steps',

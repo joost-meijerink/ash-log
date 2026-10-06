@@ -8,5 +8,5 @@
 is_healthy 3 && exit 0
 /bin/sleep 1
 is_healthy 3 && exit 0
-echo "De server draait niet meer." >&2
+echo "The server is not running anymore." >&2
 exit 1

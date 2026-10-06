@@ -22,11 +22,11 @@ describe('readJson', () => {
   it('names the file when the JSON is invalid', async () => {
     const path = join(dir, 'overrides.json')
     await writeFile(path, '{ "questStart": { "A": { "x": 1, "y": 2 }, } }')
-    await expect(readJson(path, {})).rejects.toThrow(/^overrides\.json is geen geldige JSON: /)
+    await expect(readJson(path, {})).rejects.toThrow(/^overrides\.json is not valid JSON: /)
   })
 
   it('reads a file a Windows editor saved: a BOM, UTF-16 and CRLF line endings', async () => {
-    const json = '{\r\n  "version": 1,\r\n  "naam": "Grünwald"\r\n}\r\n'
+    const json = '{\r\n  "version": 1,\r\n  "name": "Grünwald"\r\n}\r\n'
     const files: [string, Buffer][] = [
       ['utf8-bom.json', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(json, 'utf8')])],
       ['utf16le.json', Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(json, 'utf16le')])],
@@ -35,7 +35,7 @@ describe('readJson', () => {
     ]
     for (const [name, bytes] of files) {
       await writeFile(join(dir, name), bytes)
-      await expect(readJson(join(dir, name), null), name).resolves.toEqual({ version: 1, naam: 'Grünwald' })
+      await expect(readJson(join(dir, name), null), name).resolves.toEqual({ version: 1, name: 'Grünwald' })
     }
   })
 })

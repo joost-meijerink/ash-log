@@ -12,9 +12,9 @@
 //   pin    quest id: pin mode, the next click sets the quest start
 //
 // Without any filter param (c, p, ps, r, q, h, qs) the map shows the defaults: vaults and quest
-// starts. focus, quest and pin are not filters, so /kaart?quest=X also gets the defaults.
+// starts. focus, quest and pin are not filters, so /map?quest=X also gets the defaults.
 // (useMapState fills in the last filters of this session first, see src/stores/mapMemory.ts.)
-// A state equal to the defaults is written without filter params, so a plain /kaart stays clean.
+// A state equal to the defaults is written without filter params, so a plain /map stays clean.
 // Pure, no DOM: this file is also type-checked by the Node config.
 
 export interface MapFilters {

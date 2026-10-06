@@ -89,13 +89,13 @@ export async function fetchMapSources(ctx: SyncContext): Promise<MapSources> {
     (d) => d.query?.allpages ?? [],
   )
   const titles = all.map((p) => p.title).filter((t) => t.endsWith(JSON_SUFFIX))
-  ctx.log(`  ${titles.length} Module:Map-pagina's gevonden`)
+  ctx.log(`  Found ${titles.length} Module:Map pages`)
 
   const { pages } = await ctx.pages(titles)
   const found = titles.map((t) => pages.get(t)).filter((p): p is RawPage => !!p)
   const bases = [...new Set(found.map((p) => mapBaseName(p.title)))]
 
-  ctx.log(`  Wiki-categorieën en afbeeldingen van ${bases.length} pagina's ophalen`)
+  ctx.log(`  Fetching wiki categories and images of ${bases.length} pages`)
   const firstResponses = await fetchPageInfoResponses(ctx, bases)
   const first = collectPageCategories(bases, firstResponses)
   const images = collectPageImages(bases, firstResponses)
@@ -107,7 +107,7 @@ export async function fetchMapSources(ctx: SyncContext): Promise<MapSources> {
   let known = first.pageCategories
   let knownImages = images
   if (extra.length) {
-    ctx.log(`  ${extra.length} andere titels proberen voor ${Object.keys(candidates).length} pagina's zonder eigen pagina`)
+    ctx.log(`  Trying ${extra.length} other titles for ${Object.keys(candidates).length} pages without a page of their own`)
     const responses = await fetchPageInfoResponses(ctx, extra)
     known = { ...collectPageCategories(extra, responses).pageCategories, ...known }
     knownImages = { ...collectPageImages(extra, responses), ...images }
@@ -191,7 +191,7 @@ function dropTarget(raw: string): string | undefined {
  */
 async function fetchDropImages(ctx: SyncContext, bases: string[], titleOf: (base: string) => string): Promise<Record<string, DropImage>> {
   if (!bases.length) return {}
-  ctx.log(`  Buit van ${bases.length} grondstofpunten opzoeken`)
+  ctx.log(`  Looking up the drops of ${bases.length} resource nodes`)
   const { pages } = await ctx.pages([...new Set(bases.map(titleOf))])
   const itemOf = new Map<string, string>()
   for (const base of bases) {
@@ -370,10 +370,10 @@ function aliasResolver(responses: unknown[]): (title: string) => string {
 const JUNK_PAGES = new Set(['abyssalwhipstatue'])
 
 export function junkReason(base: string): string | undefined {
-  if (/user( talk)?:/i.test(base)) return 'sandbox van een gebruiker'
+  if (/user( talk)?:/i.test(base)) return "a user's sandbox"
   if (/sandbox/i.test(base)) return 'sandbox'
-  if (/^test\b/i.test(base) || /(^|[\s_-])test$/i.test(base) || /[a-z]Test$/.test(base)) return 'testpagina'
-  if (JUNK_PAGES.has(base.toLowerCase())) return 'testpunt op plaatshouder-coördinaten'
+  if (/^test\b/i.test(base) || /(^|[\s_-])test$/i.test(base) || /[a-z]Test$/.test(base)) return 'test page'
+  if (JUNK_PAGES.has(base.toLowerCase())) return 'test point at placeholder coordinates'
   return undefined
 }
 
@@ -466,7 +466,7 @@ function extractPoints(json: unknown): RawPoint[] | string {
       ? { x: p.x, y: p.y, name: p.name, icon: p.icon, descriptions: [p.description, p.desc, p.description_] }
       : { x: undefined, y: undefined, descriptions: [] }
   if (Array.isArray(json)) return json.map(fromPoint)
-  if (!isRecord(json)) return 'geen JSON-object of -lijst'
+  if (!isRecord(json)) return 'not a JSON object or array'
   if (Array.isArray(json.markers)) {
     const xy = (json.coordinateOrder ?? 'xy') === 'xy'
     return json.markers.map((m: any): RawPoint => {
@@ -482,7 +482,7 @@ function extractPoints(json: unknown): RawPoint[] | string {
     })
   }
   if ('x' in json || 'y' in json) return [fromPoint(json)]
-  return Object.keys(json).length ? 'onbekend formaat' : 'leeg object'
+  return Object.keys(json).length ? 'unknown format' : 'empty object'
 }
 
 const asText = (v: unknown): string | undefined =>
@@ -819,19 +819,19 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
     const base = mapBaseName(page.title)
     const junk = junkReason(base)
     if (junk) {
-      warn(`Overgeslagen: ${junk}`, page.title)
+      warn(`Skipped: ${junk}`, page.title)
       continue
     }
     let json: unknown
     try {
       json = JSON.parse(page.content)
     } catch (err) {
-      warn(`Ongeldige JSON, pagina overgeslagen: ${(err as Error).message}`, page.title)
+      warn(`Invalid JSON, page skipped: ${(err as Error).message}`, page.title)
       continue
     }
     const raws = extractPoints(json)
     if (typeof raws === 'string') {
-      warn(`Geen kaartpunten herkend (${raws}), pagina overgeslagen`, page.title)
+      warn(`No map points recognised (${raws}), page skipped`, page.title)
       continue
     }
 
@@ -843,9 +843,9 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
       if (draft) drafts.push(draft)
       else broken++
     }
-    if (broken) warn(`${broken} van ${raws.length} punten zonder geldige x/y overgeslagen`, page.title)
+    if (broken) warn(`${broken} of ${raws.length} points without a valid x/y skipped`, page.title)
     if (!drafts.length) {
-      if (!broken) warn('Pagina bevat geen kaartpunten', page.title)
+      if (!broken) warn('Page has no map points', page.title)
       continue
     }
 
@@ -857,7 +857,7 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
 
     const id = mapCategoryId(family.label)
     if (!id) {
-      warn('Geen bruikbare categorienaam, pagina overgeslagen', page.title)
+      warn('No usable category name, page skipped', page.title)
       continue
     }
     const cat = categories.get(id) ?? { id, labels: [], sources: [], bases: [], points: [], duplicates: 0 }
@@ -873,7 +873,7 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
   for (const cat of categories.values()) {
     mergePoints(cat, perCategorySource.get(cat.id)!)
     if (cat.duplicates) {
-      warn(`${cat.duplicates} dubbele punten (zelfde coördinaten) samengevoegd`, cat.duplicateSource)
+      warn(`${cat.duplicates} duplicate ${cat.duplicates === 1 ? 'point' : 'points'} (same coordinates) merged`, cat.duplicateSource)
     }
   }
 
@@ -966,7 +966,7 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
   }
 
   if (others.length) {
-    warn(`Geen groep gevonden voor ${others.length} categorieën, ze staan onder 'other': ${others.sort(byText).join(', ')}`)
+    warn(`No group found for ${others.length} categories, they go under 'other': ${others.sort(byText).join(', ')}`)
   }
 
   outCategories.sort((a, b) => byText(a.label.toLowerCase(), b.label.toLowerCase()) || byText(a.id, b.id))

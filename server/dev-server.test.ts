@@ -60,7 +60,7 @@ describe('dev server', () => {
     for (const path of ['/api/server/live', '/api/server/pairing', '/api/server/devices/revoke', '/api/server/stop']) {
       const res = await call('POST', path, json, '{"on":true}')
       expect(res.status, path).toBe(409)
-      expect(res.json.error).toMatch(/alleen in de app/)
+      expect(res.json.error).toMatch(/Only works in the app/)
     }
     expect((await call('POST', '/api/server/live', { 'content-type': 'text/plain' }, '{}')).status).toBe(415)
   })

@@ -191,7 +191,7 @@ export function useMapLeaflet(input: MapLeafletInput) {
       const names = group.quests.map((q) => q.name).join(', ')
       const marker = L.marker(toLatLng(group.x, group.y), {
         icon: questStartIcon(group.quests.length, lit, manual),
-        title: `Queststart: ${names}`,
+        title: `Quest start: ${names}`,
         keyboard: true,
         zIndexOffset: lit ? 2000 : 1000,
         riseOnHover: true,

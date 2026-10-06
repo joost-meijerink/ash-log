@@ -38,7 +38,7 @@ export function parseJson<T>(text: string, path: string): T {
   try {
     return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text) as T
   } catch (err) {
-    throw new Error(`${basename(path)} is geen geldige JSON: ${(err as Error).message}`)
+    throw new Error(`${basename(path)} is not valid JSON: ${(err as Error).message}`)
   }
 }
 
@@ -118,7 +118,7 @@ export async function writeJsonAtomic(path: string, data: unknown): Promise<void
 }
 
 /** Start of the message of a PartialWriteError; the report text checks for it. */
-export const PARTIAL_WRITE_PREFIX = 'Deels weggeschreven'
+export const PARTIAL_WRITE_PREFIX = 'Partially written'
 
 /** Some files of a set were already replaced when a later rename failed. */
 export class PartialWriteError extends Error {
@@ -126,7 +126,7 @@ export class PartialWriteError extends Error {
     readonly written: string[],
     cause: Error,
   ) {
-    super(`${PARTIAL_WRITE_PREFIX} (${written.join(', ')}), daarna mislukt: ${cause.message}`, { cause })
+    super(`${PARTIAL_WRITE_PREFIX} (${written.join(', ')}), then failed: ${cause.message}`, { cause })
   }
 }
 

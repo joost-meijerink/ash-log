@@ -71,9 +71,9 @@ describe('Info.plist', () => {
     expect(values).toMatchObject({ NSSupportsSuddenTermination: false, NSSupportsAutomaticTermination: false })
   })
 
-  it('explains the permissions macOS asks for, in Dutch', () => {
-    expect(values.NSDocumentsFolderUsageDescription).toContain('projectmap')
-    expect(values.NSLocalNetworkUsageDescription).toContain('Live op wifi')
+  it('explains the permissions macOS asks for, in English', () => {
+    expect(values.NSDocumentsFolderUsageDescription).toContain('project folder')
+    expect(values.NSLocalNetworkUsageDescription).toContain('Live on Wi-Fi')
     // No AppleScript any more, so no Apple Events.
     expect(values).not.toHaveProperty('NSAppleEventsUsageDescription')
   })
@@ -91,9 +91,9 @@ describe('Info.plist', () => {
   })
 
   it('writes paths with spaces as they are, and escapes XML', () => {
-    const xml = infoPlist({ ...CONFIG, projectDir: '/Users/me/Tom & Jerry <oud>' }, '1.0.0')
+    const xml = infoPlist({ ...CONFIG, projectDir: '/Users/me/Tom & Jerry <old>' }, '1.0.0')
     expect(xml).toContain(`<key>AshLogNode</key>\n\t<string>${HERD_NODE}</string>`)
-    expect(xml).toContain('<string>/Users/me/Tom &amp; Jerry &lt;oud&gt;</string>')
+    expect(xml).toContain('<string>/Users/me/Tom &amp; Jerry &lt;old&gt;</string>')
     expect(xml).toContain('<key>AshLogPort</key>\n\t<integer>5199</integer>')
     expect(xml).toContain('<key>NSAllowsLocalNetworking</key>\n\t\t<true/>')
   })
@@ -103,10 +103,10 @@ describe('Info.plist', () => {
   })
 
   it.skipIf(!isMac)('is a valid plist that reads back the same', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'logboek-plist-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ash-log-plist-'))
     try {
       const file = join(dir, 'Info.plist')
-      const config = { ...CONFIG, projectDir: '/Users/me/Tom & Jerry <oud>/"quoted" \'too\'' }
+      const config = { ...CONFIG, projectDir: '/Users/me/Tom & Jerry <old>/"quoted" \'too\'' }
       writeFileSync(file, infoPlist(config, '1.2.3'))
       execFileSync('/usr/bin/plutil', ['-lint', '-s', file])
       expect(plistToJson(file)).toEqual(infoPlistValues(config, '1.2.3'))
@@ -117,11 +117,11 @@ describe('Info.plist', () => {
 })
 
 describe('resolvePort', () => {
-  const project = mkdtempSync(join(tmpdir(), 'logboek-port-'))
+  const project = mkdtempSync(join(tmpdir(), 'ash-log-port-'))
   afterAll(() => rmSync(project, { recursive: true, force: true }))
 
   it('takes APP_PORT from .env, quotes and comments and all', () => {
-    writeFileSync(join(project, '.env'), 'WIKI_USER_AGENT="x (y@z)"\nAPP_PORT="5231" # vaste poort\n')
+    writeFileSync(join(project, '.env'), 'WIKI_USER_AGENT="x (y@z)"\nAPP_PORT="5231" # fixed port\n')
     expect(resolvePort(project, {})).toBe(5231)
   })
 
@@ -135,7 +135,7 @@ describe('resolvePort', () => {
   })
 
   it('refuses a port that is not a number', () => {
-    writeFileSync(join(project, '.env'), 'APP_PORT=vijf\n')
+    writeFileSync(join(project, '.env'), 'APP_PORT=five\n')
     expect(() => resolvePort(project, {})).toThrow(/APP_PORT/)
   })
 })
@@ -169,7 +169,7 @@ describe('Swift source', () => {
   })
 
   it.skipIf(!hasSwift)('compiles without warnings and hooks into AppKit and WebKit', { timeout: 120_000 }, () => {
-    const dir = mkdtempSync(join(tmpdir(), 'logboek-swift-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ash-log-swift-'))
     try {
       const header = join(dir, 'AshLog-Swift.h')
       const result = spawnSync('/usr/bin/swiftc', ['-typecheck', ...swiftcFlags(), '-emit-objc-header-path', header, ...SWIFT_SOURCES], {
@@ -207,9 +207,9 @@ describe('Swift source', () => {
 // process waiting for minutes, which says nothing about the app. Run them on a Mac before a release.
 describe.skipIf(!hasSwift || !!process.env.CI)('the app, without a window', () => {
   // AshLog.swift with a test main instead of its own (see __fixtures__/SelfTest.swift).
-  const root = mkdtempSync(join(tmpdir(), 'logboek-selftest-'))
+  const root = mkdtempSync(join(tmpdir(), 'ash-log-selftest-'))
   const selfTest = join(root, 'SelfTest')
-  const project = join(root, 'Mijn project')
+  const project = join(root, 'My project')
   const scripts = join(project, 'scripts', 'desktop')
 
   beforeAll(() => {
@@ -246,7 +246,7 @@ describe.skipIf(!hasSwift || !!process.env.CI)('the app, without a window', () =
     const cases = [
       [{ url: `http://localhost:${port}/quests?q=1#x` }, 'window'],
       [{ url: `http://127.0.0.1:${port}/` }, 'window'],
-      [{ url: `http://[::1]:${port}/kaart` }, 'window'],
+      [{ url: `http://[::1]:${port}/map` }, 'window'],
       [{ url: `http://LOCALHOST:${port}/` }, 'window'],
       [{ url: `http://localhost:${port}/`, newWindow: true }, 'window'],
       [{ url: 'about:blank' }, 'window'],
@@ -254,7 +254,7 @@ describe.skipIf(!hasSwift || !!process.env.CI)('the app, without a window', () =
       [{ url: 'https://example.com/embed', subframe: true }, 'window'],
       [{ url: `http://localhost:${port + 1}/` }, 'browser'],
       [{ url: `https://localhost:${port}/` }, 'browser'],
-      [{ url: `http://macbook-van-joost.local:${port}/koppel?code=1` }, 'browser'],
+      [{ url: `http://macbook-van-joost.local:${port}/pair?code=1` }, 'browser'],
       [{ url: 'https://dragonwilds.runescape.wiki/w/Quests', newWindow: true }, 'browser'],
       [{ url: 'https://creativecommons.org/licenses/by-nc-sa/3.0/' }, 'browser'],
       [{ url: 'mailto:joost@example.com' }, 'browser'],
@@ -290,10 +290,10 @@ describe.skipIf(!hasSwift || !!process.env.CI)('the app, without a window', () =
   })
 
   it('answers a quit once, right away, when stop.sh fails', { timeout: 30_000 }, () => {
-    writeScripts({ 'stop.sh': 'echo "De server op poort 1 stopt niet." >&2\nexit 1\n' })
+    writeScripts({ 'stop.sh': 'echo "The server on port 1 won\'t stop." >&2\nexit 1\n' })
     const calls = quit(1)
     expect(calls).toHaveLength(1)
-    expect(calls[0]).toMatchObject({ status: 1, lastLine: 'De server op poort 1 stopt niet.', missing: false })
+    expect(calls[0]).toMatchObject({ status: 1, lastLine: "The server on port 1 won't stop.", missing: false })
     expect(calls[0].ms).toBeLessThan(900)
   })
 
@@ -324,9 +324,9 @@ describe.skipIf(!hasSwift || !!process.env.CI)('the app, without a window', () =
 describe.skipIf(!hasSwift)('the built app', () => {
   // A stand-in project in a folder with a space, with the real desktop scripts and the
   // stand-in server of the launcher tests, and a node path with spaces, like Herd's.
-  const root = mkdtempSync(join(tmpdir(), 'logboek-app-'))
+  const root = mkdtempSync(join(tmpdir(), 'ash-log-app-'))
   const outDir = join(root, 'build')
-  const project = join(root, 'Mijn projecten', 'Logboek')
+  const project = join(root, 'My projects', 'Ash Log')
   const nodePath = join(root, 'Application Support', 'node', 'bin', 'node')
   const version = '1.2.3'
   let port = 0
@@ -420,15 +420,15 @@ describe.skipIf(!hasSwift)('the built app', () => {
   it('starts the server through start.sh with the baked-in node and port, once, and stops it', { timeout: 60_000 }, async () => {
     const started = headless('--start-server')
     expect(started.stderr).toBe('')
-    expect(started).toMatchObject({ status: 0, stdout: `De server draait op http://localhost:${port}/\n` })
+    expect(started).toMatchObject({ status: 0, stdout: `The server is running at http://localhost:${port}/\n` })
     expect(await health()).toBe(200)
     const pid = Number(readFileSync(pidFile(), 'utf8').trim())
     expect(execFileSync('/bin/ps', ['-ww', '-p', String(pid), '-o', 'command='], { encoding: 'utf8' })).toContain(nodePath)
 
-    expect(headless('--start-server')).toMatchObject({ status: 0, stdout: `De server draait al op http://localhost:${port}/\n` })
+    expect(headless('--start-server')).toMatchObject({ status: 0, stdout: `The server is already running at http://localhost:${port}/\n` })
     expect(readFileSync(pidFile(), 'utf8').trim()).toBe(String(pid))
 
-    expect(headless('--stop-server')).toMatchObject({ status: 0, stdout: 'De server is gestopt.\n', stderr: '' })
+    expect(headless('--stop-server')).toMatchObject({ status: 0, stdout: 'The server has stopped.\n', stderr: '' })
     expect(existsSync(pidFile())).toBe(false)
     expect(await health()).toBe(0)
     const requests = readFileSync(join(root, 'stop-requests.jsonl'), 'utf8').trim().split('\n')
@@ -438,19 +438,19 @@ describe.skipIf(!hasSwift)('the built app', () => {
   it('reports why the server did not start, in the words of start.sh', { timeout: 60_000 }, () => {
     const result = headless('--start-server', { FIXTURE_MODE: 'crash' })
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('De server is meteen gestopt: Poort 1234 is al in gebruik (fixture).')
+    expect(result.stderr).toContain('The server stopped right away: Port 1234 is already in use (fixture).')
     expect(existsSync(pidFile())).toBe(false)
   })
 
   it('says so when the project folder is gone', () => {
     const scripts = join(project, 'scripts')
-    renameSync(scripts, `${scripts}-weg`)
+    renameSync(scripts, `${scripts}-gone`)
     try {
       const result = headless('--start-server')
       expect(result.status).toBe(1)
-      expect(result.stderr).toContain(`De projectmap van het Logboek is niet gevonden: ${project}`)
+      expect(result.stderr).toContain(`Can't find the Ash Log project folder: ${project}`)
     } finally {
-      renameSync(`${scripts}-weg`, scripts)
+      renameSync(`${scripts}-gone`, scripts)
     }
   })
 
@@ -461,7 +461,7 @@ describe.skipIf(!hasSwift)('the built app', () => {
     execFileSync('/usr/bin/codesign', ['--force', '--sign', '-', broken], { stdio: 'pipe' })
     const result = headless('--print-config', {}, broken)
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('Ash Log is niet goed geïnstalleerd: AshLogPort ontbreekt')
+    expect(result.stderr).toContain("Ash Log isn't installed correctly: AshLogPort is missing")
     expect(result.stderr).toContain('npm run app:install')
   })
 })

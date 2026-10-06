@@ -86,20 +86,20 @@ describe('buildChestMatrix', () => {
 })
 
 describe('map links', () => {
-  it('builds the /kaart location with c, r and p', () => {
+  it('builds the /map location with c, r and p', () => {
     expect(
       mapFilterLocation({ categories: ['buried-treasure', 'treasure-chest'], regions: ['Dowdun Reach'], powers: [6] }),
-    ).toEqual({ path: '/kaart', query: { c: 'buried-treasure,treasure-chest', r: 'Dowdun Reach', p: '6' } })
+    ).toEqual({ path: '/map', query: { c: 'buried-treasure,treasure-chest', r: 'Dowdun Reach', p: '6' } })
   })
 
   it('leaves out empty filters', () => {
-    expect(mapFilterLocation({ categories: ['treasure-chest'] })).toEqual({ path: '/kaart', query: { c: 'treasure-chest' } })
-    expect(mapFilterLocation({ categories: [], regions: [], powers: [] })).toEqual({ path: '/kaart', query: {} })
+    expect(mapFilterLocation({ categories: ['treasure-chest'] })).toEqual({ path: '/map', query: { c: 'treasure-chest' } })
+    expect(mapFilterLocation({ categories: [], regions: [], powers: [] })).toEqual({ path: '/map', query: {} })
   })
 
   it('adds ps=1 for a strict power filter, only together with powers', () => {
     expect(mapFilterLocation({ categories: ['treasure-chest'], regions: ['Ghornfell'], powers: [3], strictPower: true })).toEqual({
-      path: '/kaart',
+      path: '/map',
       query: { c: 'treasure-chest', r: 'Ghornfell', p: '3', ps: '1' },
     })
     expect(mapFilterLocation({ categories: ['treasure-chest'], regions: ['Ghornfell'], strictPower: true }).query).toEqual({
@@ -107,14 +107,14 @@ describe('map links', () => {
       r: 'Ghornfell',
     })
     expect(mapFilterLocation({ categories: ['treasure-chest'], powers: [], strictPower: true }).query).toEqual({ c: 'treasure-chest' })
-    expect(mapFilterHref({ categories: ['treasure-chest'], powers: [4], strictPower: true })).toBe('/kaart?c=treasure-chest&p=4&ps=1')
+    expect(mapFilterHref({ categories: ['treasure-chest'], powers: [4], strictPower: true })).toBe('/map?c=treasure-chest&p=4&ps=1')
   })
 
   it('renders an href with encoded values and literal commas', () => {
     expect(mapFilterHref({ categories: ['a', 'b'], regions: ['Dowdun Reach'], powers: [2, 3] })).toBe(
-      '/kaart?c=a,b&r=Dowdun%20Reach&p=2,3',
+      '/map?c=a,b&r=Dowdun%20Reach&p=2,3',
     )
-    expect(mapFilterHref({ categories: [] })).toBe('/kaart')
+    expect(mapFilterHref({ categories: [] })).toBe('/map')
   })
 })
 

@@ -7,18 +7,18 @@ function cat(id: string, group: MapGroup, label = id): MapCategory {
 }
 
 describe('group order', () => {
-  it('follows the sidebar order with Dutch headings', () => {
+  it('follows the sidebar order with its headings', () => {
     expect(GROUP_ORDER.map((g) => GROUP_LABEL[g])).toEqual([
-      'Grondstoffen',
+      'Resources',
       'Chests',
-      'Unieke unlocks',
+      'Unique unlocks',
       'Lore',
       'Quests',
       'Vaults',
-      "NPC's",
+      'NPCs',
       'Monsters',
-      'Plaatsen',
-      'Overig',
+      'Places',
+      'Other',
     ])
   })
 
@@ -38,7 +38,7 @@ describe('group order', () => {
     expect(groups[3]!.label).toBe('Monsters')
   })
 
-  it('puts an unknown group under Overig instead of dropping it', () => {
+  it('puts an unknown group under Other instead of dropping it', () => {
     const groups = groupCategories([cat('odd', 'mystery' as MapGroup)])
     expect(groups).toHaveLength(1)
     expect(groups[0]!.group).toBe('other')

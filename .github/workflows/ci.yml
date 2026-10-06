@@ -86,7 +86,7 @@ jobs:
           npm run app:install -- --desktop
           if ($LASTEXITCODE -ne 0) { exit 1 }
           $programs = [Environment]::GetFolderPath('Programs')
-          foreach ($name in 'Ash Log', 'Ash Log stoppen') {
+          foreach ($name in 'Ash Log', 'Stop Ash Log') {
             $path = Join-Path $programs "$name.lnk"
             if (-not (Test-Path -LiteralPath $path)) { Write-Error "missing: $path"; exit 1 }
             $link = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
@@ -94,7 +94,7 @@ jobs:
           }
           npm run app:uninstall
           if ($LASTEXITCODE -ne 0) { exit 1 }
-          foreach ($name in 'Ash Log', 'Ash Log stoppen') {
+          foreach ($name in 'Ash Log', 'Stop Ash Log') {
             if (Test-Path -LiteralPath (Join-Path $programs "$name.lnk")) { Write-Error "still there: $name"; exit 1 }
           }
           exit 0

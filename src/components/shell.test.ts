@@ -92,8 +92,8 @@ function testRouter() {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests', component: page('quests') },
-      { path: '/kaart', component: page('kaart') },
-      { path: '/verzamelingen', component: page('verzamelingen') },
+      { path: '/map', component: page('map') },
+      { path: '/collections', component: page('collections') },
     ],
   })
 }
@@ -118,21 +118,21 @@ describe('OrphanNotice', () => {
   it('asks before cleaning up, with counts per kind and the quests involved', async () => {
     const progress = withOrphans()
     const w = mount(OrphanNotice, { attachTo: document.body })
-    expect(w.text()).toContain('4 vinkjes wijzen nergens meer naar.')
+    expect(w.text()).toContain('4 ticks point at nothing anymore.')
 
-    await w.findAll('button').find((b) => b.text() === 'Opruimen')!.trigger('click')
+    await w.findAll('button').find((b) => b.text() === 'Clean up')!.trigger('click')
     await flushPromises()
     const d = dialog()!
-    expect(d.textContent).toContain('Verweesde vinkjes opruimen?')
-    expect(d.textContent).toContain('4 vinkjes gaan voorgoed weg.')
-    expect(d.textContent).toContain('Queststappen')
+    expect(d.textContent).toContain('Clean up orphaned ticks?')
+    expect(d.textContent).toContain('4 ticks will be gone for good.')
+    expect(d.textContent).toContain('Quest steps')
     expect(d.querySelector('[lang="en"]')?.textContent).toContain('Gone Quest')
     expect(d.textContent).toContain('Ratcatcher')
     expect(d.textContent).toContain('Lore Scraps')
     // Nothing is removed yet.
     expect(progress.state.quests['Gone Quest']).toBeDefined()
 
-    buttonIn(d, 'Opruimen').click()
+    buttonIn(d, 'Clean up').click()
     await flushPromises()
     expect(progress.state.quests).toEqual({ Ratcatcher: { steps: ['Ratcatcher:s:1'], items: [] } })
     expect(Object.keys(progress.state.points)).toEqual(['lore-scraps:1:1'])
@@ -142,9 +142,9 @@ describe('OrphanNotice', () => {
   it('keeps everything when the dialog is cancelled', async () => {
     const progress = withOrphans()
     const w = mount(OrphanNotice, { attachTo: document.body })
-    await w.findAll('button').find((b) => b.text() === 'Opruimen')!.trigger('click')
+    await w.findAll('button').find((b) => b.text() === 'Clean up')!.trigger('click')
     await flushPromises()
-    buttonIn(dialog()!, 'Annuleren').click()
+    buttonIn(dialog()!, 'Cancel').click()
     await flushPromises()
     expect(progress.state.quests['Gone Quest']).toBeDefined()
     expect(Object.keys(progress.state.points)).toHaveLength(2)
@@ -164,16 +164,16 @@ describe('SyncReportPanel', () => {
     expect(panel.textContent).toContain('Lore Scraps (9, 9)')
     expect(panel.textContent).not.toContain('Ratcatcher:s:old')
 
-    buttonIn(panel, 'Opruimen').click()
+    buttonIn(panel, 'Clean up').click()
     await flushPromises()
     const confirm = [...document.body.querySelectorAll<HTMLElement>('[role="dialog"]')].find((d) =>
-      d.textContent?.includes('Verweesde vinkjes opruimen?'),
+      d.textContent?.includes('Clean up orphaned ticks?'),
     )!
     expect(progress.state.quests['Gone Quest']).toBeDefined()
-    buttonIn(confirm, 'Opruimen').click()
+    buttonIn(confirm, 'Clean up').click()
     await flushPromises()
     expect(progress.state.quests['Gone Quest']).toBeUndefined()
-    expect(dialog()!.textContent).toContain('4 vinkjes opgeruimd.')
+    expect(dialog()!.textContent).toContain('4 ticks cleaned up.')
     w.unmount()
   })
 })
@@ -194,7 +194,7 @@ describe('AppHeader', () => {
     expect(compact.classes()).toContain('xl:hidden')
     expect(compact.classes()).not.toContain('hidden')
     expect(compact.classes()).toContain('min-w-0')
-    expect(compact.text()).toBe('Gesynct5 min')
+    expect(compact.text()).toBe('Synced5 min')
     expect(compact.get('time').attributes('title')).toBeTruthy()
     w.unmount()
   })
@@ -207,7 +207,7 @@ describe('AppHeader', () => {
     progress.conflict = true
     const flush = vi.spyOn(progress, 'flush')
     const w = await mountHeader()
-    const button = w.findAll('button').find((b) => b.text().includes('Opnieuw geladen'))!
+    const button = w.findAll('button').find((b) => b.text().includes('Reloaded'))!
     await button.trigger('click')
     expect(flush).not.toHaveBeenCalled()
     expect(progress.error).toBeNull()
@@ -241,10 +241,10 @@ describe('App', () => {
   }
 
   it('warns that overrides.json is broken and edits wait until it is fixed', async () => {
-    const w = await mountApp(appData({ overridesError: 'overrides.json is geen geldige JSON: Unexpected token' }))
+    const w = await mountApp(appData({ overridesError: 'overrides.json is not valid JSON: Unexpected token' }))
     const alert = w.findAll('[role="alert"]').find((a) => a.text().includes('overrides.json'))!
-    expect(alert.text()).toContain('data/overrides.json is niet te lezen.')
-    expect(alert.text()).toContain('aanpassen kan pas weer als je het bestand herstelt')
+    expect(alert.text()).toContain("data/overrides.json can't be read.")
+    expect(alert.text()).toContain('editing waits until you fix the file')
     expect(alert.text()).toContain('Unexpected token')
     w.unmount()
   })

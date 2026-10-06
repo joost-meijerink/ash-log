@@ -20,7 +20,7 @@ export interface ReadOptions {
 export interface CertificateQr {
   /**
    * Plain-http certificate page on the address for that phone: the .local name for an iPhone
-   * and a Mac (http://MacBook-Pro-van-Joost.local:5199/certificaat), the LAN address otherwise.
+   * and a Mac (http://MacBook-Pro-van-Joost.local:5199/certificate), the LAN address otherwise.
    */
   url: string
   /** The QR code as an SVG string. */
@@ -119,7 +119,7 @@ async function putProgress(progress: Progress, init: RequestInit = {}): Promise<
   if (res.status === 409 && data?.progress) {
     // The copy in the error is the new base: a retry after merging must name its revision.
     progressEtag = res.headers.get('ETag')
-    throw new ProgressConflictError(data.error ?? 'Voortgang is elders gewijzigd', data.progress as Progress)
+    throw new ProgressConflictError(data.error ?? 'Progress was changed elsewhere', data.progress as Progress)
   }
   if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`)
   progressEtag = res.headers.get('ETag')
@@ -150,7 +150,7 @@ export const api = {
   syncStatus: () => request<SyncStatus>('GET', '/api/sync/status'),
   /** Mode, live state and addresses; paired devices only for requests from the computer itself. */
   serverStatus: () => request<ServerStatus>('GET', '/api/server'),
-  /** Turns 'Live op wifi' on or off (app server only, from the computer itself). */
+  /** Turns 'Live on Wi-Fi' on or off (app server only, from the computer itself). */
   setLive: (on: boolean) => request<ServerStatus>('POST', '/api/server/live', { on }),
   /** A one-time code plus QR code to pair a phone (the address in it suits that phone). Only while live. */
   createPairing: (phone?: PhoneKind) => request<PairingCode>('POST', '/api/server/pairing', phone ? { phone } : {}),

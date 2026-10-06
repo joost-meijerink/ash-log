@@ -190,13 +190,13 @@ async function keptSetup() {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/kaart', name: 'map', component: MapHost },
+      { path: '/map', name: 'map', component: MapHost },
       { path: '/quests', name: 'quests', component: { render: () => h('p', 'quests') } },
     ],
   })
   const memory = useViewMemoryStore()
   memory.attach(router)
-  await router.push('/kaart')
+  await router.push('/map')
   const mounted = mount(KeptViews, { global: { plugins: [router] }, attachTo: document.body })
   await flushPromises()
   return { wrapper: mounted, router, visible, dataVersion, api, map: api.map.value! }

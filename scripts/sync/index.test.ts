@@ -100,7 +100,7 @@ const readData = async <T>(path: string): Promise<T> => JSON.parse(await readFil
 const quiet = { log: () => {} }
 
 beforeEach(async () => {
-  process.env.WIKI_USER_AGENT = 'AshenfallLogboek-test/0.1 (test@ash-log.test)'
+  process.env.WIKI_USER_AGENT = 'AshLog-test/0.1 (test@ash-log.test)'
   wiki.pinX = 100
   wiki.rewardQuest = 'Ratcatcher'
   fsHook.failWrite = null
@@ -139,7 +139,7 @@ describe('runSync', () => {
     wiki.pinX = 140
     const lines: string[] = []
     const report = await runSync({ log: (m) => lines.push(m), only: ['map'] })
-    expect(lines[0]).toBe('Ook bijgewerkt, omdat ze samenhangen: quests, vaults, beloningen')
+    expect(lines[0]).toBe('Also updating, since they depend on it: quests, vaults, rewards')
 
     expect(report.domains).toEqual(['map', 'quests', 'vaults', 'rewards'])
     const map = await readData<MapData>(paths.WIKI_FILES.map)
@@ -152,7 +152,7 @@ describe('runSync', () => {
   it('warns about links that point at nothing', async () => {
     wiki.rewardQuest = 'Gone Quest'
     const report = await runSync(quiet)
-    expect(report.warnings.map((w) => w.message)).toContainEqual(expect.stringContaining('verwijst naar quest Gone Quest'))
+    expect(report.warnings.map((w) => w.message)).toContainEqual(expect.stringContaining('points to quest Gone Quest'))
   })
 
   it('runs on a fresh clone without progress.json, overrides.json or a data folder, and creates neither', async () => {
@@ -172,7 +172,7 @@ describe('runSync', () => {
     expect(report.ok).toBe(true)
     expect(report.warnings).toContainEqual({
       source: 'sync',
-      message: expect.stringMatching(/^Verweesde voortgang niet gecontroleerd: overrides\.json is geen geldige JSON/),
+      message: expect.stringMatching(/^Orphaned progress not checked: overrides\.json is not valid JSON/),
     })
     expect(report.orphans.points).toEqual([])
     expect((await readData<MapData>(paths.WIKI_FILES.map)).points).toHaveLength(1)
@@ -184,7 +184,7 @@ describe('runSync', () => {
     const report = await runSync({ ...quiet, only: ['vaults'] })
 
     expect(report.domains).toEqual(['quests', 'vaults', 'rewards'])
-    expect(report.warnings[0]!.message).toMatch(/^quests\.json is geen geldige JSON: .*Het bestand wordt opnieuw opgebouwd\.$/)
+    expect(report.warnings[0]!.message).toMatch(/^quests\.json is not valid JSON: .*The file will be rebuilt\.$/)
     expect((await readData<Quest[]>(paths.WIKI_FILES.quests))[0]!.id).toBe('Ratcatcher')
   })
 

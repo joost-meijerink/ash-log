@@ -13,8 +13,8 @@ import { inlineLink } from './styles'
 
 /**
  * One unique unlock as a check row: name and set, then how you get it (recipe consumable,
- * requirement, quest, vault or map link) and the source: via labels in Dutch, the wiki text
- * in italics. What the whole group shares (groupNote) is shown above the group instead.
+ * requirement, quest, vault or map link) and the source: via labels in the interface font, the
+ * wiki text in italics. What the whole group shares (groupNote) is shown above the group instead.
  */
 const props = defineProps<{
   reward: Reward
@@ -59,7 +59,7 @@ const hasLine = computed(
       <span class="flex flex-col gap-1">
         <span v-if="hasLine" class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span v-if="reward.recipe">via <span lang="en" class="text-text-parchment/85">{{ reward.recipe }}</span></span>
-          <span v-if="reward.requirement">Nodig: <span lang="en" class="text-text-parchment/85">{{ reward.requirement }}</span></span>
+          <span v-if="reward.requirement">Needs: <span lang="en" class="text-text-parchment/85">{{ reward.requirement }}</span></span>
           <RouterLink v-if="reward.questId" :to="questHref" :class="inlineLink">
             <ScrollText aria-hidden="true" />
             <span><span class="sr-only">Quest: </span><span lang="en">{{ questName ?? reward.questId }}</span></span>
@@ -68,9 +68,9 @@ const hasLine = computed(
             <VaultIcon aria-hidden="true" />
             <span><span class="sr-only">Vault: </span><span lang="en">{{ vaultName ?? reward.vaultId }}</span></span>
           </AnchorLink>
-          <RouterLink v-if="mapPoint" :to="{ path: '/kaart', query: { focus: mapPoint } }" :class="inlineLink" data-map-link>
+          <RouterLink v-if="mapPoint" :to="{ path: '/map', query: { focus: mapPoint } }" :class="inlineLink" data-map-link>
             <MapPin aria-hidden="true" />
-            <span>Toon op kaart<span class="sr-only">: <span lang="en">{{ reward.name }}</span></span></span>
+            <span>Show on map<span class="sr-only">: <span lang="en">{{ reward.name }}</span></span></span>
           </RouterLink>
         </span>
         <RewardNoteText v-if="showNote" :note="note" />

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Verzamelingen view in the real shell (App.vue, the header, kept-alive views), next to two
+// The Collections view in the real shell (App.vue, the header, kept-alive views), next to two
 // dummy views. What it must do: be exactly as it was left after a round trip, keep what a link
 // from another view does not name, and do nothing while another view is on screen.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -74,14 +74,14 @@ function appData(extra: Reward[] = []): AppData {
   }
 }
 
-/** Links from the other views into Verzamelingen, as the quests and the map have them. */
+/** Links from the other views into Collections, as the quests and the map have them. */
 const LINKS: Record<string, RouteLocationRaw> = {
-  vault: '/verzamelingen#vault-takla-kara',
-  page: '/verzamelingen',
-  'quest-kind': { path: '/verzamelingen', query: { soort: 'quest' }, hash: '#unlocks' },
-  'all-kinds': '/verzamelingen?soort=all#unlocks',
-  'vestiges-to-do': '/verzamelingen?soort=vestige&verberg=1#unlocks',
-  'show-owned': '/verzamelingen?verberg=0',
+  vault: '/collections#vault-takla-kara',
+  page: '/collections',
+  'quest-kind': { path: '/collections', query: { kind: 'quest' }, hash: '#unlocks' },
+  'all-kinds': '/collections?kind=all#unlocks',
+  'vestiges-to-do': '/collections?kind=vestige&hide=1#unlocks',
+  'show-owned': '/collections?hide=0',
 }
 
 function dummyView(name: ViewName) {
@@ -105,8 +105,8 @@ function testRouter(): Router {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests/:questId?', name: 'quests', component: dummyView('quests') },
-      { path: '/kaart', name: 'map', component: dummyView('map') },
-      { path: '/verzamelingen', name: 'collections', component: CollectionsView },
+      { path: '/map', name: 'map', component: dummyView('map') },
+      { path: '/collections', name: 'collections', component: CollectionsView },
     ],
   })
 }
@@ -181,7 +181,7 @@ afterEach(() => {
 
 describe('a round trip to another view', () => {
   it('leaves the view exactly as it was: address, search, kind, hide switch, chest kinds and scroll', async () => {
-    const { router, main } = await mountApp('/verzamelingen')
+    const { router, main } = await mountApp('/collections')
     const root = wrapper!.get('#vaults').element
     await search().setValue('gar')
     await press('Vestiges')
@@ -190,18 +190,18 @@ describe('a round trip to another view', () => {
     const table = wrapper!.get('[aria-labelledby="chest-caption"]').element as HTMLElement
     table.scrollLeft = 120
     main.scrollTop = 640
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige&verberg=1')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige&hide=1')
     expect(rows()).toBe(1)
 
-    await clickTab('Kaart')
+    await clickTab('Map')
     expect(wrapper!.find('#vaults').exists()).toBe(false)
     expect(main.scrollTop).toBe(0)
     // A browser forgets the scroll position of an element that is taken out of the page.
     expect(table.isConnected).toBe(false)
     table.scrollLeft = 0
 
-    await clickTab('Verzamelingen')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige&verberg=1')
+    await clickTab('Collections')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige&hide=1')
     // The same elements: nothing was set up again.
     expect(wrapper!.get('#vaults').element).toBe(root)
     expect(searchText()).toBe('gar')
@@ -217,7 +217,7 @@ describe('a round trip to another view', () => {
   })
 
   it('does not reveal, focus or highlight the anchor that is still in the address', async () => {
-    const { router, main } = await mountApp('/verzamelingen')
+    const { router, main } = await mountApp('/collections')
     await clickTab('Quests')
     await clickLink('vault')
     expect(reveals).toEqual([{ id: 'vault-takla-kara', behavior: 'auto' }])
@@ -225,9 +225,9 @@ describe('a round trip to another view', () => {
     main.scrollTop = 80
     reveals = []
 
-    await clickTab('Kaart')
-    await clickTab('Verzamelingen')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#vault-takla-kara')
+    await clickTab('Map')
+    await clickTab('Collections')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#vault-takla-kara')
     expect(reveals).toEqual([])
     expect(lit()).toEqual([])
     expect(document.activeElement?.id).not.toBe('vault-takla-kara')
@@ -235,40 +235,40 @@ describe('a round trip to another view', () => {
   })
 
   it('shows the data that was reloaded in the meantime', async () => {
-    const { router } = await mountApp('/verzamelingen?soort=vestige')
+    const { router } = await mountApp('/collections?kind=vestige')
     expect(rows()).toBe(2)
-    await clickTab('Kaart')
+    await clickTab('Map')
     useDataStore().data = appData([{ id: 'vestige:new-blade', kind: 'vestige', name: 'New Blade', group: 'Brynmoor' }])
     await flushPromises()
     // Nothing moved while it was away.
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
 
-    await clickTab('Verzamelingen')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige')
+    await clickTab('Collections')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige')
     expect(pressed('Vestiges')).toBe(true)
     expect(rows()).toBe(3)
     expect(wrapper!.text()).toContain('New Blade')
   })
 
   it('brings the address in line when leaving cut a write off', async () => {
-    const { router } = await mountApp('/verzamelingen')
+    const { router } = await mountApp('/collections')
     // The chip starts a replace; the push right behind it wins and the replace is dropped.
     const click = chip('Vestiges').trigger('click')
-    const leave = router.push('/kaart')
+    const leave = router.push('/map')
     await Promise.all([click, leave])
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
-    expect(useViewMemoryStore().locations.collections).toBe('/verzamelingen')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
+    expect(useViewMemoryStore().locations.collections).toBe('/collections')
 
-    await clickTab('Verzamelingen')
+    await clickTab('Collections')
     expect(pressed('Vestiges')).toBe(true)
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige')
   })
 })
 
 describe('a link from another view', () => {
   it('to a vault keeps kind, hide switch and search, and writes them into the address with a replace', async () => {
-    const { router, main } = await mountApp('/verzamelingen')
+    const { router, main } = await mountApp('/collections')
     await search().setValue('gar')
     await press('Vestiges')
     await toggleHide()
@@ -276,7 +276,7 @@ describe('a link from another view', () => {
     await clickTab('Quests')
 
     await clickLink('vault')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige&verberg=1#vault-takla-kara')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige&hide=1#vault-takla-kara')
     expect(pressed('Vestiges')).toBe(true)
     expect(hiding()).toBe(true)
     expect(searchText()).toBe('gar')
@@ -293,23 +293,23 @@ describe('a link from another view', () => {
     // And forward is a return to the address as it was rewritten.
     router.forward()
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige&verberg=1#vault-takla-kara')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige&hide=1#vault-takla-kara')
     expect(useViewMemoryStore().arrival).toMatchObject({ view: 'collections', kind: 'return', via: 'history' })
     expect(reveals).toHaveLength(1)
   })
 
   it('to the unlocks of a kind shows them: that kind, no search text left, nothing hidden', async () => {
-    const { router } = await mountApp('/verzamelingen')
+    const { router } = await mountApp('/collections')
     await press('Vestiges')
     await toggleHide()
     // A search text that the unlock of the link does not match. No link can name it.
     await search().setValue('gar')
     expect(rows()).toBe(1)
-    await clickTab('Kaart')
+    await clickTab('Map')
 
     await clickLink('quest-kind')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=quest#unlocks')
-    expect(pressed('Questbeloningen')).toBe(true)
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=quest#unlocks')
+    expect(pressed('Quest rewards')).toBe(true)
     expect(pressed('Vestiges')).toBe(false)
     expect(hiding()).toBe(false)
     expect(searchText()).toBe('')
@@ -319,43 +319,43 @@ describe('a link from another view', () => {
   })
 
   it('that asks for all kinds, or for the hide switch on or off, gets that and keeps the rest', async () => {
-    const { router } = await mountApp('/verzamelingen')
+    const { router } = await mountApp('/collections')
     await press('Vestiges')
     await toggleHide()
-    await clickTab('Kaart')
+    await clickTab('Map')
 
     // The unlocks of a map point with several kinds: all of them, none hidden.
     await clickLink('all-kinds')
-    expect(pressed('Alles')).toBe(true)
+    expect(pressed('All')).toBe(true)
     expect(hiding()).toBe(false)
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#unlocks')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#unlocks')
 
     // A link to the list that asks for the switch gets it.
-    await clickTab('Kaart')
+    await clickTab('Map')
     await clickLink('vestiges-to-do')
     expect(pressed('Vestiges')).toBe(true)
     expect(hiding()).toBe(true)
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige&verberg=1#unlocks')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige&hide=1#unlocks')
 
     // Not a link to the list: only what it names changes, the search text stays.
     await search().setValue('gar')
-    await clickTab('Kaart')
+    await clickTab('Map')
     await clickLink('show-owned')
     expect(hiding()).toBe(false)
     expect(pressed('Vestiges')).toBe(true)
     expect(searchText()).toBe('gar')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige')
   })
 
   it('to the page itself starts at the top with everything kept', async () => {
-    const { router, main } = await mountApp('/verzamelingen')
+    const { router, main } = await mountApp('/collections')
     await press('Vestiges')
     await press('Buried Treasure')
     main.scrollTop = 640
     await clickTab('Quests')
 
     await clickLink('page')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige')
     expect(pressed('Vestiges')).toBe(true)
     expect(pressed('Buried Treasure')).toBe(false)
     expect(main.scrollTop).toBe(0)
@@ -365,7 +365,7 @@ describe('a link from another view', () => {
   it('on the first visit of the session is read as it is', async () => {
     const { router } = await mountApp('/quests')
     await clickLink('quest-kind')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=quest#unlocks')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=quest#unlocks')
     expect(hiding()).toBe(false)
     expect(pressed('Vestiges')).toBe(false)
     expect(rows()).toBe(1)
@@ -374,17 +374,17 @@ describe('a link from another view', () => {
 
 describe('while another view is on screen', () => {
   it('never reads or writes the address of that view', async () => {
-    const { router } = await mountApp('/verzamelingen?soort=vestige')
-    await clickTab('Kaart')
-    // The map with params and a hash that mean something in Verzamelingen.
-    await router.push('/kaart?soort=quest&verberg=1#vault-takla-kara')
+    const { router } = await mountApp('/collections?kind=vestige')
+    await clickTab('Map')
+    // The map with params and a hash that mean something in Collections.
+    await router.push('/map?kind=quest&hide=1#vault-takla-kara')
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?soort=quest&verberg=1#vault-takla-kara')
-    expect(useViewMemoryStore().locations.collections).toBe('/verzamelingen?soort=vestige')
+    expect(router.currentRoute.value.fullPath).toBe('/map?kind=quest&hide=1#vault-takla-kara')
+    expect(useViewMemoryStore().locations.collections).toBe('/collections?kind=vestige')
     expect(reveals).toEqual([])
 
-    await clickTab('Verzamelingen')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige')
+    await clickTab('Collections')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige')
     expect(pressed('Vestiges')).toBe(true)
     expect(hiding()).toBe(false)
     expect(reveals).toEqual([])
@@ -393,32 +393,32 @@ describe('while another view is on screen', () => {
 
 describe('inside the view', () => {
   it('the address is followed: its own tab goes to the base path, the search text stays', async () => {
-    const { router, main } = await mountApp('/verzamelingen?soort=vestige&verberg=1')
+    const { router, main } = await mountApp('/collections?kind=vestige&hide=1')
     expect(pressed('Vestiges')).toBe(true)
     expect(hiding()).toBe(true)
     await search().setValue('gar')
     main.scrollTop = 300
 
-    await clickTab('Verzamelingen')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen')
-    expect(pressed('Alles')).toBe(true)
+    await clickTab('Collections')
+    expect(router.currentRoute.value.fullPath).toBe('/collections')
+    expect(pressed('All')).toBe(true)
     expect(hiding()).toBe(false)
     expect(searchText()).toBe('gar')
     expect(main.scrollTop).toBe(300)
 
-    await router.push('/verzamelingen?soort=quest')
+    await router.push('/collections?kind=quest')
     await flushPromises()
-    expect(pressed('Alles')).toBe(false)
+    expect(pressed('All')).toBe(false)
     router.back()
     await flushPromises()
-    expect(pressed('Alles')).toBe(true)
+    expect(pressed('All')).toBe(true)
   })
 
   it('a change of kind keeps the hash and adds no history entry', async () => {
     const { router } = await mountApp('/quests')
     await clickLink('vault')
     await press('Vestiges')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen?soort=vestige#vault-takla-kara')
+    expect(router.currentRoute.value.fullPath).toBe('/collections?kind=vestige#vault-takla-kara')
     router.back()
     await flushPromises()
     expect(router.currentRoute.value.fullPath).toBe('/quests')

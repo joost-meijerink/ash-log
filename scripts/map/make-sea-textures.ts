@@ -229,17 +229,17 @@ export function writeSeaTextures(outDir = OUT_DIR): string[] {
   const written: string[] = []
   for (let zoom = MIN_NATIVE_ZOOM; zoom <= MAX_NATIVE_ZOOM; zoom++) {
     const patch = findSeaPatch(zoom, sea)
-    if (!patch) throw new Error(`Geen stuk open zee gevonden op zoom ${zoom}`)
+    if (!patch) throw new Error(`No patch of open sea found at zoom ${zoom}`)
     const border = Math.round(patch.size / 8)
     const seamless = makeSeamless(readRegion(zoom, patch.left, patch.top, patch.size), border)
     const { texture, removed } = highPass(seamless, Math.max(2, Math.round(seamless.width / 24)))
     const file = join(outDir, `sea-z${zoom}.png`)
     writeFileSync(file, encodeOpaquePng(texture.width, texture.height, texture.pixels))
-    written.push(`${file} (${texture.width} px, uit ${patch.size} px op ${patch.left},${patch.top}; grote vlekken weggehaald: ${removed.toFixed(1)})`)
+    written.push(`${file} (${texture.width} px, from ${patch.size} px at ${patch.left},${patch.top}; large blotches removed: ${removed.toFixed(1)})`)
   }
   return written
 }
 
 if (isEntryPoint(import.meta.url, process.argv[1])) {
-  for (const line of writeSeaTextures()) console.log(`geschreven: ${line}`)
+  for (const line of writeSeaTextures()) console.log(`written: ${line}`)
 }

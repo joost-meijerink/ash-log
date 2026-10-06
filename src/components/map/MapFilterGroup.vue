@@ -14,7 +14,7 @@ import MapGlyph from './MapGlyph.vue'
 import MapGroupPicker from './MapGroupPicker.vue'
 
 /**
- * One filter group (Grondstoffen, Lore...): collapsible, with an all-on/all-off action.
+ * One filter group (Resources, Lore...): collapsible, with an all-on/all-off action.
  * Large groups get their own filter field. While collapsed, the categories that are on show as
  * chips, so you can switch them off without opening the list.
  */
@@ -63,13 +63,13 @@ const chips = computed(() => (chipsExpanded.value ? active.value : active.value.
 const moreChips = computed(() => active.value.length - chips.value.length)
 
 const toggleAllLabel = computed(() => {
-  const what = filtered.value ? 'Selectie' : 'Alles'
-  return `${what} ${allOn.value ? 'uit' : 'aan'}`
+  const what = filtered.value ? 'selection' : 'all'
+  return `${allOn.value ? 'Hide' : 'Show'} ${what}`
 })
 const toggleAllAria = computed(() => {
   const n = rows.value.length
-  const scope = filtered.value ? `${n} ${n === 1 ? 'categorie' : 'categorieën'} in ${props.group.label}` : `Alles in ${props.group.label}`
-  return `${scope} ${allOn.value ? 'uitzetten' : 'aanzetten'}`
+  const scope = filtered.value ? `${n} ${n === 1 ? 'category' : 'categories'} in ${props.group.label}` : `everything in ${props.group.label}`
+  return `Turn ${allOn.value ? 'off' : 'on'} ${scope}`
 })
 
 function toggleAll() {
@@ -113,8 +113,8 @@ function toggleOpen() {
           </span>
           <span class="ml-auto shrink-0 pl-2 text-sm tabular-nums">
             <span class="sr-only">, </span>
-            <span v-if="active.length" class="text-gold">{{ active.length }} aan</span>
-            <span v-else class="text-muted-light">{{ group.categories.length }}<span class="sr-only"> categorieën</span></span>
+            <span v-if="active.length" class="text-gold">{{ active.length }} on</span>
+            <span v-else class="text-muted-light">{{ group.categories.length }}<span class="sr-only">{{ group.categories.length === 1 ? ' category' : ' categories' }}</span></span>
           </span>
         </button>
       </h3>
@@ -134,7 +134,7 @@ function toggleOpen() {
       v-if="progress"
       class="px-2 pb-2"
       :value="progress.found / progress.total"
-      :label="`${group.label}: gevonden`"
+      :label="`${group.label}: found`"
       :detail="`${progress.found} / ${progress.total}`"
     />
 
@@ -145,13 +145,13 @@ function toggleOpen() {
         :key="c.id"
         :pressed="true"
         class="max-w-full px-2.5 text-[0.85rem]"
-        :title="`${c.label} uitzetten`"
+        :title="`Turn off ${c.label}`"
         @update:pressed="state.toggleCategory(c.id, false)"
       >
         <span lang="en">{{ c.label }}</span>
         <template #icon><X aria-hidden="true" class="order-last" /></template>
       </ToggleChip>
-      <Button v-if="moreChips > 0" variant="link" size="xs" @click="chipsExpanded = true">en nog {{ moreChips }}</Button>
+      <Button v-if="moreChips > 0" variant="link" size="xs" @click="chipsExpanded = true">and {{ moreChips }} more</Button>
     </div>
 
     <!-- Rows are only rendered while open: 400 categories stay cheap -->
@@ -173,7 +173,7 @@ function toggleOpen() {
             <MapGroupPicker :category="c" />
           </li>
         </ul>
-        <p v-if="rows.length === 0" class="px-2 py-2 text-sm text-muted-light">Niets gevonden met '{{ local }}'.</p>
+        <p v-if="rows.length === 0" class="px-2 py-2 text-sm text-muted-light">Nothing found for '{{ local }}'.</p>
       </template>
     </div>
   </section>

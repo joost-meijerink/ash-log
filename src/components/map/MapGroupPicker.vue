@@ -21,14 +21,14 @@ const value = computed(() => manual.value ?? '')
 const disabled = computed(() => groupOverride.readOnly.value || groupOverride.saving.value !== null)
 
 const current = computed(() => GROUP_LABEL[props.category.group] ?? GROUP_LABEL.other)
-const autoOption = computed(() => (manual.value ? 'Automatisch (zoals de sync)' : `Automatisch: ${current.value}`))
+const autoOption = computed(() => (manual.value ? 'Automatic (as the sync picked)' : `Automatic: ${current.value}`))
 const label = computed(() => {
-  const how = manual.value ? 'met de hand' : 'automatisch'
-  return `Groep van ${props.category.label}: ${current.value} (${how}). Kies een andere groep.`
+  const how = manual.value ? 'by hand' : 'automatic'
+  return `Group for ${props.category.label}: ${current.value} (${how}). Pick another group.`
 })
 const hint = computed(() => {
-  if (groupOverride.offline.value) return 'Offline: groep wijzigen kan weer zodra je computer bereikbaar is'
-  return groupOverride.readOnly.value ? 'overrides.json is niet te lezen, groep wijzigen kan nu niet' : 'Andere groep kiezen'
+  if (groupOverride.offline.value) return "Offline: you can change the group again once your computer is back"
+  return groupOverride.readOnly.value ? "Can't read overrides.json, so you can't change the group right now" : 'Pick another group'
 })
 
 async function onChange(event: Event) {

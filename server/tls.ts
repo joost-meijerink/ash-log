@@ -1,5 +1,5 @@
 // Local https for the app server. A phone only runs a service worker (and so shows its own
-// 'niet bereikbaar' screen while the computer is away) in a secure context, so the Wi-Fi side
+// 'can't be reached' screen while the computer is away) in a secure context, so the Wi-Fi side
 // runs on https with a certificate authority of this computer's own:
 //
 // - The CA (ten years) is made once in .local/tls and reused. Its key stays in that folder
@@ -25,7 +25,7 @@ import { join } from 'node:path'
 import { PRIVATE_IPV4_RANGES, isPrivateIpv4, mdnsName } from './net.ts'
 import { createCaCertificate, createLeafCertificate, toPem } from './x509.ts'
 
-/** Subject of the CA: the name iOS lists under Instellingen voor certificaatvertrouwen. */
+/** Subject of the CA: the name iOS lists under Certificate Trust Settings. */
 export const CA_COMMON_NAME = 'Ash Log'
 export const CA_DAYS = 3650
 /** iOS refuses server certificates that are valid longer than 825 days. */
@@ -106,8 +106,8 @@ export function certNames(hostname: string, lan: readonly string[]): TlsNames {
  * for the subject. A certificate with one name outside the constraints is worthless.
  */
 export function checkLeafNames(names: TlsNames): void {
-  if (!names.dns.length || !names.dns.every(permittedDnsName)) throw new Error(`Ongeldige naam voor het certificaat: ${names.dns.join(', ')}`)
-  if (!names.ips.every((ip) => isIPv4(ip) && isPrivateIpv4(ip))) throw new Error(`Ongeldig adres voor het certificaat: ${names.ips.join(', ')}`)
+  if (!names.dns.length || !names.dns.every(permittedDnsName)) throw new Error(`Invalid name for the certificate: ${names.dns.join(', ')}`)
+  if (!names.ips.every((ip) => isIPv4(ip) && isPrivateIpv4(ip))) throw new Error(`Invalid address for the certificate: ${names.ips.join(', ')}`)
 }
 
 /** Names from X509Certificate.subjectAltName ('DNS:a.local, DNS:localhost, IP Address:127.0.0.1'). */
@@ -277,19 +277,19 @@ export class LocalTls {
     if (keyText === null && certPem === null) return null
     let problem: string
     try {
-      if (keyText === null || certPem === null) throw new Error(keyText === null ? 'sleutel ontbreekt' : 'certificaat ontbreekt')
+      if (keyText === null || certPem === null) throw new Error(keyText === null ? 'key missing' : 'certificate missing')
       const cert = new X509Certificate(certPem)
       const key = createPrivateKey(keyText)
-      if (!cert.ca) throw new Error('geen CA')
-      if (!cert.checkPrivateKey(key)) throw new Error('sleutel hoort er niet bij')
+      if (!cert.ca) throw new Error('not a CA')
+      if (!cert.checkPrivateKey(key)) throw new Error('key does not match')
       // x509.ts signs with EC and RSA keys only; the CA has always been EC P-256.
-      if (key.asymmetricKeyType !== 'ec' && key.asymmetricKeyType !== 'rsa') throw new Error(`sleuteltype ${key.asymmetricKeyType ?? 'onbekend'}`)
-      if (validToOf(cert).getTime() - this.now() <= RENEW_BEFORE_MS) throw new Error('verloopt binnenkort')
+      if (key.asymmetricKeyType !== 'ec' && key.asymmetricKeyType !== 'rsa') throw new Error(`key type ${key.asymmetricKeyType ?? 'unknown'}`)
+      if (validToOf(cert).getTime() - this.now() <= RENEW_BEFORE_MS) throw new Error('expires soon')
       return { cert, pem: certPem, key, fresh: false }
     } catch (err) {
       problem = (err as Error).message
     }
-    this.log(`Het Ash Log-certificaat is onbruikbaar (${problem}). Er komt een nieuw; installeer dat opnieuw op je telefoon.`)
+    this.log(`The Ash Log certificate can't be used (${problem}). Making a new one; install that on your phone again.`)
     return null
   }
 
@@ -305,14 +305,14 @@ export class LocalTls {
     })
     const pem = toPem(der)
     const cert = new X509Certificate(pem)
-    if (!cert.ca || !cert.checkPrivateKey(key) || !cert.verify(cert.publicKey)) throw new Error('Het nieuwe CA-certificaat klopt niet')
+    if (!cert.ca || !cert.checkPrivateKey(key) || !cert.verify(cert.publicKey)) throw new Error('The new CA certificate is not right')
     const work = await mkdtemp(join(this.dir, WORK_PREFIX))
     try {
       await writeSecret(join(work, TLS_FILES.caKey), keyPem(key))
       await writeFile(join(work, TLS_FILES.caCert), pem)
       await moveIntoPlace(join(work, TLS_FILES.caKey), this.path('caKey'))
       await moveIntoPlace(join(work, TLS_FILES.caCert), this.path('caCert'))
-      this.log('Nieuw Ash Log-certificaat gemaakt. Installeer het één keer op je telefoon (Live op wifi, stap 1).')
+      this.log('Made a new Ash Log certificate. Install it on your phone once (Live on Wi-Fi, step 1).')
       return { cert, pem, key, fresh: true }
     } finally {
       await rm(work, { recursive: true, force: true })
@@ -354,7 +354,7 @@ export class LocalTls {
       !cert.checkPrivateKey(leafKey) ||
       !sameNames(parseSubjectAltName(cert.subjectAltName), names)
     ) {
-      throw new Error('Het nieuwe servercertificaat klopt niet')
+      throw new Error('The new server certificate is not right')
     }
     const key = keyPem(leafKey)
     const work = await mkdtemp(join(this.dir, WORK_PREFIX))
@@ -363,7 +363,7 @@ export class LocalTls {
       await writeFile(join(work, TLS_FILES.cert), pem)
       await moveIntoPlace(join(work, TLS_FILES.key), this.path('key'))
       await moveIntoPlace(join(work, TLS_FILES.cert), this.path('cert'))
-      this.log(`Servercertificaat gemaakt voor ${[...names.dns, ...names.ips].join(', ')}`)
+      this.log(`Made a server certificate for ${[...names.dns, ...names.ips].join(', ')}`)
       return { cert, pem, key }
     } finally {
       await rm(work, { recursive: true, force: true })

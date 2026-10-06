@@ -20,34 +20,34 @@ const guessed = computed(() => start.value?.source === 'wiki' && props.quest.sta
 
 <template>
   <section aria-labelledby="quest-start-heading">
-    <SectionHeading id="quest-start-heading" title="Startpunt" />
+    <SectionHeading id="quest-start-heading" title="Start point" />
 
     <LocationText v-if="quest.location" as="p" pin lang="en" class="mt-2 text-[1.05rem] leading-relaxed">
       {{ quest.location }}
     </LocationText>
-    <p v-else class="mt-2 text-text-parchment/70">De wiki noemt geen startpunt.</p>
+    <p v-else class="mt-2 text-text-parchment/70">The wiki doesn't name a start point.</p>
 
     <p v-if="manual" class="mt-2.5 flex flex-wrap items-center gap-2 text-sm text-text-parchment/70">
-      <Badge variant="ember">Handmatige pin</Badge>
-      Door jou op de kaart gezet.
+      <Badge variant="ember">Manual pin</Badge>
+      You put it on the map.
     </p>
     <p v-else-if="guessed" class="mt-2.5 text-sm leading-snug text-text-parchment/70">
-      Pin gekoppeld op de naam van de NPC. Staat hij verkeerd? Verplaats hem.
+      Pin matched on the NPC's name. In the wrong spot? Move it.
     </p>
-    <p v-else-if="!start" class="mt-2.5 text-sm text-text-parchment/70">Nog geen pin op de kaart.</p>
+    <p v-else-if="!start" class="mt-2.5 text-sm text-text-parchment/70">No pin on the map yet.</p>
 
     <div class="mt-3 flex flex-wrap gap-2">
       <Button v-if="start" as-child variant="outline" size="sm">
         <RouterLink :to="mapQuestLink(quest.id)">
           <MapIcon aria-hidden="true" />
-          Toon op kaart
+          Show on map
         </RouterLink>
       </Button>
       <!-- Placing a pin writes overrides: not while the Mac cannot be reached -->
       <Button v-if="!connection.readOnly" as-child :variant="start ? 'ghost' : 'outline'" size="sm">
         <RouterLink :to="mapPinLink(quest.id)">
           <MapPinPlus aria-hidden="true" />
-          {{ start ? 'Pin verplaatsen' : 'Pin zetten' }}
+          {{ start ? 'Move pin' : 'Set pin' }}
         </RouterLink>
       </Button>
     </div>

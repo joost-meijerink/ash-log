@@ -1,16 +1,16 @@
-// Texts of the 'niet bereikbaar' state. public/sw.js shows the same title and text on its own
+// Texts of the 'can't be reached' state. public/sw.js shows the same title and text on its own
 // page (when not even the app is cached); a test keeps the two in step.
 
-export const OFFLINE_TITLE = 'Ash Log is niet bereikbaar'
+export const OFFLINE_TITLE = "Ash Log can't be reached"
 export const OFFLINE_TEXT =
-  'Je computer staat uit of slaapt, of Live op wifi staat uit. Zorg dat je telefoon op hetzelfde wifi zit.'
-export const RETRY_LABEL = 'Opnieuw proberen'
-export const BROWSE_LABEL = 'Laatst bekende gegevens bekijken'
+  'Your computer is off or asleep, or Live on Wi-Fi is off. Make sure your phone is on the same Wi-Fi.'
+export const RETRY_LABEL = 'Try again'
+export const BROWSE_LABEL = 'View last known data'
 
 /** The auto-retry line under the retry button. */
 export function retryHint(opts: { checking: boolean; secondsLeft: number | null }): string {
-  if (opts.checking) return 'Even kijken of je computer er weer is...'
-  if (opts.secondsLeft === null) return 'Ash Log probeert het vanzelf opnieuw.'
-  if (opts.secondsLeft <= 1) return 'Ash Log probeert het zo opnieuw.'
-  return `Ash Log probeert het over ${opts.secondsLeft} s vanzelf opnieuw.`
+  if (opts.checking) return 'Checking whether your computer is back...'
+  if (opts.secondsLeft === null) return 'Ash Log will try again on its own.'
+  if (opts.secondsLeft <= 1) return 'Ash Log will try again in a moment.'
+  return `Ash Log will try again in ${opts.secondsLeft} s.`
 }

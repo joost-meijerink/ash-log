@@ -1,5 +1,5 @@
 // Can this page reach the Mac? On a phone the answer decides between the app, the full-screen
-// 'niet bereikbaar' state and read-only browsing of the last known data. On the Mac itself
+// 'can't be reached' state and read-only browsing of the last known data. On the Mac itself
 // (localhost) nothing changes: the native app has its own alert when the server is gone.
 //
 // Signals: every /api request (via lib/connection.ts), the offline copies the service worker
@@ -42,7 +42,7 @@ export const useConnectionStore = defineStore('connection', () => {
   const state = ref<ConnectionState>('online')
   /** A health request is under way. */
   const checking = ref(false)
-  /** The user chose to look at the last known data instead of the 'niet bereikbaar' screen. */
+  /** The user chose to look at the last known data instead of the 'can't be reached' screen. */
   const browsing = ref(false)
   /** Epoch ms of the next automatic check while offline; null while none is planned. */
   const nextCheckAt = ref<number | null>(null)
@@ -253,7 +253,7 @@ export const useConnectionStore = defineStore('connection', () => {
     stop,
     retry,
     onReconnect,
-    /** Leave the 'niet bereikbaar' screen for the last known data, read-only. */
+    /** Leave the 'can't be reached' screen for the last known data, read-only. */
     browse: () => {
       if (offline.value) browsing.value = true
     },

@@ -38,16 +38,16 @@ describe('figmaSvg', () => {
 
   it.each(['ios', 'macos'] as const)('%s names its layers', (variant) => {
     const ids = [...figmaSvg(variant).matchAll(/ id="([^"]+)"/g)].map((m) => m[1])
-    expect(ids).toEqual(expect.arrayContaining(['Leer', 'Kompasroos', 'Randen', 'Rand_buiten', 'Rand_binnen', 'Rand_goud', 'Ruitjes', 'Ash_Logs']))
+    expect(ids).toEqual(expect.arrayContaining(['Leather', 'Compass_rose', 'Borders', 'Border_outer', 'Border_inner', 'Border_gold', 'Diamonds', 'Ash_Logs']))
   })
 
   it('draws the gold border as a stroked continuous rect inset from the iOS mask', () => {
-    const gold = /<path id="Rand_goud" d="([^"]+)" fill="none" stroke="#c9a24a" stroke-width="12" opacity="0.85"\/>/.exec(figmaSvg('ios'))
+    const gold = /<path id="Border_gold" d="([^"]+)" fill="none" stroke="#c9a24a" stroke-width="12" opacity="0.85"\/>/.exec(figmaSvg('ios'))
     expect(gold?.[1]).toBe(continuousRect(104, 104, 816, 816, 230.4 - 104))
   })
 
   it('keeps the iOS mask as a guide layer only on the iOS copy', () => {
-    expect(figmaSvg('ios')).toContain('id="iOS-masker_hulplijn_verbergen_bij_export"')
+    expect(figmaSvg('ios')).toContain('id="iOS_mask_guide_hide_on_export"')
     expect(figmaSvg('macos')).not.toContain('hulplijn')
   })
 

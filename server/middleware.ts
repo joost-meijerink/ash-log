@@ -182,13 +182,13 @@ async function readProgress(): Promise<{ progress: Progress; etag: string }> {
 }
 
 async function putProgress(req: IncomingMessage, body: unknown) {
-  if (!isRecord(body) || body.version !== 1) throw new HttpError(400, 'Ongeldige voortgang: verwacht een object met version 1')
+  if (!isRecord(body) || body.version !== 1) throw new HttpError(400, 'Invalid progress: expected an object with version 1')
   const progress = normalizeProgress(body)
   return withLock(PROGRESS_FILE, async () => {
     // Also refuses to overwrite a progress.json that is not valid JSON (the parse error names the file).
     const current = await readProgress()
     if (!ifMatchOk(req.headers['if-match'], current.etag)) {
-      throw new HttpError(409, 'Voortgang is elders gewijzigd', { progress: current.progress }, { ETag: `"${current.etag}"` })
+      throw new HttpError(409, 'Progress was changed elsewhere', { progress: current.progress }, { ETag: `"${current.etag}"` })
     }
     await writeJsonAtomic(PROGRESS_FILE, progress)
     return { progress, etag: etagOf(jsonText(progress)) }
@@ -196,14 +196,14 @@ async function putProgress(req: IncomingMessage, body: unknown) {
 }
 
 async function putOverrides(req: IncomingMessage, body: unknown) {
-  if (!isRecord(body)) throw new HttpError(400, 'Ongeldige overrides: verwacht een object')
+  if (!isRecord(body)) throw new HttpError(400, 'Invalid overrides: expected an object')
   const overrides = normalizeOverrides(body)
   return withLock(OVERRIDES_FILE, async () => {
     const current = await readOverridesFile()
     // Never replace a hand-edited file that has a typo: the user would lose every override in it.
-    if (current.error) throw new HttpError(409, 'overrides.json is ongeldig, herstel het bestand eerst', { detail: current.error })
+    if (current.error) throw new HttpError(409, 'overrides.json is invalid, fix the file first', { detail: current.error })
     if (!ifMatchOk(req.headers['if-match'], current.etag)) {
-      throw new HttpError(409, 'Overrides zijn elders gewijzigd', { overrides: current.overrides }, { ETag: `"${current.etag}"` })
+      throw new HttpError(409, 'Overrides were changed elsewhere', { overrides: current.overrides }, { ETag: `"${current.etag}"` })
     }
     await writeJsonAtomic(OVERRIDES_FILE, overrides)
     return { overrides, etag: etagOf(jsonText(overrides)) }
@@ -259,7 +259,7 @@ function startSync(only: SyncDomain[], full: boolean): boolean {
     buffer = ''
     const report = await readJson<DiffReport | null>(WIKI_FILES.report, null).catch(() => null)
     const fresh = report && status.startedAt && report.syncedAt >= status.startedAt.slice(0, 19)
-    status.report = fresh && report ? report : failedReport(only, error?.message ?? `Sync stopte met code ${code}`)
+    status.report = fresh && report ? report : failedReport(only, error?.message ?? `Sync stopped with code ${code}`)
     status.running = false
   }
 
@@ -268,7 +268,7 @@ function startSync(only: SyncDomain[], full: boolean): boolean {
     // windowsHide: no console window pops up when the server runs without one (the launcher).
     const child = spawn(command, args, { cwd: ROOT, env: process.env, windowsHide: true })
     syncChild = child
-    // One decoder per stream: a character such as the ë in 'categorieën' may arrive split over two chunks.
+    // One decoder per stream: a character such as an é may arrive split over two chunks.
     const reader = () => {
       const decoder = new StringDecoder('utf8')
       return (chunk: Buffer) => {
@@ -291,7 +291,7 @@ function startSync(only: SyncDomain[], full: boolean): boolean {
       void finish(code, spawnError)
     })
   } catch (err) {
-    const message = `Sync starten mislukt: ${(err as Error).message}`
+    const message = `Couldn't start the sync: ${(err as Error).message}`
     status.report = failedReport(only, message)
     status.running = false
     throw new HttpError(500, message)
@@ -335,7 +335,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse): Prom
         const body: { only?: unknown; full?: unknown } = isRecord(raw) ? raw : {}
         const only = Array.isArray(body.only) ? body.only.filter((d): d is SyncDomain => DOMAINS.includes(d)) : []
         if (!startSync(only, body.full === true)) {
-          send(res, 409, { error: 'Er loopt al een sync' })
+          send(res, 409, { error: 'A sync is already running' })
           return true
         }
         send(res, 202, status)
@@ -345,7 +345,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse): Prom
         send(res, 200, status)
         return true
     }
-    send(res, 404, { error: `Onbekend endpoint: ${route}` })
+    send(res, 404, { error: `Unknown endpoint: ${route}` })
     return true
   } catch (err) {
     sendError(res, err)
@@ -401,10 +401,10 @@ export async function handleDevServerApi(req: IncomingMessage, res: ServerRespon
       return true
     }
     if (req.method === 'POST') {
-      send(res, 409, { error: 'Kan alleen in de app: start het Logboek via het app-icoon' })
+      send(res, 409, { error: 'Only works in the app: start Ash Log from its app icon' })
       return true
     }
-    send(res, 404, { error: `Onbekend endpoint: ${req.method} ${pathname}` })
+    send(res, 404, { error: `Unknown endpoint: ${req.method} ${pathname}` })
     return true
   } catch (err) {
     sendError(res, err)

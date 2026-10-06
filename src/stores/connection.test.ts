@@ -234,7 +234,7 @@ describe('progress across a lost connection', () => {
         const body = JSON.parse(String(init.body)) as Progress
         puts.push({ ifMatch: headers['If-Match'], body })
         if (headers['If-Match'] && headers['If-Match'] !== etag()) {
-          return new Response(JSON.stringify({ error: 'Voortgang is elders gewijzigd', progress: disk.progress }), {
+          return new Response(JSON.stringify({ error: 'Progress was changed elsewhere', progress: disk.progress }), {
             status: 409,
             headers: { ETag: etag() },
           })

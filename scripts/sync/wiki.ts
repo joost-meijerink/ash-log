@@ -59,10 +59,10 @@ export class WikiClient {
   constructor(options: WikiClientOptions) {
     const problem = userAgentProblem(options.userAgent ?? '')
     if (problem === 'missing') {
-      throw new WikiError('WIKI_USER_AGENT mist contactgegevens (e-mail of URL). Zet hem in .env, zie .env.example.')
+      throw new WikiError('WIKI_USER_AGENT has no contact details (an e-mail address or URL). Set it in .env, see .env.example.')
     }
     if (problem === 'example') {
-      throw new WikiError('WIKI_USER_AGENT bevat nog het voorbeeldadres uit .env.example. Zet er je eigen e-mailadres of URL in .env in.')
+      throw new WikiError('WIKI_USER_AGENT still has the example address from .env.example. Put your own e-mail address or URL in .env.')
     }
     this.userAgent = options.userAgent
     this.delayMs = options.delayMs ?? 300
@@ -82,7 +82,7 @@ export class WikiClient {
     const body = await this.request(url.toString(), 'json')
     const data = JSON.parse(body.toString('utf8'))
     if (data.error) {
-      throw new WikiError(`Wiki-API-fout ${data.error.code}: ${data.error.info}`)
+      throw new WikiError(`Wiki API error ${data.error.code}: ${data.error.info}`)
     }
     return data as T
   }
@@ -258,10 +258,10 @@ export class WikiClient {
         if (err instanceof NotFoundError) throw err
         const message = (err as Error).message
         if (attempt >= this.maxRetries) {
-          throw new WikiError(`Wiki niet bereikbaar na ${attempts(attempt + 1)}: ${message}`, { cause: err })
+          throw new WikiError(`Can't reach the wiki after ${attempts(attempt + 1)}: ${message}`, { cause: err })
         }
         const backoff = 2000 * (attempt + 1)
-        this.log(`Netwerkfout, opnieuw over ${backoff} ms: ${message}`)
+        this.log(`Network error, retrying in ${backoff} ms: ${message}`)
         await sleep(backoff)
         continue
       }
@@ -282,16 +282,16 @@ export class WikiClient {
 
       if (lagged || badJson || res.status === 429 || res.status === 503 || (res.status >= 500 && res.status < 600)) {
         if (attempt >= this.maxRetries) {
-          if (badJson) throw new WikiError(`Geen geldige JSON van ${url} (na ${attempts(attempt + 1)})`)
-          throw new WikiError(`Opgegeven na ${attempts(attempt + 1)}: ${lagged ? 'maxlag' : `HTTP ${res.status}`} ${url}`)
+          if (badJson) throw new WikiError(`No valid JSON from ${url} (after ${attempts(attempt + 1)})`)
+          throw new WikiError(`Gave up after ${attempts(attempt + 1)}: ${lagged ? 'maxlag' : `HTTP ${res.status}`} ${url}`)
         }
         const backoff = retryAfter ?? 5000 * (attempt + 1)
-        const reason = lagged ? 'maxlag' : badJson ? 'geen geldige JSON' : `HTTP ${res.status}`
-        this.log(`${reason}, ${Math.round(backoff / 1000)} s wachten${retryAfter !== undefined ? ' (Retry-After)' : ''}`)
+        const reason = lagged ? 'maxlag' : badJson ? 'no valid JSON' : `HTTP ${res.status}`
+        this.log(`${reason}, waiting ${Math.round(backoff / 1000)} s${retryAfter !== undefined ? ' (Retry-After)' : ''}`)
         await sleep(backoff)
         continue
       }
-      if (!res.ok) throw new WikiError(`HTTP ${res.status} voor ${url}`)
+      if (!res.ok) throw new WikiError(`HTTP ${res.status} for ${url}`)
       return buf
     }
   }
@@ -299,7 +299,7 @@ export class WikiClient {
 
 export class NotFoundError extends WikiError {
   constructor(url: string) {
-    super(`404 (niet gevonden): ${url}`)
+    super(`404 (not found): ${url}`)
   }
 }
 
@@ -329,7 +329,7 @@ function parseRetryAfter(value: string | null): number | undefined {
 }
 
 function attempts(n: number): string {
-  return n === 1 ? '1 poging' : `${n} pogingen`
+  return n === 1 ? '1 attempt' : `${n} attempts`
 }
 
 function sleep(ms: number) {

@@ -147,10 +147,10 @@ describe('routing', () => {
   })
 
   it('tells app routes from server pages and files', () => {
-    for (const p of ['/', '/index.html', '/quests', "/quests/Black%20Knight's%20Fortress", '/kaart', '/verzamelingen']) {
+    for (const p of ['/', '/index.html', '/quests', "/quests/Black%20Knight's%20Fortress", '/map', '/collections', '/kaart', '/verzamelingen']) {
       expect(sw.isAppRoute(p), p).toBe(true)
     }
-    for (const p of ['/koppel', '/certificaat', '/certificaat/ash-log.mobileconfig', '/api/data', '/assets/x.js', '/manifest.webmanifest', '/sw.js']) {
+    for (const p of ['/pair', '/certificate', '/certificate/ash-log.mobileconfig', '/koppel', '/certificaat', '/certificaat/ash-log-ca.crt', '/api/data', '/assets/x.js', '/manifest.webmanifest', '/sw.js']) {
       expect(sw.isAppRoute(p), p).toBe(false)
     }
   })
@@ -178,7 +178,7 @@ describe('navigations', () => {
   })
 
   it('never keeps the pairing page, the certificate page or an error page', async () => {
-    for (const res of [page('<p>Koppel dit apparaat</p>', 200), page('Onbekende host', 403), page('kapot', 500)]) {
+    for (const res of [page('<p>Pair this device</p>', 200), page('Unknown host', 403), page('broken', 500)]) {
       network.mockResolvedValueOnce(res)
       const { response, settled } = navigate('/')
       await response
@@ -191,7 +191,7 @@ describe('navigations', () => {
     network.mockResolvedValue(app())
     await navigate('/').settled()
     network.mockRejectedValue(new TypeError('Load failed'))
-    const res = await navigate('/kaart?device=abc').response!
+    const res = await navigate('/map?device=abc').response!
     expect(res.status).toBe(200)
     expect(await res.text()).toBe(appHtml)
     expect(res.headers.get('X-Ash-Log-Cached-At')).toBeNull()
@@ -211,7 +211,7 @@ describe('navigations', () => {
     expect(await (await response!).text()).toBe(appHtml)
   })
 
-  it('shows its own Dutch page when nothing is kept yet', async () => {
+  it('shows its own page when nothing is kept yet', async () => {
     const res = await navigate('/quests').response!
     expect(res.status).toBe(503)
     expect(res.headers.get('Content-Type')).toContain('text/html')
@@ -223,11 +223,11 @@ describe('navigations', () => {
     expect(html).toContain('#15120e')
   })
 
-  it('never opens the kept app for a server page such as /koppel', async () => {
+  it('never opens the kept app for a server page such as /pair', async () => {
     network.mockResolvedValue(app())
     await navigate('/').settled()
     network.mockRejectedValue(new TypeError('Load failed'))
-    const res = await navigate('/koppel?code=123456').response!
+    const res = await navigate('/pair?code=123456').response!
     expect(res.status).toBe(503)
     expect(await res.text()).toContain(OFFLINE_TITLE)
   })
@@ -239,7 +239,7 @@ describe('navigations', () => {
     await dispatch({ url: at('/api/data') }).settled()
     expect(caches.entry(SHELL, at('/'))).toBeDefined()
 
-    network.mockResolvedValueOnce(page('<p>Koppel dit apparaat</p>', 401))
+    network.mockResolvedValueOnce(page('<p>Pair this device</p>', 401))
     const { response, settled } = navigate('/')
     expect((await response!).status).toBe(401)
     await settled()
@@ -341,7 +341,7 @@ describe('data', () => {
     }
     expect(await caches.entry(DATA, at('/api/data'))!.json()).toEqual({ ok: 1 })
 
-    network.mockResolvedValueOnce(json({ error: 'Koppel dit apparaat eerst' }, 401))
+    network.mockResolvedValueOnce(json({ error: 'Pair this device first' }, 401))
     const { response, settled } = data()
     expect((await response!).status).toBe(401)
     await settled()
@@ -351,7 +351,7 @@ describe('data', () => {
   it('never answers a 401 with an old copy', async () => {
     network.mockResolvedValueOnce(json({ ok: 1 }))
     await data().settled()
-    network.mockResolvedValueOnce(json({ error: 'Koppel dit apparaat eerst' }, 401))
+    network.mockResolvedValueOnce(json({ error: 'Pair this device first' }, 401))
     const res = await data().response!
     expect(res.status).toBe(401)
     expect(res.headers.get(OFFLINE_HEADER)).toBeNull()

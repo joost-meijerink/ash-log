@@ -4,12 +4,12 @@ import { LocationText } from '@/components/common'
 import { viaText, type RewardNote } from '@/lib/collections-rewards'
 
 /**
- * How you get a reward, as running text: an optional prefix ('Bij 6 van de 7:'), the via
- * labels in the interface font (Dutch) and then the wiki's own source in italics (English).
+ * How you get a reward, as running text: an optional prefix ('For 6 of the 7:'), the via
+ * labels in the interface font and then the wiki's own source in italics.
  */
 const props = defineProps<{
   note: RewardNote
-  /** Interface text in front, e.g. 'Bij 6 van de 7:'. */
+  /** Interface text in front, e.g. 'For 6 of the 7:'. */
   prefix?: string
 }>()
 

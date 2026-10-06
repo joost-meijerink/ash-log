@@ -80,7 +80,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     )
 
   beforeEach(async () => {
-    project = mkdtempSync(join(tmpdir(), 'logboek-launcher-'))
+    project = mkdtempSync(join(tmpdir(), 'ash-log-launcher-'))
     mkdirSync(join(project, 'server'))
     copyFileSync(join(FIXTURES, 'server.mjs'), join(project, 'server', 'app.mjs'))
     mkdirSync(join(project, 'src'))
@@ -121,7 +121,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     const again = await run('start.sh')
     expect(again.code).toBe(0)
     expect(serverPid()).toBe(pid)
-    expect(log().match(/Server starten/g)).toHaveLength(1)
+    expect(log().match(/Starting the server/g)).toHaveLength(1)
 
     expect((await run('status.sh')).code).toBe(0)
 
@@ -134,13 +134,13 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
 
     const status = await run('status.sh')
     expect(status.code).toBe(1)
-    expect(status.stderr).toContain('draait niet meer')
+    expect(status.stderr).toContain('not running anymore')
   })
 
   it('reports a server that exits right away, with its last message', { timeout: 20_000 }, async () => {
     const result = await run('start.sh', { FIXTURE_MODE: 'crash' })
     expect(result.code).toBe(1)
-    expect(result.stderr).toContain('De server is meteen gestopt: Poort 1234 is al in gebruik (fixture).')
+    expect(result.stderr).toContain('The server stopped right away: Port 1234 is already in use (fixture).')
     expect(result.stderr).toContain('.local/server.log')
     expect(existsSync(pidFile())).toBe(false)
   })
@@ -151,7 +151,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     try {
       const result = await run('start.sh')
       expect(result.code).toBe(1)
-      expect(result.stderr).toContain(`Poort ${port} is al bezet door node (pid ${process.pid})`)
+      expect(result.stderr).toContain(`Port ${port} is already in use by node (pid ${process.pid})`)
       expect(existsSync(pidFile())).toBe(false)
     } finally {
       await new Promise((r) => other.close(r))
@@ -169,7 +169,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     try {
       const start = await run('start.sh')
       expect(start.code).toBe(1)
-      expect(start.stderr).toContain(`Poort ${port} is al bezet door node (pid ${process.pid})`)
+      expect(start.stderr).toContain(`Port ${port} is already in use by node (pid ${process.pid})`)
       expect((await run('status.sh')).code).toBe(1)
       expect(await run('stop.sh')).toMatchObject({ code: 0, stderr: '' })
       expect(stopRequests).toBe(0)
@@ -210,7 +210,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     rmSync(join(project, 'dist'), { recursive: true })
     const result = await run('start.sh', { FIXTURE_BUILD_FAIL: '1' })
     expect(result.code).toBe(1)
-    expect(result.stderr).toContain('Bouwen van de app is mislukt')
+    expect(result.stderr).toContain('Building the app failed')
     expect(log()).toContain('build failed (fixture)')
     expect(existsSync(pidFile())).toBe(false)
     expect(await health()).toBe(0)
@@ -221,7 +221,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     async () => {
       const result = await run('start.sh', { ASHENFALL_NODE: '/nowhere/bin/node' })
       expect(result.code).toBe(1)
-      expect(result.stderr).toContain('Node niet gevonden (verwacht op /nowhere/bin/node)')
+      expect(result.stderr).toContain('Node not found (expected at /nowhere/bin/node)')
       expect(result.stderr).toContain('npm run app:install')
     },
   )
@@ -259,7 +259,7 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     })
 
     it('comes from APP_PORT in .env', async () => {
-      writeFileSync(join(project, '.env'), 'WIKI_USER_AGENT="x (y@z)"\nAPP_PORT="5231" # vaste poort\n')
+      writeFileSync(join(project, '.env'), 'WIKI_USER_AGENT="x (y@z)"\nAPP_PORT="5231" # fixed port\n')
       expect(await port()).toMatchObject({ code: 0, stdout: '5231\n' })
     })
 
@@ -273,10 +273,10 @@ describe.skipIf(process.platform !== 'darwin')('desktop launcher scripts', () =>
     })
 
     it('must be a number', async () => {
-      writeFileSync(join(project, '.env'), 'APP_PORT=vijf\n')
+      writeFileSync(join(project, '.env'), 'APP_PORT=five\n')
       const result = await port()
       expect(result.code).toBe(1)
-      expect(result.stderr).toContain('APP_PORT in .env is geen poortnummer: vijf')
+      expect(result.stderr).toContain("APP_PORT in .env isn't a port number: five")
     })
   })
 

@@ -33,9 +33,9 @@ const HTTPS = 'https://MacBook-Pro-van-Joost.local:5199/'
 describe('paths', () => {
   it('are the page, the profile and the CA certificate only', () => {
     for (const path of [CERTIFICATE_PATH, PROFILE_PATH, CA_CERT_PATH]) expect(isCertificatePath(path), path).toBe(true)
-    for (const path of ['/certificaat/', '/certificaat/ca.key', '/certificaten', '/']) expect(isCertificatePath(path), path).toBe(false)
-    expect(PROFILE_PATH).toBe('/certificaat/ash-log.mobileconfig')
-    expect(CA_CERT_PATH).toBe('/certificaat/ash-log-ca.crt')
+    for (const path of ['/certificate/', '/certificate/ca.key', '/certificaten', '/']) expect(isCertificatePath(path), path).toBe(false)
+    expect(PROFILE_PATH).toBe('/certificate/ash-log.mobileconfig')
+    expect(CA_CERT_PATH).toBe('/certificate/ash-log-ca.crt')
   })
 })
 
@@ -84,7 +84,7 @@ describe.skipIf(!existsSync(PLUTIL))('configuration profile', () => {
 
   it('has the display name and stable identifiers', async () => {
     expect(await extract('PayloadDisplayName')).toBe(PROFILE_DISPLAY_NAME)
-    expect(PROFILE_DISPLAY_NAME).toBe('Ash Log certificaat')
+    expect(PROFILE_DISPLAY_NAME).toBe('Ash Log certificate')
     expect(await extract('PayloadIdentifier')).toBe('nl.ashenfall.ashlog.ca')
     expect(await extract('PayloadContent.0.PayloadIdentifier')).toBe(`${PROFILE_IDENTIFIER}.root`)
     expect(await extract('PayloadUUID')).toBe(stableUuid(material.caFingerprint, 'profile'))
@@ -95,10 +95,10 @@ describe.skipIf(!existsSync(PLUTIL))('configuration profile', () => {
     )
   })
 
-  it('says in Dutch what it does, without em-dashes', async () => {
+  it('says in English what it does, without em-dashes', async () => {
     const description = await extract('PayloadDescription')
-    expect(description).toContain('Ash Log op je Mac')
-    expect(description).toContain('eigen netwerk')
+    expect(description).toContain('Ash Log on your Mac')
+    expect(description).toContain('your own network')
     expect(description).not.toMatch(/\u2014/)
   })
 })
@@ -106,8 +106,8 @@ describe.skipIf(!existsSync(PLUTIL))('configuration profile', () => {
 describe('the profile text', () => {
   it('names the computer it runs on', () => {
     const ca = { der: Buffer.from([0x30, 0x00]), fingerprint: FINGERPRINT }
-    expect(renderMobileconfig(ca, 'pc')).toContain('met Ash Log op je pc.')
-    expect(renderMobileconfig(ca)).toContain('met Ash Log op je computer.')
+    expect(renderMobileconfig(ca, 'PC')).toContain('to Ash Log on your PC.')
+    expect(renderMobileconfig(ca)).toContain('to Ash Log on your computer.')
   })
 })
 
@@ -120,20 +120,22 @@ const between = (html: string, from: string, to: string) => {
 describe('pages', () => {
   it('certificate page on an iPhone: the profile button, the three iOS steps and the https link, no scripts', () => {
     const html = renderCertificatePage({ httpsUrl: HTTPS, fingerprint: FINGERPRINT, phone: 'iphone', computer: 'Mac' })
-    expect(html).toContain('<html lang="nl">')
+    expect(html).toContain('<html lang="en">')
     const first = between(html, '<section data-phone="iphone">', '</section>')
-    expect(first).toContain(`<a class="button" href="${PROFILE_PATH}">Profiel downloaden</a>`)
+    expect(first).toContain(`<a class="button" href="${PROFILE_PATH}">Download Profile</a>`)
     const steps = between(first, '<ol class="steps">', '</ol>')
     expect(steps.match(/<li>/g)).toHaveLength(3)
-    expect(steps).toContain('Profiel gedownload')
-    expect(steps).toContain('Instellingen voor certificaatvertrouwen')
-    expect(steps).toContain('<strong>Ash Log</strong> aan')
-    expect(first).toContain('je Mac heeft het certificaat zelf gemaakt')
-    expect(html).toContain('van je Mac vertrouwen')
+    expect(steps).toContain('<strong>Allow</strong>')
+    expect(steps).toContain('<strong>Profile Downloaded</strong>')
+    expect(steps).toContain('Settings &gt; General &gt; About &gt; Certificate Trust Settings')
+    expect(steps).toContain('turn on <strong>Ash Log</strong>')
+    expect(steps).toContain('Then open the secure link:')
+    expect(first).toContain('your Mac made the certificate itself')
+    expect(html).toContain('trust the certificate of your Mac once')
     expect(html).toContain(`href="${HTTPS}"`)
     // Android one tap away.
     const other = between(html, '<details data-phone="android">', '</details>')
-    expect(other).toContain('<summary>Heb je een Android-telefoon?</summary>')
+    expect(other).toContain('<summary>Got an Android phone?</summary>')
     expect(other).toContain(`href="${CA_CERT_PATH}"`)
     expect(html.indexOf('data-phone="iphone"')).toBeLessThan(html.indexOf('data-phone="android"'))
     expect(html).toContain(FINGERPRINT)
@@ -144,25 +146,25 @@ describe('pages', () => {
   })
 
   it('certificate page on an Android phone: the download, the Settings route and the iPhone steps folded', () => {
-    const html = renderCertificatePage({ httpsUrl: HTTPS, fingerprint: FINGERPRINT, phone: 'android', computer: 'pc' })
+    const html = renderCertificatePage({ httpsUrl: HTTPS, fingerprint: FINGERPRINT, phone: 'android', computer: 'PC' })
     const first = between(html, '<section data-phone="android">', '</section>')
-    expect(first).toContain(`<a class="button" href="${CA_CERT_PATH}" download="${CA_CERT_FILE_NAME}">Certificaat downloaden</a>`)
+    expect(first).toContain(`<a class="button" href="${CA_CERT_PATH}" download="${CA_CERT_FILE_NAME}">Download certificate</a>`)
     const steps = between(first, '<ol class="steps">', '</ol>')
     expect(steps.match(/<li>/g)).toHaveLength(4)
     expect(steps).toContain(
-      'Open Instellingen &gt; Beveiliging en privacy &gt; Meer beveiligingsinstellingen &gt; Versleuteling en inloggegevens &gt; Certificaat installeren &gt; CA-certificaat.',
+      'Open Settings &gt; Security &amp; privacy &gt; More security settings &gt; Encryption &amp; credentials &gt; Install a certificate &gt; CA certificate.',
     )
-    expect(steps).toContain('<strong>Toch installeren</strong>')
+    expect(steps).toContain('<strong>Install anyway</strong>')
     expect(steps).toContain(`<strong>${CA_CERT_FILE_NAME}</strong>`)
-    expect(steps).toContain('Open daarna in Chrome de beveiligde link:')
-    expect(first).toContain('Andere browsers dan Chrome vertrouwen het certificaat soms niet.')
-    expect(first).toContain('Zoek in Instellingen op <strong>CA-certificaat</strong>')
+    expect(steps).toContain('Then open the secure link in Chrome:')
+    expect(first).toContain("Browsers other than Chrome sometimes don't trust the certificate.")
+    expect(first).toContain('Search Settings for <strong>CA certificate</strong>')
     expect(first).not.toContain(PROFILE_PATH)
     const other = between(html, '<details data-phone="iphone">', '</details>')
-    expect(other).toContain('<summary>Heb je een iPhone?</summary>')
+    expect(other).toContain('<summary>Got an iPhone?</summary>')
     expect(other).toContain(`href="${PROFILE_PATH}"`)
-    expect(other).toContain('de beveiligde link hierboven')
-    expect(html).toContain('van je pc vertrouwen')
+    expect(other).toContain('Then open the secure link above.')
+    expect(html).toContain('trust the certificate of your PC once')
     expect(html).not.toMatch(/\bMac\b/)
     expect(html).not.toMatch(/\u2014/)
   })
@@ -171,28 +173,28 @@ describe('pages', () => {
     const html = renderCertificatePage({ httpsUrl: HTTPS, fingerprint: FINGERPRINT, phone: null })
     expect(html).toContain('<section data-phone="iphone">')
     expect(html).toContain('<details data-phone="android">')
-    expect(html).toContain('certificaat van je computer vertrouwen')
+    expect(html).toContain('trust the certificate of your computer once')
   })
 
   it('certificate page without a certificate says so', () => {
-    const html = renderCertificatePage({ httpsUrl: HTTPS, computer: 'pc' })
-    expect(html).toContain('Het certificaat is er nog niet. Kijk op je pc of Ash Log goed draait')
+    const html = renderCertificatePage({ httpsUrl: HTTPS, computer: 'PC' })
+    expect(html).toContain("The certificate isn't there yet. Check on your PC that Ash Log is running")
     expect(html).not.toContain(PROFILE_PATH)
     expect(html).not.toContain(CA_CERT_PATH)
   })
 
   it('serves the CA certificate as a download Android keeps in Downloads', () => {
-    expect(CA_CERT_PATH).toBe(`/certificaat/${CA_CERT_FILE_NAME}`)
+    expect(CA_CERT_PATH).toBe(`/certificate/${CA_CERT_FILE_NAME}`)
     // Never application/x-x509-ca-cert: Chrome on Android would hand that to the installer, which refuses it.
     expect(CA_CERT_CONTENT_TYPE).toBe('application/octet-stream')
   })
 
   it('secure-connection page: links to the certificate and the https address, escaped', () => {
-    const html = renderSecureConnectionPage({ httpsUrl: `${HTTPS}kaart?punt=a&b="x"`, computer: 'pc' })
-    expect(html).toContain('href="/certificaat"')
-    expect(html).toContain(`href="${HTTPS}kaart?punt=a&amp;b=&quot;x&quot;"`)
-    expect(html).toContain('beginscherm')
-    expect(html).toContain('QR-code op je pc')
+    const html = renderSecureConnectionPage({ httpsUrl: `${HTTPS}map?focus=a&b="x"`, computer: 'PC' })
+    expect(html).toContain('href="/certificate"')
+    expect(html).toContain(`href="${HTTPS}map?focus=a&amp;b=&quot;x&quot;"`)
+    expect(html).toContain('home screen')
+    expect(html).toContain('QR code on your PC')
     expect(html).not.toContain('<script')
     expect(html).not.toMatch(/\u2014/)
   })

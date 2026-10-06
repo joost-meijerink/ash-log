@@ -32,7 +32,7 @@ export interface ChestRow {
 export interface ChestMatrix {
   /** Power levels that occur in the chest points, ascending (the columns). */
   powers: number[]
-  /** True when some chest point has no power level ('Onbekend' column). */
+  /** True when some chest point has no power level ('Unknown' column). */
   hasUnknown: boolean
   /** One row per region in play order; regions without any chest point are left out. */
   rows: ChestRow[]
@@ -94,8 +94,8 @@ export interface MapFilter {
   strictPower?: boolean
 }
 
-/** Vue Router location for /kaart?c=...&r=...&p=...&ps=1 (empty lists are left out). */
-export function mapFilterLocation(filter: MapFilter): { path: '/kaart'; query: Record<string, string> } {
+/** Vue Router location for /map?c=...&r=...&p=...&ps=1 (empty lists are left out). */
+export function mapFilterLocation(filter: MapFilter): { path: '/map'; query: Record<string, string> } {
   const query: Record<string, string> = {}
   if (filter.categories.length) query.c = filter.categories.join(',')
   if (filter.regions?.length) query.r = filter.regions.join(',')
@@ -103,10 +103,10 @@ export function mapFilterLocation(filter: MapFilter): { path: '/kaart'; query: R
     query.p = filter.powers.join(',')
     if (filter.strictPower) query.ps = '1'
   }
-  return { path: '/kaart', query }
+  return { path: '/map', query }
 }
 
-/** The same location as a URL string, e.g. '/kaart?c=treasure-chest&r=Dowdun%20Reach&p=2&ps=1'. */
+/** The same location as a URL string, e.g. '/map?c=treasure-chest&r=Dowdun%20Reach&p=2&ps=1'. */
 export function mapFilterHref(filter: MapFilter): string {
   const { path, query } = mapFilterLocation(filter)
   const parts = Object.entries(query).map(

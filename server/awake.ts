@@ -31,7 +31,7 @@ export function windowsPowerShell(env: NodeJS.ProcessEnv = process.env): string 
 
 /** The PowerShell script: keep the system awake from this thread, then wait for `pid` to end. */
 export function windowsAwakeScript(pid: number): string {
-  if (!Number.isInteger(pid) || pid <= 0) throw new Error(`Ongeldig proces-id: ${pid}`)
+  if (!Number.isInteger(pid) || pid <= 0) throw new Error(`Invalid process id: ${pid}`)
   return [
     "$ErrorActionPreference = 'Stop'",
     `Add-Type -Namespace AshLog -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'`,
@@ -67,7 +67,7 @@ export function awakeCommand(platform: NodeJS.Platform, pid: number, env: NodeJS
         args: [
           '--what=idle:sleep',
           '--who=Ash Log',
-          '--why=Live op wifi: je telefoon gebruikt het Logboek',
+          '--why=Live on Wi-Fi: your phone uses Ash Log',
           '--mode=block',
           'sh',
           '-c',
@@ -118,19 +118,19 @@ export class StayAwake {
     try {
       child = this.spawn(cmd.command, cmd.args, { stdio: 'ignore', windowsHide: true })
     } catch (err) {
-      this.log(`Wakker houden lukt niet: ${(err as Error).message}`)
+      this.log(`Couldn't keep the computer awake: ${(err as Error).message}`)
       return
     }
     if (!child) return
     child.on('error', (err) => {
-      this.log(`Wakker houden lukt niet: ${err.message}`)
+      this.log(`Couldn't keep the computer awake: ${err.message}`)
       if (this.child === child) this.child = null
     })
     child.on('exit', (code) => {
       if (this.child !== child) return
       this.child = null
       // Not stopped by us: the helper could not do its work (no rights, blocked PowerShell).
-      if (code !== null && code !== 0) this.log(`Wakker houden lukt niet: ${cmd.command} stopte met code ${code}. De computer kan nu in slaap vallen.`)
+      if (code !== null && code !== 0) this.log(`Couldn't keep the computer awake: ${cmd.command} stopped with code ${code}. The computer may go to sleep now.`)
     })
     this.child = child
   }

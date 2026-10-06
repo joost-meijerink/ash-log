@@ -21,7 +21,7 @@ import MapSearchResults from './MapSearchResults.vue'
 const props = defineProps<{
   /** Narrow screens: the sidebar is a drawer, the header button closes it. */
   drawer: boolean
-  /** False while the column is hidden (wide screens, 'Filters verbergen'). */
+  /** False while the column is hidden (wide screens, 'Hide filters'). */
   shown: boolean
 }>()
 
@@ -86,13 +86,13 @@ watch(
 )
 
 const powerHint = computed(() => {
-  if (!state.filters.powers.length) return 'Kies je levels: punten met een ander level verdwijnen. Punten zonder level blijven staan.'
-  if (state.filters.strictPower) return 'Alleen punten met een gekozen level blijven staan.'
-  return 'Punten met een ander level verdwijnen, punten zonder level blijven staan.'
+  if (!state.filters.powers.length) return 'Pick your levels: points with another level disappear. Points without a level stay.'
+  if (state.filters.strictPower) return 'Only points with a picked level stay.'
+  return 'Points with another level disappear, points without a level stay.'
 })
 const countText = computed(() => {
   const n = visibleCount.value
-  return `${n.toLocaleString('nl-NL')} ${n === 1 ? 'punt' : 'punten'}`
+  return `${n.toLocaleString('en-GB')} ${n === 1 ? 'point' : 'points'}`
 })
 </script>
 
@@ -101,14 +101,14 @@ const countText = computed(() => {
     <!-- Header and search stay put, the rest scrolls -->
     <div class="shrink-0 border-b border-line-dark px-3 pt-2.5 pb-3">
       <div class="flex min-h-11 items-center gap-2">
-        <h1 class="font-display text-base font-semibold tracking-[0.12em] text-text-light uppercase">Kaart</h1>
+        <h1 class="font-display text-base font-semibold tracking-[0.12em] text-text-light uppercase">Map</h1>
         <p class="truncate text-sm text-muted-light tabular-nums" aria-live="polite">{{ countText }}</p>
         <div class="ml-auto flex items-center gap-0.5">
           <Button v-if="active" variant="ghost" size="sm" class="text-muted-light" @click="state.clearFilters()">
-            Wis filters
+            Clear filters
           </Button>
           <IconButton
-            :label="props.drawer ? 'Filters sluiten' : 'Filters verbergen'"
+            :label="props.drawer ? 'Close filters' : 'Hide filters'"
             size="icon-sm"
             :side="props.drawer ? 'bottom' : 'right'"
             @click="emit('close')"
@@ -122,7 +122,7 @@ const countText = computed(() => {
         ref="searchInput"
         class="mt-1.5"
         :model-value="state.filters.search"
-        placeholder="Zoek een plek of categorie"
+        placeholder="Search a spot or category"
         @update:model-value="state.setSearch"
       />
       <!-- Outcome of moving a category to another group -->
@@ -140,19 +140,19 @@ const countText = computed(() => {
         >
           <p class="min-w-0 flex-1 py-1">
             <template v-if="groupOverride.message.value.kind === 'error'">
-              Groep van <span lang="en">{{ groupOverride.message.value.label }}</span> opslaan lukt niet:
+              Couldn't save the group for <span lang="en">{{ groupOverride.message.value.label }}</span>:
               {{ groupOverride.message.value.text }}
             </template>
             <template v-else-if="groupOverride.message.value.manual">
-              <span lang="en">{{ groupOverride.message.value.label }}</span> staat nu onder
+              <span lang="en">{{ groupOverride.message.value.label }}</span> is now under
               {{ groupOverride.message.value.group }}.
             </template>
             <template v-else>
-              <span lang="en">{{ groupOverride.message.value.label }}</span> volgt weer de sync:
+              <span lang="en">{{ groupOverride.message.value.label }}</span> follows the sync again:
               {{ groupOverride.message.value.group }}.
             </template>
           </p>
-          <IconButton label="Melding sluiten" size="icon-sm" class="-my-1 -mr-1.5 shrink-0" @click="groupOverride.dismiss()">
+          <IconButton label="Dismiss message" size="icon-sm" class="-my-1 -mr-1.5 shrink-0" @click="groupOverride.dismiss()">
             <X />
           </IconButton>
         </div>
@@ -169,28 +169,28 @@ const countText = computed(() => {
         <EmptyState
           v-if="results.total === 0 && groups.length === 0"
           compact
-          title="Niets gevonden"
-          :text="`Geen plek of categorie met '${state.filters.search.trim()}'. Probeer een ander woord.`"
+          title="Nothing found"
+          :text="`No spot or category matches '${state.filters.search.trim()}'. Try another word.`"
         />
       </template>
 
       <template v-else>
         <!-- View switches -->
         <section aria-labelledby="map-view-heading" class="px-3 pt-3">
-          <SectionHeading id="map-view-heading" as="h2" title="Weergave" />
+          <SectionHeading id="map-view-heading" as="h2" title="View" />
           <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 hover:bg-line-dark/45">
             <MapPinned aria-hidden="true" class="size-[18px] shrink-0 text-gold" :stroke-width="1.75" />
             <span class="flex min-w-0 flex-1 flex-col leading-tight">
-              <span>Queststarts</span>
-              <span class="text-xs text-muted-light">{{ model.questsWithStart.value }} quests met een startpunt</span>
+              <span>Quest starts</span>
+              <span class="text-xs text-muted-light">{{ model.questsWithStart.value }} quests with a start point</span>
             </span>
             <Switch :model-value="state.filters.questStarts" @update:model-value="(v: boolean) => state.setQuestStarts(v)" />
           </label>
           <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 hover:bg-line-dark/45">
             <EyeOff aria-hidden="true" class="size-[18px] shrink-0 text-muted-light" :stroke-width="1.75" />
             <span class="flex min-w-0 flex-1 flex-col leading-tight">
-              <span>Verberg wat ik al gevonden heb</span>
-              <span class="text-xs text-muted-light">Alleen lore en unieke unlocks, chests komen terug</span>
+              <span>Hide what I've found</span>
+              <span class="text-xs text-muted-light">Only lore and unique unlocks, chests respawn</span>
             </span>
             <Switch :model-value="state.filters.hideFound" @update:model-value="(v: boolean) => state.setHideFound(v)" />
           </label>
@@ -216,7 +216,7 @@ const countText = computed(() => {
             :pressed="state.filters.strictPower"
             @update:pressed="(v: boolean) => state.setStrictPower(v)"
           >
-            Alleen met power level
+            Only with a power level
             <template v-if="state.filters.strictPower" #icon><X aria-hidden="true" class="order-last" /></template>
           </ToggleChip>
           <p class="mt-2 px-0.5 text-sm leading-snug text-muted-light">{{ powerHint }}</p>
@@ -224,8 +224,8 @@ const countText = computed(() => {
 
         <!-- Region -->
         <section v-if="model.regions.value.length" aria-labelledby="map-region-heading" class="px-3 pt-3">
-          <SectionHeading id="map-region-heading" as="h2" title="Regio" />
-          <div class="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Regio">
+          <SectionHeading id="map-region-heading" as="h2" title="Region" />
+          <div class="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Region">
             <ToggleChip
               v-for="region in model.regions.value"
               :key="region"
@@ -236,14 +236,14 @@ const countText = computed(() => {
             </ToggleChip>
           </div>
           <p class="mt-2 px-0.5 text-sm leading-snug text-muted-light">
-            Met een regio gekozen zie je alleen punten in die regio's, ook als de regio geschat is.
+            With a region picked, you only see points in those regions, even when the region is estimated.
           </p>
         </section>
       </template>
 
       <!-- Category groups -->
       <section v-if="groups.length" aria-labelledby="map-groups-heading" class="px-3 pt-3 pb-4">
-        <SectionHeading id="map-groups-heading" as="h2" title="Categorieën" />
+        <SectionHeading id="map-groups-heading" as="h2" title="Categories" />
         <div class="mt-1">
           <MapFilterGroup v-for="g in groups" :key="g.group" :group="g" />
         </div>

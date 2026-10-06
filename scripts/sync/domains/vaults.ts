@@ -31,7 +31,7 @@ export async function fetchVaultSources(ctx: SyncContext): Promise<VaultSources>
   const navbox = pages.get(VAULT_NAVBOX)
   if (!page || !navbox) {
     const gone = [VAULT_PAGE, VAULT_NAVBOX].filter((title) => !pages.has(title))
-    throw new Error(`Vaults: pagina ontbreekt op de wiki: ${gone.join(', ')}. Zonder deze pagina's valt er niets te lezen.`)
+    throw new Error(`Vaults: page missing from the wiki: ${gone.join(', ')}. Without these pages there's nothing to read.`)
   }
   return { page, navbox }
 }
@@ -77,7 +77,7 @@ export function parseVaults(src: VaultSources, map: MapData, warn: Warn): Vault[
   const progression = tables.map((rows) => readColumns(rows, PROGRESSION_COLUMNS)).find((t) => t !== undefined)
   if (!progression) {
     // Without this table there is no vault list at all; stop rather than write an empty file.
-    throw new Error(`Vaults: tabel 'Standard Progression Order' (Order, Vault, Power level, Area) niet gevonden op ${pageTitle}`)
+    throw new Error(`Vaults: table 'Standard Progression Order' (Order, Vault, Power level, Area) not found on ${pageTitle}`)
   }
 
   const rows = readProgression(progression, (m) => warn(m, pageTitle))
@@ -91,7 +91,7 @@ export function parseVaults(src: VaultSources, map: MapData, warn: Warn): Vault[
     if (row.name) {
       const key = nameKey(row.name)
       if (used.has(key)) {
-        warn(`Vault ${row.name} staat twee keer in de volgordetabel, tweede rij overgeslagen`, pageTitle)
+        warn(`Vault ${row.name} is in the order table twice, second row skipped`, pageTitle)
         continue
       }
       used.add(key)
@@ -106,17 +106,17 @@ export function parseVaults(src: VaultSources, map: MapData, warn: Warn): Vault[
     const group = groups.find((g) => sameName(g.title, row.area) || sameName(g.title, areaName))
     const entry = group?.entries.find((e) => !tableKeys.has(nameKey(e.name)) && !used.has(nameKey(e.name)))
     if (!group || !entry) {
-      warn(`Vault zonder naam (TBA, volgorde ${row.order}, ${row.area || 'onbekend gebied'}) niet gevonden in de navbox, overgeslagen`, VAULT_NAVBOX)
+      warn(`Vault without a name (TBA, order ${row.order}, ${row.area || 'unknown area'}) not found in the navbox, skipped`, VAULT_NAVBOX)
       continue
     }
     used.add(nameKey(entry.name))
     vaults.push(makeVault(entry.name, row, group.title, entry.linked ? entry.name : undefined))
   }
 
-  if (noRegion.length) warn(`Geen regio in de navbox voor: ${noRegion.join(', ')}`, VAULT_NAVBOX)
+  if (noRegion.length) warn(`No region in the navbox for: ${noRegion.join(', ')}`, VAULT_NAVBOX)
   const leftover = groups.flatMap((g) => g.entries).filter((e) => !used.has(nameKey(e.name)))
   if (leftover.length) {
-    warn(`In de navbox maar niet in de volgordetabel, overgeslagen: ${leftover.map((e) => e.name).join(', ')}`, VAULT_NAVBOX)
+    warn(`In the navbox but not in the order table, skipped: ${leftover.map((e) => e.name).join(', ')}`, VAULT_NAVBOX)
   }
 
   addRecipes(tables, vaults, pageTitle, warn)
@@ -157,15 +157,15 @@ function makeVault(name: string, row: ProgressionRow, region: string | undefined
 function readProgression(table: Record<keyof typeof PROGRESSION_COLUMNS, string>[], warn: (m: string) => void): ProgressionRow[] {
   const out: ProgressionRow[] = []
   for (const cells of table) {
-    const label = stripMarkup(cells.vault) || `rij ${out.length + 1}`
+    const label = stripMarkup(cells.vault) || `row ${out.length + 1}`
     const order = Number.parseInt(stripMarkup(cells.order), 10)
     const power = Number.parseInt(stripMarkup(cells.power), 10)
     if (!Number.isFinite(order) || !Number.isFinite(power)) {
-      warn(`Vault ${label}: volgorde of power level is geen getal, rij overgeslagen`)
+      warn(`Vault ${label}: order or power level isn't a number, row skipped`)
       continue
     }
     const area = stripMarkup(cells.area)
-    if (!area) warn(`Vault ${label}: geen gebied in de volgordetabel`)
+    if (!area) warn(`Vault ${label}: no area in the order table`)
 
     const link = links(cells.vault)[0]
     const plain = stripMarkup(cells.vault)
@@ -184,7 +184,7 @@ function readProgression(table: Record<keyof typeof PROGRESSION_COLUMNS, string>
 function vaultGroups(navbox: RawPage, rows: ProgressionRow[], warn: Warn): NavGroup[] {
   const navboxes = findTemplates(navbox.content, 'Navbox', { nested: true })
   if (!navboxes.length) {
-    warn('Navbox niet herkend (geen {{Navbox}}), vaults krijgen geen regio', navbox.title)
+    warn('Navbox not recognised (no {{Navbox}}), vaults get no region', navbox.title)
     return []
   }
 
@@ -214,7 +214,7 @@ function vaultGroups(navbox: RawPage, rows: ProgressionRow[], warn: Warn): NavGr
 function addRecipes(tables: ReturnType<typeof parseTables>, vaults: Vault[], pageTitle: string, warn: Warn): void {
   const table = tables.map((rows) => readColumns(rows, RECIPE_COLUMNS, RECIPE_OPTIONAL)).find((t) => t !== undefined)
   if (!table) {
-    warn(`Tabel 'Recipes' (Vault, Recipe) niet gevonden, vaults zonder recepten`, pageTitle)
+    warn(`Table 'Recipes' (Vault, Recipe) not found, vaults without recipes`, pageTitle)
     return
   }
 
@@ -228,18 +228,18 @@ function addRecipes(tables: ReturnType<typeof parseTables>, vaults: Vault[], pag
       continue
     }
     if (done.has(vault.id)) {
-      warn(`Vault ${vault.name} staat twee keer in de receptentabel, tweede rij overgeslagen`, pageTitle)
+      warn(`Vault ${vault.name} is in the recipe table twice, second row skipped`, pageTitle)
       continue
     }
     done.add(vault.id)
 
     const recipes = parseRecipeList(cells.recipe)
-    if (!recipes) warn(`Recepten van ${vault.name} niet herkend (geen lijst of links), overgeslagen`, pageTitle)
+    if (!recipes) warn(`Recipes of ${vault.name} not recognised (no list or links), skipped`, pageTitle)
     else vault.recipes = recipes
     const note = stripMarkup(cells.note)
     if (note) vault.note = note
   }
-  if (unknown.length) warn(`Recepten voor onbekende vaults overgeslagen: ${unknown.join(', ')}`, pageTitle)
+  if (unknown.length) warn(`Recipes for unknown vaults skipped: ${unknown.join(', ')}`, pageTitle)
 }
 
 /**
@@ -294,7 +294,7 @@ function addPoints(vaults: Vault[], map: MapData, warn: Warn): void {
   const points = map.points.filter((p) => p.categoryId === VAULT_MAP_CATEGORY || categories.has(p.categoryId))
   if (!points.length) {
     if (vaults.length) {
-      warn(`Geen vault-ingangen op de kaart (categorie '${VAULT_MAP_CATEGORY}'), vaults zonder kaartpunt`, VAULT_MAP_PAGE)
+      warn(`No vault entrances on the map (category '${VAULT_MAP_CATEGORY}'), vaults without a map point`, VAULT_MAP_PAGE)
     }
     return
   }
@@ -318,9 +318,9 @@ function addPoints(vaults: Vault[], map: MapData, warn: Warn): void {
       vault.pointId = candidates[0].id
       used.add(candidates[0].id)
     } else if (candidates.length > 1) {
-      warn(`Meerdere kaartpunten mogelijk voor vault ${vault.name}, geen gekozen`, vault.name)
+      warn(`More than one possible map point for vault ${vault.name}, none picked`, vault.name)
     } else {
-      warn(`Geen kaartpunt gevonden voor vault ${vault.name}`, vault.name)
+      warn(`No map point found for vault ${vault.name}`, vault.name)
     }
   }
 }

@@ -29,14 +29,14 @@ const quest = computed(() => props.entry.quest)
 
 const progressText = computed(() => {
   const { state, stepsDone, stepsTotal } = props.entry
-  if (state === 'done') return 'Voltooid'
-  if (!stepsTotal) return 'Geen stappen'
+  if (state === 'done') return 'Done'
+  if (!stepsTotal) return 'No steps'
   return `${stepsDone} / ${stepsTotal}`
 })
 
 const srText = computed(() => {
   const { state, stepsDone, stepsTotal } = props.entry
-  const steps = stepsTotal ? `, ${stepsDone} van ${stepsTotal} stappen` : ''
+  const steps = stepsTotal ? `, ${stepsDone} of ${stepsTotal} ${stepsTotal === 1 ? 'step' : 'steps'}` : ''
   return `, ${QUEST_STATE_LABEL[state]}${state === 'done' ? '' : steps}`
 })
 

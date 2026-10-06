@@ -23,7 +23,7 @@ export interface RewardSources {
 export async function fetchRewardSources(ctx: SyncContext): Promise<RewardSources> {
   const { pages } = await ctx.pages([REWARD_PAGE])
   const page = pages.get(REWARD_PAGE)
-  if (!page) throw new Error(`Beloningen: pagina '${REWARD_PAGE}' ontbreekt op de wiki. Zonder deze pagina valt er niets te lezen.`)
+  if (!page) throw new Error(`Rewards: page '${REWARD_PAGE}' is missing from the wiki. Without it there's nothing to read.`)
   return { page }
 }
 
@@ -102,7 +102,7 @@ export function parseRewards(
     if (s.level !== 2) continue
     const spec = KINDS.find((k) => k.title.test(s.title))
     if (!spec) {
-      if (!IGNORED_SECTIONS.test(s.title)) p.warn(`Onbekende sectie '${s.title}' overgeslagen`)
+      if (!IGNORED_SECTIONS.test(s.title)) p.warn(`Unknown section '${s.title}' skipped`)
       continue
     }
     seen.add(spec.kind)
@@ -111,15 +111,15 @@ export function parseRewards(
       const n = found.length
       parseBlock(spec.kind, block, p)
       // Only groups: a section intro is often prose without rewards (Dragonkin Effigies).
-      if (block.group && found.length === n) p.warn(`${where(block)}: geen beloningen herkend, groep overgeslagen`)
+      if (block.group && found.length === n) p.warn(`${where(block)}: no rewards recognised, group skipped`)
     }
-    if (found.length === before) p.warn(`Sectie '${s.title}' leverde geen beloningen op, pagina-opbouw veranderd?`)
+    if (found.length === before) p.warn(`Section '${s.title}' gave no rewards, did the page layout change?`)
   }
   for (const { kind } of KINDS) {
-    if (!seen.has(kind)) p.warn(`Sectie voor '${kind}' niet gevonden, deze beloningen ontbreken`)
+    if (!seen.has(kind)) p.warn(`Section for '${kind}' not found, these rewards are missing`)
   }
-  if (p.unresolvedQuests.size) p.warn(`Quests niet gevonden, beloningen zonder quest-koppeling: ${[...p.unresolvedQuests].join(', ')}`)
-  if (p.unresolvedVaults.size) p.warn(`Vaults niet gevonden, effigies zonder vault-koppeling: ${[...p.unresolvedVaults].join(', ')}`)
+  if (p.unresolvedQuests.size) p.warn(`Quests not found, rewards without a quest link: ${[...p.unresolvedQuests].join(', ')}`)
+  if (p.unresolvedVaults.size) p.warn(`Vaults not found, effigies without a vault link: ${[...p.unresolvedVaults].join(', ')}`)
 
   const rewards = dedupe(found, p.warn)
   if (refs.map) linkPoints(rewards, refs.map, p.warn)
@@ -156,19 +156,19 @@ function parsePaired(kind: RewardKind, columns: { recipe: RegExp; item: RegExp; 
   for (const rows of parseTables(block.text)) {
     const table = readColumns(rows, { recipe: columns.recipe, item: columns.item }, { source: columns.source })
     if (!table) {
-      p.warn(`${where(block)}: tabel zonder herkenbare kolommen overgeslagen`)
+      p.warn(`${where(block)}: table without recognisable columns skipped`)
       continue
     }
     for (const row of table) {
       const recipes = entries(row.recipe)
       const items = entries(row.item)
       if (!items.length && !recipes.length) {
-        if (stripMarkup(row.recipe + row.item)) p.warn(`${where(block)}: rij zonder {{plink}} overgeslagen: ${stripMarkup(row.item || row.recipe)}`)
+        if (stripMarkup(row.recipe + row.item)) p.warn(`${where(block)}: row without {{plink}} skipped: ${stripMarkup(row.item || row.recipe)}`)
         continue
       }
       if (recipes.length !== items.length) {
         p.warn(
-          `${where(block)}: ${recipes.length} recepten en ${items.length} items in één rij, rij overgeslagen (${items[0] ?? recipes[0]})`,
+          `${where(block)}: ${recipes.length} recipes and ${items.length} items in one row, row skipped (${items[0] ?? recipes[0]})`,
         )
         continue
       }
@@ -185,13 +185,13 @@ function parseQuests(block: Block, p: Parser) {
   for (const rows of parseTables(block.text)) {
     const table = readColumns(rows, QUEST_COLUMNS)
     if (!table) {
-      p.warn(`${where(block)}: tabel zonder kolommen Reward, Requirement en Quest overgeslagen`)
+      p.warn(`${where(block)}: table without the columns Reward, Requirement and Quest skipped`)
       continue
     }
     for (const row of table) {
       const names = entries(row.reward)
       if (!names.length) {
-        if (stripMarkup(row.reward)) p.warn(`${where(block)}: beloning niet herkend, rij overgeslagen: ${stripMarkup(row.reward)}`)
+        if (stripMarkup(row.reward)) p.warn(`${where(block)}: reward not recognised, row skipped: ${stripMarkup(row.reward)}`)
         continue
       }
       const questName = stripMarkup(row.quest)
@@ -218,18 +218,18 @@ function parseEffigies(block: Block, p: Parser) {
   for (const rows of parseTables(block.text)) {
     const table = readColumns(rows, EFFIGY_COLUMNS)
     if (!table) {
-      p.warn(`${where(block)}: tabel zonder kolommen Item en Vault overgeslagen`)
+      p.warn(`${where(block)}: table without the columns Item and Vault skipped`)
       continue
     }
     for (const row of table) {
       const names = entries(row.item)
       if (!names.length) {
-        if (stripMarkup(row.item)) p.warn(`${where(block)}: item niet herkend, rij overgeslagen: ${stripMarkup(row.item)}`)
+        if (stripMarkup(row.item)) p.warn(`${where(block)}: item not recognised, row skipped: ${stripMarkup(row.item)}`)
         continue
       }
       const ref = links(row.vault)[0]?.target ?? stripMarkup(row.vault)
       const vault = p.vaults.find((v) => sameName(v.id, ref) || sameName(v.name, ref))
-      if (!vault) p.unresolvedVaults.add(ref || '(leeg)')
+      if (!vault) p.unresolvedVaults.add(ref || '(empty)')
       for (const name of names) {
         const recipe = vault?.recipes.find((r) => slug(r.name) === slug(name))
         p.add({
@@ -253,7 +253,7 @@ function parseRecipeBooks(block: Block, p: Parser) {
     const link = plink ? undefined : links(item.text)[0]
     const name = plink ? stripMarkup(plink.raw) : link ? upperFirst(link.label) : ''
     if (!name) {
-      p.warn(`${where(block)}: regel zonder {{plink}} overgeslagen: ${stripMarkup(item.text)}`)
+      p.warn(`${where(block)}: line without {{plink}} skipped: ${stripMarkup(item.text)}`)
       continue
     }
     const paren = trailingParenthetical(plink ? item.text.slice(plink.end) : item.text)
@@ -333,7 +333,7 @@ function dedupe(rewards: Reward[], warn: (message: string) => void): Reward[] {
     for (const [key, value] of Object.entries(reward)) if (target[key] === undefined) target[key] = value
     dupes.set(reward.kind, [...(dupes.get(reward.kind) ?? []), reward.name])
   }
-  for (const [kind, names] of dupes) warn(`Dubbele beloningen (${kind}) samengevoegd: ${[...new Set(names)].join(', ')}`)
+  for (const [kind, names] of dupes) warn(`Duplicate rewards (${kind}) merged: ${[...new Set(names)].join(', ')}`)
   return [...byId.values()]
 }
 
@@ -398,7 +398,7 @@ export function linkPoints(rewards: Reward[], map: MapData, warn: (message: stri
       for (const r of exact.length ? exact : loose.length === 1 ? loose : []) found.add(r)
     }
     if (found.size > 1) {
-      warn(`Kaartpunt ${point.id} past bij meerdere beloningen (${[...found].map((r) => r.id).join(', ')}), niet gekoppeld`)
+      warn(`Map point ${point.id} matches more than one reward (${[...found].map((r) => r.id).join(', ')}), not linked`)
       continue
     }
     const [reward] = found

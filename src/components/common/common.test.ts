@@ -15,9 +15,9 @@ import WikiLink from './WikiLink.vue'
 
 describe('ProgressBar', () => {
   it('clamps the value and exposes it as a percentage', () => {
-    const over = mount(ProgressBar, { props: { value: 1.7, label: 'Stappen' } })
+    const over = mount(ProgressBar, { props: { value: 1.7, label: 'Steps' } })
     expect(over.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('100')
-    expect(over.get('[role="progressbar"]').attributes('aria-label')).toBe('Stappen')
+    expect(over.get('[role="progressbar"]').attributes('aria-label')).toBe('Steps')
     const nan = mount(ProgressBar, { props: { value: Number.NaN, showPercent: true } })
     expect(nan.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('0')
     expect(nan.text()).toContain('0%')
@@ -31,9 +31,9 @@ describe('ProgressBar', () => {
 })
 
 describe('badges', () => {
-  it('shows the Dutch quest state', () => {
-    expect(mount(StatusBadge, { props: { state: 'active' } }).text()).toBe('Bezig')
-    expect(mount(StatusBadge, { props: { state: 'done' } }).text()).toBe('Voltooid')
+  it('shows the quest state', () => {
+    expect(mount(StatusBadge, { props: { state: 'active' } }).text()).toBe('In progress')
+    expect(mount(StatusBadge, { props: { state: 'done' } }).text()).toBe('Done')
   })
 
   it('shows PL with a readable name', () => {
@@ -68,13 +68,13 @@ describe('WikiLink', () => {
   it('marks a page title as English, but leaves slot text to the caller', () => {
     const titled = mount(WikiLink, { props: { page: 'Ratcatcher' } })
     expect(titled.get('[lang="en"]').text()).toBe('Ratcatcher')
-    const slotted = mount(WikiLink, { props: { page: 'Ratcatcher' }, slots: { default: 'Op de wiki' } })
+    const slotted = mount(WikiLink, { props: { page: 'Ratcatcher' }, slots: { default: 'On the wiki' } })
     expect(slotted.find('[lang="en"]').exists()).toBe(false)
-    expect(mount(WikiLink).text()).toContain('Op de wiki')
+    expect(mount(WikiLink).text()).toContain('On the wiki')
   })
 
   it('uses href as is when given', () => {
-    const w = mount(WikiLink, { props: { href: 'https://dragonwilds.runescape.wiki/w/Ratcatcher' }, slots: { default: 'Op de wiki' } })
+    const w = mount(WikiLink, { props: { href: 'https://dragonwilds.runescape.wiki/w/Ratcatcher' }, slots: { default: 'On the wiki' } })
     expect(w.get('a').attributes('href')).toBe('https://dragonwilds.runescape.wiki/w/Ratcatcher')
   })
 })
@@ -107,16 +107,16 @@ describe('ToggleChip', () => {
 })
 
 describe('LocationText', () => {
-  it('is English wiki text by default, Dutch when asked', () => {
+  it('is English wiki text by default, another language when asked', () => {
     expect(mount(LocationText, { slots: { default: 'Fellhollow' } }).attributes('lang')).toBe('en')
-    expect(mount(LocationText, { props: { lang: 'nl' }, slots: { default: 'Overige' } }).attributes('lang')).toBe('nl')
+    expect(mount(LocationText, { props: { lang: 'de' }, slots: { default: 'Sonstige' } }).attributes('lang')).toBe('de')
   })
 })
 
 describe('RelativeTime', () => {
   it('has a compact form for tight spots', () => {
     const value = new Date(Date.now() - 5 * 60_000).toISOString()
-    expect(mount(RelativeTime, { props: { value } }).text()).toBe('5 min geleden')
+    expect(mount(RelativeTime, { props: { value } }).text()).toBe('5 minutes ago')
     const short = mount(RelativeTime, { props: { value, short: true } })
     expect(short.text()).toBe('5 min')
     expect(short.attributes('title')).toBeTruthy()
@@ -127,15 +127,15 @@ describe('ConfirmDialog', () => {
   it('shows details from the slot and emits confirm once confirmed', async () => {
     document.body.innerHTML = ''
     const w = mount(ConfirmDialog, {
-      props: { open: true, title: 'Opruimen?', description: '2 vinkjes gaan weg.', confirmLabel: 'Opruimen' },
-      slots: { default: () => h('p', { class: 'details' }, 'Queststappen 2') },
+      props: { open: true, title: 'Clean up?', description: '2 ticks will be gone.', confirmLabel: 'Clean up' },
+      slots: { default: () => h('p', { class: 'details' }, 'Quest steps 2') },
       attachTo: document.body,
     })
     await flushPromises()
     const dialog = document.body.querySelector('[role="dialog"]')!
-    expect(dialog.textContent).toContain('2 vinkjes gaan weg.')
-    expect(dialog.querySelector('.details')?.textContent).toBe('Queststappen 2')
-    ;[...dialog.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Opruimen')!.click()
+    expect(dialog.textContent).toContain('2 ticks will be gone.')
+    expect(dialog.querySelector('.details')?.textContent).toBe('Quest steps 2')
+    ;[...dialog.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Clean up')!.click()
     await flushPromises()
     expect(w.emitted('confirm')).toHaveLength(1)
     expect(w.emitted('update:open')).toEqual([[false]])

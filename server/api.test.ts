@@ -200,7 +200,7 @@ describe('progress: ETag and If-Match', () => {
       headers: { 'if-match': '"0"' },
     })
     expect(stale.status).toBe(409)
-    expect(stale.json.error).toBe('Voortgang is elders gewijzigd')
+    expect(stale.json.error).toBe('Progress was changed elsewhere')
     expect(stale.json.progress.quests.Ratcatcher.steps).toEqual(['Ratcatcher:s:aaaa'])
     expect(stale.headers.etag).toBe(first.headers.etag)
     const get = await call('GET', '/api/progress')
@@ -242,7 +242,7 @@ describe('progress: ETag and If-Match', () => {
     await writeFile(paths.PROGRESS_FILE, '{ "version": 1, }')
     const get = await call('GET', '/api/progress')
     expect(get.status).toBe(500)
-    expect(get.json.error).toMatch(/^progress\.json is geen geldige JSON/)
+    expect(get.json.error).toMatch(/^progress\.json is not valid JSON/)
     const put = await call('PUT', '/api/progress', { body: progressBody(['a']) })
     expect(put.status).toBe(500)
     expect(await readFile(paths.PROGRESS_FILE, 'utf8')).toBe('{ "version": 1, }')
@@ -257,7 +257,7 @@ describe('overrides', () => {
     const res = await call('GET', '/api/data')
     expect(res.status).toBe(200)
     expect(res.json.overrides).toEqual({ questStart: {}, questItems: {}, categoryGroup: {} })
-    expect(res.json.overridesError).toMatch(/^overrides\.json is geen geldige JSON/)
+    expect(res.json.overridesError).toMatch(/^overrides\.json is not valid JSON/)
   })
 
   it('refuses to write while overrides.json is invalid, so the hand edits survive', async () => {
@@ -265,7 +265,7 @@ describe('overrides', () => {
     await writeFile(paths.OVERRIDES_FILE, broken)
     const res = await call('PUT', '/api/overrides', { body: pin })
     expect(res.status).toBe(409)
-    expect(res.json.error).toBe('overrides.json is ongeldig, herstel het bestand eerst')
+    expect(res.json.error).toBe('overrides.json is invalid, fix the file first')
     expect(await readFile(paths.OVERRIDES_FILE, 'utf8')).toBe(broken)
   })
 
@@ -348,10 +348,10 @@ describe('sync start', () => {
     })
     const res = await call('POST', '/api/sync', { body: {} })
     expect(res.status).toBe(500)
-    expect(res.json.error).toBe('Sync starten mislukt: spawn EINVAL')
+    expect(res.json.error).toBe("Couldn't start the sync: spawn EINVAL")
     const status = (await call('GET', '/api/sync/status')).json
     expect(status.running).toBe(false)
-    expect(status.report).toMatchObject({ ok: false, error: 'Sync starten mislukt: spawn EINVAL' })
+    expect(status.report).toMatchObject({ ok: false, error: "Couldn't start the sync: spawn EINVAL" })
 
     const child = fakeChild()
     spawnMock.fn.mockImplementation(() => child)
@@ -406,14 +406,14 @@ describe('sync start', () => {
     const child = fakeChild()
     spawnMock.fn.mockImplementation(() => child)
     expect((await call('POST', '/api/sync', { body: {} })).status).toBe(202)
-    child.stdout.emit('data', Buffer.from('Kaart: ophalen\r\nQuests: 12 quests\r\nhalf'))
-    child.stderr.emit('data', Buffer.from(' regel\r\n'))
+    child.stdout.emit('data', Buffer.from('Map: fetching\r\nQuests: 12 quests\r\nhalf'))
+    child.stderr.emit('data', Buffer.from(' line\r\n'))
     // A two-byte character split over two chunks.
-    const word = Buffer.from('Kaart: 75 categorieën\r\n')
+    const word = Buffer.from('Map: 75 categories, café\r\n')
     const cut = word.indexOf(0xc3) + 1
     child.stdout.emit('data', word.subarray(0, cut))
     child.stdout.emit('data', word.subarray(cut))
-    expect((await call('GET', '/api/sync/status')).json.log).toEqual(['Kaart: ophalen', 'Quests: 12 quests', 'half regel', 'Kaart: 75 categorieën'])
+    expect((await call('GET', '/api/sync/status')).json.log).toEqual(['Map: fetching', 'Quests: 12 quests', 'half line', 'Map: 75 categories, café'])
     child.emit('close', 0)
     await settled()
   })
@@ -425,7 +425,7 @@ describe('sync start', () => {
     expect(spawnMock.fn.mock.calls[0]![1]).toEqual(['--import', TSX_LOADER, join(paths.ROOT, 'scripts', 'sync', 'index.ts')])
     child.emit('close', 1)
     const status = await settled()
-    expect(status.report).toMatchObject({ ok: false, error: 'Sync stopte met code 1' })
+    expect(status.report).toMatchObject({ ok: false, error: 'Sync stopped with code 1' })
   })
 })
 

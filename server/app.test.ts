@@ -205,7 +205,7 @@ async function failingTls(name: string): Promise<LocalTls> {
 /** Creates a code on the Mac and pairs the phone with it; returns the device cookie. */
 async function pairPhone(): Promise<{ cookie: string; token: string }> {
   const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code as string
-  const res = await call('GET', `/koppel?code=${code}`, phone())
+  const res = await call('GET', `/pair?code=${code}`, phone())
   expect(res.status).toBe(302)
   const token = tokenOf(res)
   return { cookie: `logboek_device=${token}`, token }
@@ -213,7 +213,7 @@ async function pairPhone(): Promise<{ cookie: string; token: string }> {
 
 beforeAll(async () => {
   await mkdir(join(dist, 'assets'), { recursive: true })
-  await writeFile(join(dist, 'index.html'), '<!doctype html><title>Logboek</title>')
+  await writeFile(join(dist, 'index.html'), '<!doctype html><title>App shell</title>')
   await writeFile(join(dist, 'assets', 'index-abc123.js'), 'console.log(1)')
   await writeFile(join(dist, 'assets', 'index-abc123.css'), 'body{}')
   await mkdir(join(pub, 'icons'), { recursive: true })
@@ -262,10 +262,10 @@ describe('Host header (DNS rebinding)', () => {
   it('refuses a foreign host, also from this Mac', async () => {
     const api = await call('GET', '/api/health', { headers: { host: `evil.example:${APP_PORT}` } })
     expect(api.status).toBe(403)
-    expect(api.json).toEqual({ error: 'Onbekende host' })
+    expect(api.json).toEqual({ error: 'Unknown host' })
     const page = await call('GET', '/', { headers: { host: `evil.example:${APP_PORT}` } })
     expect(page.status).toBe(403)
-    expect(page.text).toBe('Onbekende host')
+    expect(page.text).toBe('Unknown host')
     expect((await call('GET', '/api/health', { headers: { host: `localhost:${APP_PORT + 1}` } })).status).toBe(403)
     expect((await call('GET', '/api/health', { headers: { host: 'localhost' } })).status).toBe(403)
   })
@@ -288,7 +288,7 @@ describe('local requests', () => {
       live: true,
       port: APP_PORT,
       urls: [`https://${MAC}:${APP_PORT}`, `https://${LAN_IP}:${APP_PORT}`],
-      certificateUrl: `http://${MAC}:${APP_PORT}/certificaat`,
+      certificateUrl: `http://${MAC}:${APP_PORT}/certificate`,
       devices: [],
     })
     const progress = await call('GET', '/api/progress')
@@ -334,7 +334,7 @@ describe('local requests', () => {
   it('do not retry a failing certificate on every status poll', async () => {
     app = makeApp({ tls: await failingTls('tls-failing') })
     app.listeners.live = true
-    const failures = () => logs.filter((l) => l.startsWith('Certificaat maken mislukt'))
+    const failures = () => logs.filter((l) => l.startsWith("Couldn't make the certificate"))
     await call('GET', '/api/server')
     await vi.waitFor(() => expect(failures()).toHaveLength(1))
     await call('GET', '/api/server')
@@ -358,7 +358,7 @@ describe('static files', () => {
   it('serves index.html without caching and with frame protection', async () => {
     const res = await call('GET', '/')
     expect(res.status).toBe(200)
-    expect(res.text).toBe('<!doctype html><title>Logboek</title>')
+    expect(res.text).toBe('<!doctype html><title>App shell</title>')
     expect(res.headers['content-type']).toBe('text/html; charset=utf-8')
     expect(res.headers['cache-control']).toBe('no-cache')
     expect(res.headers['x-frame-options']).toBe('DENY')
@@ -367,15 +367,15 @@ describe('static files', () => {
 
   it('marks index.html as the app for the service worker, and nothing else', async () => {
     expect(APP_HEADER).toBe('X-Ash-Log-App')
-    for (const path of ['/', '/index.html', '/quests', '/kaart?punt=1']) {
+    for (const path of ['/', '/index.html', '/quests', '/map?focus=1']) {
       expect((await call('GET', path)).headers['x-ash-log-app'], path).toBe('1')
     }
     const { cookie } = await pairPhone()
     expect((await call('GET', '/', phone(cookie))).headers['x-ash-log-app']).toBe('1')
     for (const [path, opts] of [
       ['/', phone()],
-      ['/koppel', phone()],
-      ['/certificaat', plainPhone()],
+      ['/pair', phone()],
+      ['/certificate', plainPhone()],
       ['/quests', plainPhone()],
       ['/assets/index-abc123.js', {}],
       ['/api/progress', {}],
@@ -416,10 +416,10 @@ describe('static files', () => {
   })
 
   it('falls back to index.html for app routes, not for missing files', async () => {
-    for (const path of ['/quests', '/kaart/iets', '/verzamelingen?x=1']) {
+    for (const path of ['/quests', '/map/something', '/collections?x=1']) {
       const res = await call('GET', path)
       expect(res.status, path).toBe(200)
-      expect(res.text, path).toContain('<title>Logboek</title>')
+      expect(res.text, path).toContain('<title>App shell</title>')
     }
     expect((await call('GET', '/assets/missing-123.js')).status).toBe(404)
     expect((await call('GET', '/favicon.ico')).status).toBe(404)
@@ -459,7 +459,7 @@ describe('static files', () => {
     app = makeApp({ distDir: join(root, 'no-dist') })
     const res = await call('GET', '/quests')
     expect(res.status).toBe(503)
-    expect(res.text).toMatch(/nog niet gebouwd/)
+    expect(res.text).toMatch(/hasn't been built yet/)
   })
 })
 
@@ -476,35 +476,35 @@ describe('requests from the network without pairing', () => {
     ] as const) {
       const res = await call(method, path, { ...phone(), body: method === 'GET' ? undefined : {} })
       expect(res.status, `${method} ${path}`).toBe(401)
-      expect(res.json, `${method} ${path}`).toEqual({ error: 'Koppel dit apparaat eerst' })
+      expect(res.json, `${method} ${path}`).toEqual({ error: 'Pair this device first' })
     }
   })
 
   it('get the pairing page for every page path, and nothing of the app', async () => {
-    for (const path of ['/', '/quests', '/kaart']) {
+    for (const path of ['/', '/quests', '/map']) {
       const res = await call('GET', path, phone())
       expect(res.status, path).toBe(401)
       expect(res.headers['content-type']).toBe('text/html; charset=utf-8')
       expect(res.headers['cache-control']).toBe('no-store')
-      expect(res.text).toContain('Koppel dit apparaat')
-      expect(res.text).toContain('action="/koppel"')
+      expect(res.text).toContain('Pair this device')
+      expect(res.text).toContain('action="/pair"')
       expect(res.text).not.toContain('<script')
-      expect(res.text).not.toContain('Logboek</title>')
+      expect(res.text).not.toContain('App shell</title>')
     }
     expect((await call('GET', '/assets/index-abc123.js', phone())).status).toBe(401)
     expect((await call('GET', '/wiki-img/icons/Gold_Ore.png', phone())).status).toBe(401)
     expect((await call('GET', '/robots.txt', phone())).status).toBe(401)
   })
 
-  it('may reach the manifest (start_url /), the icons and /koppel', async () => {
+  it('may reach the manifest (start_url /), the icons and /pair', async () => {
     const manifest = await call('GET', '/manifest.webmanifest', phone())
     expect(manifest.status).toBe(200)
     expect(manifest.headers['content-type']).toBe('application/manifest+json; charset=utf-8')
     expect(manifest.json.start_url).toBe('/')
     expect((await call('GET', '/icons/apple-touch-icon.png', phone())).status).toBe(200)
-    const koppel = await call('GET', '/koppel', phone())
-    expect(koppel.status).toBe(200)
-    expect(koppel.text).toContain('Koppel dit apparaat')
+    const pairPage = await call('GET', '/pair', phone())
+    expect(pairPage.status).toBe(200)
+    expect(pairPage.text).toContain('Pair this device')
   })
 
   it('are dropped while live mode is off', async () => {
@@ -518,14 +518,14 @@ describe('pairing', () => {
     app.listeners.live = false
     const off = await call('POST', '/api/server/pairing', { body: {} })
     expect(off.status).toBe(409)
-    expect(off.json.error).toBe('Zet eerst Live op wifi aan')
+    expect(off.json.error).toBe('Turn on Live on Wi-Fi first')
   })
 
   it('returns a code, its QR code for the https mDNS url and the expiry', async () => {
     const res = await call('POST', '/api/server/pairing', { body: {} })
     expect(res.status).toBe(200)
     expect(res.json.code).toMatch(/^\d{6}$/)
-    expect(res.json.url).toBe(`https://${MAC}:${APP_PORT}/koppel?code=${res.json.code}`)
+    expect(res.json.url).toBe(`https://${MAC}:${APP_PORT}/pair?code=${res.json.code}`)
     expect(res.json.qrSvg).toMatch(/^<svg[^>]*xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
     expect(res.json.expiresAt).toBe(new Date(clock + CODE_TTL_MS).toISOString())
   })
@@ -533,18 +533,18 @@ describe('pairing', () => {
   it('puts the LAN address in the QR code for an Android phone, and refuses an unknown phone', async () => {
     const android = await call('POST', '/api/server/pairing', { body: { phone: 'android' } })
     expect(android.status).toBe(200)
-    expect(android.json.url).toBe(`https://${LAN_IP}:${APP_PORT}/koppel?code=${android.json.code}`)
+    expect(android.json.url).toBe(`https://${LAN_IP}:${APP_PORT}/pair?code=${android.json.code}`)
     const iphone = await call('POST', '/api/server/pairing', { body: { phone: 'iphone' } })
-    expect(iphone.json.url).toBe(`https://${MAC}:${APP_PORT}/koppel?code=${iphone.json.code}`)
+    expect(iphone.json.url).toBe(`https://${MAC}:${APP_PORT}/pair?code=${iphone.json.code}`)
     const bad = await call('POST', '/api/server/pairing', { body: { phone: 42 } })
     expect(bad.status).toBe(400)
     // The last good code still works: a bad request makes none.
-    expect((await call('GET', `/koppel?code=${iphone.json.code}`, phone())).status).toBe(302)
+    expect((await call('GET', `/pair?code=${iphone.json.code}`, phone())).status).toBe(302)
   })
 
   it('pairs through the QR link: cookie, redirect, then full access', async () => {
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
-    const res = await call('GET', `/koppel?code=${code}`, phone())
+    const res = await call('GET', `/pair?code=${code}`, phone())
     expect(res.status).toBe(302)
     expect(res.headers.location).toBe('/')
     const cookie = cookieOf(res)
@@ -552,7 +552,7 @@ describe('pairing', () => {
     const token = tokenOf(res)
 
     const auth = `logboek_device=${token}`
-    expect((await call('GET', '/', phone(auth))).text).toContain('<title>Logboek</title>')
+    expect((await call('GET', '/', phone(auth))).text).toContain('<title>App shell</title>')
     expect((await call('GET', '/api/progress', phone(auth))).status).toBe(200)
     expect((await call('GET', '/assets/index-abc123.js', phone(auth))).status).toBe(200)
 
@@ -569,45 +569,45 @@ describe('pairing', () => {
 
   it('uses a code once and lets it expire', async () => {
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
-    expect((await call('GET', `/koppel?code=${code}`, phone())).status).toBe(302)
-    const reused = await call('GET', `/koppel?code=${code}`, { ...phone(), from: '192.168.1.51' })
+    expect((await call('GET', `/pair?code=${code}`, phone())).status).toBe(302)
+    const reused = await call('GET', `/pair?code=${code}`, { ...phone(), from: '192.168.1.51' })
     expect(reused.status).toBe(410)
-    expect(reused.text).toContain('Deze code is niet meer geldig')
+    expect(reused.text).toContain('That code has expired')
 
     const late = (await call('POST', '/api/server/pairing', { body: {} })).json.code
     clock += CODE_TTL_MS
-    expect((await call('GET', `/koppel?code=${late}`, phone())).status).toBe(410)
+    expect((await call('GET', `/pair?code=${late}`, phone())).status).toBe(410)
   })
 
   it('shows wrong codes on the page with 400, and HEAD never uses a code up', async () => {
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
     const wrong = code === '000000' ? '000001' : '000000'
-    const res = await call('GET', `/koppel?code=${wrong}`, phone())
+    const res = await call('GET', `/pair?code=${wrong}`, phone())
     expect(res.status).toBe(400)
-    expect(res.text).toContain('Deze code klopt niet')
-    expect((await call('HEAD', `/koppel?code=${code}`, phone())).status).toBe(200)
-    expect((await call('GET', `/koppel?code=${code}`, phone())).status).toBe(302)
+    expect(res.text).toContain("That code isn&#39;t right")
+    expect((await call('HEAD', `/pair?code=${code}`, phone())).status).toBe(200)
+    expect((await call('GET', `/pair?code=${code}`, phone())).status).toBe(302)
   })
 
   it('rate-limits wrong codes per address', async () => {
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
     const wrong = code === '000000' ? '000001' : '000000'
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) expect((await call('GET', `/koppel?code=${wrong}`, phone())).status).toBe(400)
-    const blocked = await call('GET', `/koppel?code=${code}`, phone())
+    for (let i = 0; i < RATE_LIMIT_MAX; i++) expect((await call('GET', `/pair?code=${wrong}`, phone())).status).toBe(400)
+    const blocked = await call('GET', `/pair?code=${code}`, phone())
     expect(blocked.status).toBe(429)
     expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0)
     const api = await call('POST', '/api/pair', { ...phone(), body: { code } })
     expect(api.status).toBe(429)
-    expect(api.json.error).toMatch(/Te veel pogingen/)
+    expect(api.json.error).toMatch(/Too many tries/)
     // Another phone is not blocked.
-    expect((await call('GET', `/koppel?code=${code}`, { ...phone(), from: '192.168.1.51' })).status).toBe(302)
+    expect((await call('GET', `/pair?code=${code}`, { ...phone(), from: '192.168.1.51' })).status).toBe(302)
   })
 
   it('accepts typed digits via POST /api/pair (JSON, same origin)', async () => {
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
     const wrong = await call('POST', '/api/pair', { ...phone(), body: { code: '12345' } })
     expect(wrong.status).toBe(400)
-    expect(wrong.json.error).toBe('Typ de zes cijfers van de koppelcode')
+    expect(wrong.json.error).toBe('Type the six digits of the pairing code')
     const form = await call('POST', '/api/pair', { ...phone(undefined, { 'content-type': 'application/x-www-form-urlencoded' }), raw: `code=${code}` })
     expect(form.status).toBe(415)
     const foreign = await call('POST', '/api/pair', { ...phone(undefined, { origin: 'http://evil.example' }), body: { code } })
@@ -621,15 +621,15 @@ describe('pairing', () => {
     expect((await call('POST', '/api/pair', { ...phone(), body: { code } })).status).toBe(410)
   })
 
-  it('sends an already paired phone and this Mac from /koppel to the app without using the code', async () => {
+  it('sends an already paired phone and this Mac from /pair to the app without using the code', async () => {
     const { cookie } = await pairPhone()
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
-    const paired = await call('GET', `/koppel?code=${code}`, phone(cookie))
+    const paired = await call('GET', `/pair?code=${code}`, phone(cookie))
     expect(paired.status).toBe(302)
     expect(paired.headers['set-cookie']).toBeUndefined()
-    const mac = await call('GET', `/koppel?code=${code}`)
+    const mac = await call('GET', `/pair?code=${code}`)
     expect(mac.status).toBe(302)
-    expect((await call('GET', `/koppel?code=${code}`, { ...phone(), from: '192.168.1.51' })).status).toBe(302)
+    expect((await call('GET', `/pair?code=${code}`, { ...phone(), from: '192.168.1.51' })).status).toBe(302)
   })
 
   it('invalidates the code when live mode goes off', async () => {
@@ -637,7 +637,48 @@ describe('pairing', () => {
     // Not bound in handler tests: the switch itself is a no-op here.
     expect((await call('POST', '/api/server/live', { body: { on: false } })).json.live).toBe(false)
     app.listeners.live = true
-    expect((await call('GET', `/koppel?code=${code}`, phone())).status).toBe(410)
+    expect((await call('GET', `/pair?code=${code}`, phone())).status).toBe(410)
+  })
+})
+
+describe('the Dutch paths of older QR codes and links', () => {
+  it('redirects /koppel?code= to /pair with the code, which is not used up by the redirect', async () => {
+    const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
+    const old = await call('GET', `/koppel?code=${code}`, phone())
+    expect(old.status).toBe(302)
+    expect(old.headers.location).toBe(`/pair?code=${code}`)
+    expect(old.headers['set-cookie']).toBeUndefined()
+    expect(old.headers['cache-control']).toBe('no-store')
+    expect(old.headers['referrer-policy']).toBe('no-referrer')
+    const res = await call('GET', old.headers.location as string, phone())
+    expect(res.status).toBe(302)
+    expect(res.headers.location).toBe('/')
+    expect(cookieOf(res)).toMatch(/^logboek_device=/)
+    // Without a code, from this Mac and over plain http too.
+    expect((await call('GET', '/koppel')).headers.location).toBe('/pair')
+    expect((await call('HEAD', '/koppel', plainPhone())).headers.location).toBe('/pair')
+  })
+
+  it('redirects the certificate page, the profile and the CA file, over plain http too', async () => {
+    const cases: [string, string][] = [
+      ['/certificaat', '/certificate'],
+      ['/certificaat?phone=android', '/certificate?phone=android'],
+      ['/certificaat/ash-log.mobileconfig', PROFILE_PATH],
+      [`/certificaat/${CA_CERT_FILE_NAME}`, CA_CERT_PATH],
+    ]
+    for (const [from, to] of cases) {
+      const res = await call('GET', from, plainPhone())
+      expect(res.status, from).toBe(302)
+      expect(res.headers.location, from).toBe(to)
+      expect((await call('GET', from)).headers.location, from).toBe(to)
+    }
+    expect((await call('GET', '/certificate', plainPhone())).status).toBe(200)
+  })
+
+  it('only redirects reads, and only the paths that moved', async () => {
+    expect((await call('POST', '/koppel', { ...phone(), body: {} })).status).not.toBe(302)
+    expect((await call('GET', '/certificaat/other.txt', plainPhone())).status).not.toBe(302)
+    expect((await call('GET', '/koppel/', phone())).status).not.toBe(302)
   })
 })
 
@@ -652,13 +693,13 @@ describe('paired devices', () => {
       live: true,
       port: APP_PORT,
       urls: [`https://${MAC}:${APP_PORT}`, `https://${LAN_IP}:${APP_PORT}`],
-      certificateUrl: `http://${MAC}:${APP_PORT}/certificaat`,
+      certificateUrl: `http://${MAC}:${APP_PORT}/certificate`,
     })
     expect((await call('GET', '/api/server/certificate-qr', phone(cookie))).status).toBe(403)
     for (const path of ['/api/server/live', '/api/server/pairing', '/api/server/devices/revoke', '/api/server/stop']) {
       const res = await call('POST', path, { ...phone(cookie), body: { on: false, id: 'x' } })
       expect(res.status, path).toBe(403)
-      expect(res.json.error).toBe('Dit kan alleen op de Mac zelf')
+      expect(res.json.error).toBe('This only works on the Mac itself')
     }
     expect(stopped).toBe(0)
     expect(app.listeners.live).toBe(true)
@@ -682,14 +723,14 @@ describe('paired devices', () => {
     expect(tokenOf(res)).toBe(token)
     expect(cookieOf(res)).toMatch(/HttpOnly; SameSite=Lax; Secure$/)
 
-    const kept = await call('GET', `/kaart?device=${token}&punt=abc`, phone())
-    expect(kept.headers.location).toBe('/kaart?punt=abc')
+    const kept = await call('GET', `/map?device=${token}&focus=abc`, phone())
+    expect(kept.headers.location).toBe('/map?focus=abc')
     const sneaky = await call('GET', `/.//evil.example?device=${token}`, phone())
     expect(sneaky.headers.location).toBe('/evil.example')
 
     const bad = await call('GET', '/?device=wrong', phone())
     expect(bad.status).toBe(401)
-    expect(bad.text).toContain('Koppel dit apparaat')
+    expect(bad.text).toContain('Pair this device')
   })
 
   it('lose access when unpaired on the Mac', async () => {
@@ -716,45 +757,45 @@ describe('plain http from the network', () => {
   const HTTPS = `https://${MAC.toLowerCase()}:${APP_PORT}`
 
   it('serves the certificate page: why, the profile button, the three steps and the https link', async () => {
-    const res = await call('GET', '/certificaat', plainPhone())
+    const res = await call('GET', '/certificate', plainPhone())
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toBe('text/html; charset=utf-8')
     expect(res.headers['cache-control']).toBe('no-store')
     expect(res.headers['content-security-policy']).toContain("default-src 'none'")
-    expect(res.text).toContain('Certificaat installeren')
+    expect(res.text).toContain('Install certificate')
     expect(res.text).toContain(`href="${PROFILE_PATH}"`)
-    expect(res.text).toContain('Profiel gedownload')
-    expect(res.text).toContain('Instellingen &gt; Algemeen &gt; Info &gt; Instellingen voor certificaatvertrouwen')
+    expect(res.text).toContain('Profile Downloaded')
+    expect(res.text).toContain('Settings &gt; General &gt; About &gt; Certificate Trust Settings')
     expect(res.text).toContain(`href="${HTTPS}/"`)
     expect(res.text).toContain(sharedTls.current!.caFingerprint)
     expect(res.text).not.toContain('<script')
     expect(res.text).not.toContain('<img')
     expect(res.text).not.toMatch(/\u2014/)
-    expect((await call('HEAD', '/certificaat', plainPhone())).text).toBe('')
-    expect((await call('POST', '/certificaat', { ...plainPhone(), body: {} })).status).toBe(405)
+    expect((await call('HEAD', '/certificate', plainPhone())).text).toBe('')
+    expect((await call('POST', '/certificate', { ...plainPhone(), body: {} })).status).toBe(405)
   })
 
   it('links to the address the phone used when the certificate holds it, else to the .local name', async () => {
-    const byIp = await call('GET', '/certificaat', { ...plainPhone(), headers: { host: `${LAN_IP}:${APP_PORT}` } })
+    const byIp = await call('GET', '/certificate', { ...plainPhone(), headers: { host: `${LAN_IP}:${APP_PORT}` } })
     expect(byIp.text).toContain(`href="https://${LAN_IP}:${APP_PORT}/"`)
     // The DHCP hostname passes the Host check but is not in the certificate.
     const dhcp = osHostname()
     if (!dhcp.toLowerCase().endsWith('.local') && dhcp.toLowerCase() !== MAC.toLowerCase()) {
-      const byName = await call('GET', '/certificaat', { ...plainPhone(), headers: { host: `${dhcp}:${APP_PORT}` } })
+      const byName = await call('GET', '/certificate', { ...plainPhone(), headers: { host: `${dhcp}:${APP_PORT}` } })
       expect(byName.text).toContain(`href="https://${MAC}:${APP_PORT}/"`)
     }
   })
 
   it('shows an Android phone its own steps first, the iPhone steps one tap away', async () => {
-    const res = await call('GET', '/certificaat', { ...plainPhone(), headers: { 'user-agent': ANDROID, host: `${LAN_IP}:${APP_PORT}` } })
+    const res = await call('GET', '/certificate', { ...plainPhone(), headers: { 'user-agent': ANDROID, host: `${LAN_IP}:${APP_PORT}` } })
     expect(res.status).toBe(200)
     expect(res.headers.vary).toBe('Cookie, User-Agent')
     expect(res.text.indexOf('<section data-phone="android">')).toBeGreaterThan(0)
     expect(res.text).toContain('<details data-phone="iphone">')
     expect(res.text).toContain(`href="${CA_CERT_PATH}" download="${CA_CERT_FILE_NAME}"`)
-    expect(res.text).toContain('CA-certificaat')
+    expect(res.text).toContain('CA certificate')
     expect(res.text).toContain(`href="https://${LAN_IP}:${APP_PORT}/"`)
-    const iphone = await call('GET', '/certificaat', plainPhone())
+    const iphone = await call('GET', '/certificate', plainPhone())
     expect(iphone.text).toContain('<section data-phone="iphone">')
     expect(iphone.text).toContain('<details data-phone="android">')
   })
@@ -788,7 +829,7 @@ describe('plain http from the network', () => {
     expect(crt.disposition).toBe(`attachment; filename="${CA_CERT_FILE_NAME}"`)
     expect(crt.body.equals(material.caDer)).toBe(true)
 
-    for (const path of ['/certificaat/ca.key', '/certificaat/server.key', '/certificaat/', '/certificaat/../tls/ca.key']) {
+    for (const path of ['/certificate/ca.key', '/certificate/server.key', '/certificate/', '/certificate/../tls/ca.key']) {
       const res = await call('GET', path, plainPhone())
       expect(res.text, path).not.toContain('PRIVATE KEY')
       expect(res.status, path).toBe(403)
@@ -798,23 +839,23 @@ describe('plain http from the network', () => {
   it('answers 503 on the certificate paths while there is no certificate', async () => {
     app = makeApp({ tls: new LocalTls({ dir: join(root, 'tls-unused') }) })
     app.listeners.live = true
-    const page = await call('GET', '/certificaat', plainPhone())
+    const page = await call('GET', '/certificate', plainPhone())
     expect(page.status).toBe(503)
-    expect(page.text).toContain('Het certificaat is er nog niet')
+    expect(page.text).toContain("The certificate isn't there yet")
     expect((await call('GET', PROFILE_PATH, plainPhone())).status).toBe(503)
     expect((await call('GET', CA_CERT_PATH, plainPhone())).status).toBe(503)
   })
 
   it('gets the secure-connection page for everything else, with links and without a redirect', async () => {
-    for (const path of ['/', '/quests', '/kaart?punt=a1']) {
+    for (const path of ['/', '/quests', '/map?focus=a1']) {
       const res = await call('GET', path, plainPhone())
       expect(res.status, path).toBe(403)
       expect(res.headers.location).toBeUndefined()
       expect(res.headers['content-type']).toBe('text/html; charset=utf-8')
-      expect(res.text).toContain('Beveiligde verbinding')
-      expect(res.text).toContain('href="/certificaat"')
+      expect(res.text).toContain('Secure connection')
+      expect(res.text).toContain('href="/certificate"')
       expect(res.text).toContain(`href="${HTTPS}${path}"`)
-      expect(res.text).not.toContain('Logboek</title>')
+      expect(res.text).not.toContain('App shell</title>')
       expect(res.text).not.toContain('<script')
     }
     // A protocol-relative path never turns into a link to another host.
@@ -826,7 +867,7 @@ describe('plain http from the network', () => {
     for (const path of ['/api/progress', '/api/server', '/api/health', '/api/data']) {
       const res = await call('GET', path, plainPhone(cookie))
       expect(res.status, path).toBe(403)
-      expect(res.json.error, path).toContain('beveiligde verbinding')
+      expect(res.json.error, path).toContain('secure connection')
     }
     expect((await call('PUT', '/api/progress', { ...plainPhone(cookie), body: { version: 1 } })).status).toBe(403)
     for (const path of ['/assets/index-abc123.js', '/wiki-img/icons/Gold_Ore.png', '/manifest.webmanifest', '/icons/icon-192.png']) {
@@ -844,22 +885,22 @@ describe('plain http from the network', () => {
 
     // An old QR code over http does not use up the code.
     const code = (await call('POST', '/api/server/pairing', { body: {} })).json.code
-    const koppel = await call('GET', `/koppel?code=${code}`, plainPhone())
-    expect(koppel.status).toBe(403)
-    expect(koppel.headers['set-cookie']).toBeUndefined()
-    expect((await call('GET', `/koppel?code=${code}`, phone())).status).toBe(302)
+    const pairPage = await call('GET', `/pair?code=${code}`, plainPhone())
+    expect(pairPage.status).toBe(403)
+    expect(pairPage.headers['set-cookie']).toBeUndefined()
+    expect((await call('GET', `/pair?code=${code}`, phone())).status).toBe(302)
     expect((await call('POST', '/api/pair', { ...plainPhone(), body: { code } })).status).toBe(403)
   })
 
   it('is dropped while live mode is off, like https', async () => {
     app.listeners.live = false
-    await expect(call('GET', '/certificaat', plainPhone())).rejects.toThrow(/socket hang up|ECONNRESET/)
+    await expect(call('GET', '/certificate', plainPhone())).rejects.toThrow(/socket hang up|ECONNRESET/)
   })
 
   it('still refuses a foreign Host header first', async () => {
-    const res = await call('GET', '/certificaat', { ...plainPhone(), headers: { host: `evil.example:${APP_PORT}` } })
+    const res = await call('GET', '/certificate', { ...plainPhone(), headers: { host: `evil.example:${APP_PORT}` } })
     expect(res.status).toBe(403)
-    expect(res.text).toBe('Onbekende host')
+    expect(res.text).toBe('Unknown host')
   })
 })
 
@@ -867,7 +908,7 @@ describe('certificate QR code', () => {
   it('gives this Mac the certificate url and its QR code while live', async () => {
     const res = await call('GET', '/api/server/certificate-qr')
     expect(res.status).toBe(200)
-    expect(res.json.url).toBe(`http://${MAC}:${APP_PORT}/certificaat`)
+    expect(res.json.url).toBe(`http://${MAC}:${APP_PORT}/certificate`)
     expect(res.json.qrSvg).toMatch(/^<svg[^>]*xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
     expect((await call('POST', '/api/server/certificate-qr', { body: {} })).status).toBe(405)
   })
@@ -877,20 +918,20 @@ describe('certificate QR code', () => {
     app.listeners.live = true
     const status = (await call('GET', '/api/server')).json
     expect(status.urls).toEqual([`https://${LAN_IP}:${APP_PORT}`, `https://${MAC}:${APP_PORT}`])
-    expect(status.certificateUrl).toBe(`http://${LAN_IP}:${APP_PORT}/certificaat`)
-    expect((await call('GET', '/api/server/certificate-qr?phone=iphone')).json.url).toBe(`http://${LAN_IP}:${APP_PORT}/certificaat`)
+    expect(status.certificateUrl).toBe(`http://${LAN_IP}:${APP_PORT}/certificate`)
+    expect((await call('GET', '/api/server/certificate-qr?phone=iphone')).json.url).toBe(`http://${LAN_IP}:${APP_PORT}/certificate`)
     const code = await call('POST', '/api/server/pairing', { body: { phone: 'iphone' } })
-    expect(code.json.url).toBe(`https://${LAN_IP}:${APP_PORT}/koppel?code=${code.json.code}`)
+    expect(code.json.url).toBe(`https://${LAN_IP}:${APP_PORT}/pair?code=${code.json.code}`)
   })
 
   it('points an Android phone at the LAN address, an iPhone at the .local name', async () => {
-    expect((await call('GET', '/api/server/certificate-qr?phone=iphone')).json.url).toBe(`http://${MAC}:${APP_PORT}/certificaat`)
+    expect((await call('GET', '/api/server/certificate-qr?phone=iphone')).json.url).toBe(`http://${MAC}:${APP_PORT}/certificate`)
     const android = await call('GET', '/api/server/certificate-qr?phone=android')
     expect(android.status).toBe(200)
-    expect(android.json.url).toBe(`http://${LAN_IP}:${APP_PORT}/certificaat`)
+    expect(android.json.url).toBe(`http://${LAN_IP}:${APP_PORT}/certificate`)
     const bad = await call('GET', '/api/server/certificate-qr?phone=nokia')
     expect(bad.status).toBe(400)
-    expect(bad.json.error).toBe('Verwacht phone: iphone of android')
+    expect(bad.json.error).toBe('Expected phone: iphone or android')
   })
 
   it('needs live mode and this Mac', async () => {
@@ -898,7 +939,7 @@ describe('certificate QR code', () => {
     app.listeners.live = false
     const off = await call('GET', '/api/server/certificate-qr')
     expect(off.status).toBe(409)
-    expect(off.json.error).toBe('Zet eerst Live op wifi aan')
+    expect(off.json.error).toBe('Turn on Live on Wi-Fi first')
   })
 })
 
@@ -919,7 +960,7 @@ describe('management from this Mac', () => {
   })
 })
 
-describe('on a Windows pc', () => {
+describe('on a Windows PC', () => {
   const PC = 'DESKTOP-7Q2LK3M'
   const winApp = (extra: Partial<AppOptions> = {}) => makeApp({ platform: 'win32', hostname: () => PC, ...extra })
 
@@ -930,11 +971,11 @@ describe('on a Windows pc', () => {
     expect(status.platform).toBe('windows')
     // The address phones get comes first.
     expect(status.urls).toEqual([`https://${LAN_IP}:${APP_PORT}`, `https://${PC}.local:${APP_PORT}`])
-    expect(status.certificateUrl).toBe(`http://${LAN_IP}:${APP_PORT}/certificaat`)
+    expect(status.certificateUrl).toBe(`http://${LAN_IP}:${APP_PORT}/certificate`)
     for (const kind of ['iphone', 'android']) {
-      expect((await call('GET', `/api/server/certificate-qr?phone=${kind}`)).json.url, kind).toBe(`http://${LAN_IP}:${APP_PORT}/certificaat`)
+      expect((await call('GET', `/api/server/certificate-qr?phone=${kind}`)).json.url, kind).toBe(`http://${LAN_IP}:${APP_PORT}/certificate`)
       const code = await call('POST', '/api/server/pairing', { body: { phone: kind } })
-      expect(code.json.url, kind).toBe(`https://${LAN_IP}:${APP_PORT}/koppel?code=${code.json.code}`)
+      expect(code.json.url, kind).toBe(`https://${LAN_IP}:${APP_PORT}/pair?code=${code.json.code}`)
     }
   })
 
@@ -943,46 +984,46 @@ describe('on a Windows pc', () => {
     app.listeners.live = true
     const status = (await call('GET', '/api/server')).json
     expect(status.urls[0]).toBe(`https://${PC}.local:${APP_PORT}`)
-    expect((await call('GET', '/api/server/certificate-qr?phone=android')).json.url).toBe(`http://${PC}.local:${APP_PORT}/certificaat`)
+    expect((await call('GET', '/api/server/certificate-qr?phone=android')).json.url).toBe(`http://${PC}.local:${APP_PORT}/certificate`)
   })
 
   it('falls back to the .local name without a LAN address', async () => {
     app = winApp({ lanAddresses: () => [] })
     app.listeners.live = true
-    expect((await call('GET', '/api/server')).json.certificateUrl).toBe(`http://${PC}.local:${APP_PORT}/certificaat`)
+    expect((await call('GET', '/api/server')).json.certificateUrl).toBe(`http://${PC}.local:${APP_PORT}/certificate`)
   })
 
-  it('says pc, not Mac, to phones', async () => {
+  it('says PC, not Mac, to phones', async () => {
     app = winApp()
     app.listeners.live = true
     const host = { host: `${LAN_IP}:${APP_PORT}` }
-    const page = await call('GET', '/certificaat', { ...plainPhone(), headers: { 'user-agent': IPHONE, ...host } })
-    expect(page.text).toContain('het certificaat van je pc vertrouwen')
+    const page = await call('GET', '/certificate', { ...plainPhone(), headers: { 'user-agent': IPHONE, ...host } })
+    expect(page.text).toContain('trust the certificate of your PC once')
     expect(page.text).not.toMatch(/\bMac\b/)
     const profile = await call('GET', PROFILE_PATH, { ...plainPhone(), headers: host })
-    expect(profile.text).toContain('Ash Log op je pc.')
+    expect(profile.text).toContain('to Ash Log on your PC.')
     const plain = await call('GET', '/', { ...plainPhone(), headers: host })
-    expect(plain.text).toContain('QR-code op je pc')
-    // Paired over the LAN address: the .local name of this test Mac is not one of the pc's names.
+    expect(plain.text).toContain('QR code on your PC')
+    // Paired over the LAN address: the .local name of this test Mac is not one of the PC's names.
     const code = (await call('POST', '/api/server/pairing', { body: { phone: 'android' } })).json.code as string
-    const cookie = `logboek_device=${tokenOf(await call('GET', `/koppel?code=${code}`, phone(undefined, host)))}`
+    const cookie = `logboek_device=${tokenOf(await call('GET', `/pair?code=${code}`, phone(undefined, host)))}`
     const manage = await call('POST', '/api/server/live', { ...phone(cookie, host), body: { on: false } })
     expect(manage.status).toBe(403)
-    expect(manage.json.error).toBe('Dit kan alleen op de pc zelf')
+    expect(manage.json.error).toBe('This only works on the PC itself')
   })
 
-  it('logs pc and the LAN address when live goes on and off', async () => {
+  it('logs PC and the LAN address when live goes on and off', async () => {
     const live = winApp({ port: 0, stayAwake: { start: vi.fn(), stop: vi.fn() } })
     try {
       await live.start()
       const port = live.listeners.port
       const host = { host: `localhost:${port}` }
       await call('POST', '/api/server/live', { port, headers: host, body: { on: true } })
-      await vi.waitFor(() => expect(logs.some((l) => l.startsWith('Live op wifi'))).toBe(true))
-      expect(logs.find((l) => l.startsWith('Live op wifi'))).toMatch(/\. Deze pc blijft wakker\.$/)
-      expect(logs).toContain(`Certificaat voor je telefoon: http://${LAN_IP}:${port}/certificaat`)
+      await vi.waitFor(() => expect(logs.some((l) => l.startsWith('Live on Wi-Fi'))).toBe(true))
+      expect(logs.find((l) => l.startsWith('Live on Wi-Fi'))).toMatch(/\. This PC stays awake\.$/)
+      expect(logs).toContain(`Certificate for your phone: http://${LAN_IP}:${port}/certificate`)
       await call('POST', '/api/server/live', { port, headers: host, body: { on: false } })
-      await vi.waitFor(() => expect(logs).toContain('Live uit: alleen deze pc kan erbij'))
+      await vi.waitFor(() => expect(logs).toContain('Live off: only this PC can reach Ash Log'))
     } finally {
       await live.close()
     }
@@ -991,8 +1032,8 @@ describe('on a Windows pc', () => {
   it('says so when no certificate can be made, without naming an iPhone or a Mac', async () => {
     app = winApp({ tls: await failingTls('tls-failing-win') })
     await app.refreshTls()
-    const line = logs.find((l) => l.startsWith('Certificaat maken mislukt'))!
-    expect(line).toMatch(/Je telefoon kan er nu niet bij; op deze pc werkt alles gewoon\.$/)
+    const line = logs.find((l) => l.startsWith("Couldn't make the certificate"))!
+    expect(line).toMatch(/Your phone can't reach Ash Log now; on this PC everything works as usual\.$/)
   })
 })
 
@@ -1019,7 +1060,7 @@ describe('live switch on real sockets', () => {
       live: true,
       local: true,
       urls: [`https://${MAC}:${port}`, `https://${LAN_IP}:${port}`],
-      certificateUrl: `http://${MAC}:${port}/certificaat`,
+      certificateUrl: `http://${MAC}:${port}/certificate`,
     })
     await vi.waitFor(() => expect(live.listeners.addresses().sort()).toEqual([`0.0.0.0:${port}`, `[::]:${port}`].sort()))
     expect(live.listeners.live).toBe(true)
@@ -1034,8 +1075,8 @@ describe('live switch on real sockets', () => {
     await vi.waitFor(() => expect(live.listeners.addresses().sort()).toEqual([`127.0.0.1:${port}`, `[::1]:${port}`].sort()))
     await vi.waitFor(() => expect(awake.stop).toHaveBeenCalledTimes(1))
     expect((await call('GET', '/api/server', { port, headers: host })).json.live).toBe(false)
-    expect(logs.some((l) => l.startsWith('Live op wifi'))).toBe(true)
-    expect(logs).toContain('Live uit: alleen deze Mac kan erbij')
+    expect(logs.some((l) => l.startsWith('Live on Wi-Fi'))).toBe(true)
+    expect(logs).toContain('Live off: only this Mac can reach Ash Log')
   })
 
   it('stays on loopback when the port is taken on the network', async () => {
@@ -1048,8 +1089,8 @@ describe('live switch on real sockets', () => {
       await live.start()
       const host = { host: `localhost:${port}` }
       expect((await call('POST', '/api/server/live', { port, headers: host, body: { on: true } })).status).toBe(200)
-      await vi.waitFor(() => expect(logs.some((l) => l.startsWith('Live zetten mislukt'))).toBe(true))
-      expect(logs.find((l) => l.startsWith('Live zetten mislukt'))).toContain(`Poort ${port} is op het netwerk al in gebruik`)
+      await vi.waitFor(() => expect(logs.some((l) => l.startsWith("Couldn't turn on Live"))).toBe(true))
+      expect(logs.find((l) => l.startsWith("Couldn't turn on Live"))).toContain(`Port ${port} is already in use on the network`)
       expect(live.listeners.live).toBe(false)
       expect(awake.start).not.toHaveBeenCalled()
       expect(live.listeners.addresses()).toEqual([`127.0.0.1:${port}`])
@@ -1115,10 +1156,10 @@ describe('live switch on real sockets', () => {
     await live.start()
     const port = live.listeners.port
     const host = { host: `localhost:${port}` }
-    expect(logs.some((l) => l.startsWith('Certificaat maken mislukt'))).toBe(true)
+    expect(logs.some((l) => l.startsWith("Couldn't make the certificate"))).toBe(true)
     expect((await call('GET', '/api/health', { port, headers: host })).status).toBe(200)
     await expect(callHttps(port, '/api/health', { ca: sharedTls.current!.caPem, headers: host })).rejects.toThrow()
-    expect((await call('GET', '/certificaat', { port, headers: host })).status).toBe(503)
+    expect((await call('GET', '/certificate', { port, headers: host })).status).toBe(503)
   })
 
   it('refuses to start when the port is taken', async () => {
@@ -1127,7 +1168,7 @@ describe('live switch on real sockets', () => {
     const port = (blocker.address() as AddressInfo).port
     try {
       live = makeApp({ port })
-      await expect(live.start()).rejects.toThrow(`Poort ${port} is al in gebruik`)
+      await expect(live.start()).rejects.toThrow(`Port ${port} is already in use`)
     } finally {
       await new Promise<void>((r) => blocker.close(() => r()))
     }

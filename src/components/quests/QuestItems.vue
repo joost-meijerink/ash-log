@@ -10,7 +10,7 @@ import { useConnectionStore } from '@/stores/connection'
 import { useProgressStore } from '@/stores/progress'
 import QuestItemsEditor from './QuestItemsEditor.vue'
 
-/** What to bring ('Benodigdheden') as a checklist, with an edit mode that writes overrides. */
+/** What to bring ('Items needed') as a checklist, with an edit mode that writes overrides. */
 const props = defineProps<{ quest: AppQuest }>()
 
 const progress = useProgressStore()
@@ -39,15 +39,15 @@ function stopEdit() {
   <section ref="root" aria-labelledby="quest-items-heading" class="@container">
     <SectionHeading
       id="quest-items-heading"
-      title="Benodigdheden"
+      title="Items needed"
       :count="!editing && items.length ? `${checkedCount} / ${items.length}` : null"
     >
       <template #right>
-        <Badge v-if="quest.itemsOverridden" variant="outline">Aangepast</Badge>
+        <Badge v-if="quest.itemsOverridden" variant="outline">Edited</Badge>
         <IconButton
           v-if="!editing"
           data-edit-items
-          :label="connection.readOnly ? 'Lijst aanpassen kan weer zodra je computer bereikbaar is' : 'Lijst aanpassen'"
+          :label="connection.readOnly ? 'You can edit the list again once your computer is back' : 'Edit list'"
           :disabled="connection.readOnly"
           size="icon-sm"
           @click="startEdit"
@@ -74,13 +74,13 @@ function stopEdit() {
         </li>
       </ul>
       <p v-else class="mt-2 text-text-parchment/70">
-        {{ quest.itemsOverridden ? 'Je hebt de lijst leeggemaakt: niets mee te nemen.' : 'Geen benodigdheden bekend.' }}
+        {{ quest.itemsOverridden ? 'You emptied the list: nothing to bring.' : 'No items known.' }}
       </p>
       <p class="mt-2 text-sm leading-snug text-text-parchment/60">
         {{
           quest.itemsOverridden
-            ? 'Dit is je eigen lijst. Een resync laat hem staan.'
-            : 'Beste gok uit de wiki. Klopt er iets niet? Pas de lijst aan.'
+            ? 'This is your own list. A resync leaves it alone.'
+            : 'Best guess from the wiki. Something off? Edit the list.'
         }}
       </p>
     </template>

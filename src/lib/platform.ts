@@ -16,10 +16,10 @@ export function serverPlatform(nodePlatform: string): ServerPlatform {
   return 'other'
 }
 
-/** How texts name the computer: 'Mac', 'pc' or 'computer', as in 'je Mac' or 'deze pc'. */
+/** How texts name the computer: 'Mac', 'PC' or 'computer', as in 'your Mac' or 'this PC'. */
 export function computerNoun(platform: ServerPlatform | undefined): string {
   if (platform === 'mac') return 'Mac'
-  if (platform === 'windows') return 'pc'
+  if (platform === 'windows') return 'PC'
   return 'computer'
 }
 
@@ -43,7 +43,7 @@ export function parsePhoneKind(value: unknown): PhoneKind | null {
 /* Installing the certificate on a phone                               */
 /* ------------------------------------------------------------------ */
 
-/** The CA certificate as an Android phone downloads it (GET /certificaat/ash-log-ca.crt). */
+/** The CA certificate as an Android phone downloads it (GET /certificate/ash-log-ca.crt). */
 export const CA_CERT_FILE_NAME = 'ash-log-ca.crt'
 
 /**
@@ -51,10 +51,10 @@ export const CA_CERT_FILE_NAME = 'ash-log-ca.crt'
  * menus a little differently; the texts say so and suggest searching Settings instead.
  */
 export const ANDROID_CA_MENU = [
-  'Instellingen',
-  'Beveiliging en privacy',
-  'Meer beveiligingsinstellingen',
-  'Versleuteling en inloggegevens',
-  'Certificaat installeren',
-  'CA-certificaat',
+  'Settings',
+  'Security & privacy',
+  'More security settings',
+  'Encryption & credentials',
+  'Install a certificate',
+  'CA certificate',
 ] as const

@@ -160,9 +160,9 @@ describe('readable orphans', () => {
     )
     expect(summary).toEqual([
       { kind: 'quests', label: 'Quests', count: 1, names: ['Old Quest'] },
-      { kind: 'steps', label: 'Queststappen', count: 3, names: ['Ratcatcher', 'Gone'] },
-      { kind: 'points', label: 'Kaartpunten', count: 2, names: ['Lore Scraps'] },
-      { kind: 'rewards', label: 'Beloningen', count: 1, names: [] },
+      { kind: 'steps', label: 'Quest steps', count: 3, names: ['Ratcatcher', 'Gone'] },
+      { kind: 'points', label: 'Map points', count: 2, names: ['Lore Scraps'] },
+      { kind: 'rewards', label: 'Rewards', count: 1, names: [] },
     ])
   })
 
@@ -179,7 +179,7 @@ describe('readable orphans', () => {
     expect(result.label('steps', 'Ratcatcher:s:gone')).toBe('Ratcatcher: Old step.')
     expect(result.summary.value.find((g) => g.kind === 'steps')).toEqual({
       kind: 'steps',
-      label: 'Queststappen',
+      label: 'Quest steps',
       count: 1,
       names: ['Ratcatcher'],
     })

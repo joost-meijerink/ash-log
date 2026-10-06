@@ -47,8 +47,9 @@ export const useSyncStore = defineStore('sync', () => {
     try {
       await api.startSync(opts)
     } catch (err) {
-      // 409: a sync is already running (another tab); just follow it.
-      if (!/al een sync/i.test((err as Error).message)) {
+      // 409: a sync is already running (another tab); just follow it. The Dutch text is from an
+      // older server.
+      if (!/already running|al een sync/i.test((err as Error).message)) {
         error.value = (err as Error).message
         return
       }

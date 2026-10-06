@@ -23,7 +23,7 @@ import MapGlyph from './MapGlyph.vue'
 
 /**
  * Card for the selected map point, on parchment. Lore and unique spots can be ticked off; a spot
- * where you pick up a reward is ticked through that reward, so it also counts in Verzamelingen.
+ * where you pick up a reward is ticked through that reward, so it also counts in Collections.
  */
 const props = defineProps<{ point: MapPoint }>()
 const emit = defineEmits<{ close: [] }>()
@@ -44,16 +44,16 @@ const foundState = computed(() => pointFoundState(props.point, model.links.value
 const found = computed(() => foundState.value.found)
 /** Rewards picked up here: those are what you tick. */
 const rewards = computed(() => (trackable.value ? foundState.value.rewards : []))
-/** The plain 'Gevonden' tick: always without rewards, and with rewards only to undo an old tick. */
+/** The plain 'Found' tick: always without rewards, and with rewards only to undo an old tick. */
 const showMark = computed(() => trackable.value && (rewards.value.length === 0 || foundState.value.marked))
 /** Ticks wait until progress.json is loaded, so nothing gets lost, and while the Mac cannot be reached. */
 const locked = computed(() => !progress.canEdit)
-const lockedNote = computed(() => (connection.readOnly ? 'Offline: alleen lezen' : 'Voortgang niet geladen'))
+const lockedNote = computed(() => (connection.readOnly ? 'Offline: read-only' : "Progress isn't loaded"))
 
 const markNote = computed(() => {
   if (locked.value) return lockedNote.value
-  if (rewards.value.length) return 'Losse vink op de kaart, telt niet in Verzamelingen'
-  return found.value ? 'Afgevinkt in je logboek' : 'Vink af als je dit gelezen of opgepakt hebt'
+  if (rewards.value.length) return "Map-only tick, doesn't count in Collections"
+  return found.value ? 'Ticked off in your log' : "Tick it once you've read or picked this up"
 })
 
 /** Unticking clears the point and its merged twins, so no old tick keeps it found. */
@@ -63,14 +63,14 @@ function setMarked(on: boolean) {
 }
 
 /**
- * Verzamelingen, on the unlocks of this kind (?soort= is the collections URL state). The kind is
+ * Collections, on the unlocks of this kind (?kind= is the collections URL state). The kind is
  * always named, 'all' for unlocks of several kinds: that view is kept with its filters, and a
  * kind that is still selected there would hide what this link is about.
  */
 const collectionsLink = computed(() => {
   const kinds = new Set(rewards.value.map((r) => r.kind))
   if (kinds.size === 0) return null
-  return { path: '/verzamelingen', query: { soort: kinds.size === 1 ? [...kinds][0]! : 'all' }, hash: '#unlocks' }
+  return { path: '/collections', query: { kind: kinds.size === 1 ? [...kinds][0]! : 'all' }, hash: '#unlocks' }
 })
 const onMap = computed(() => isInWorld(props.point))
 const wikiPage = computed(() => props.point.link ?? category.value?.wikiPage)
@@ -98,7 +98,7 @@ function questPath(id: string) {
           {{ title }}
         </h2>
       </div>
-      <IconButton label="Sluiten" size="icon-sm" class="-mt-1 -mr-2 shrink-0" @click="emit('close')">
+      <IconButton label="Close" size="icon-sm" class="-mt-1 -mr-2 shrink-0" @click="emit('close')">
         <X />
       </IconButton>
     </header>
@@ -106,18 +106,18 @@ function questPath(id: string) {
     <div class="flex flex-col gap-3 px-4 pt-3 pb-4 sm:px-5">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.95rem]">
         <LocationText v-if="point.region" pin lang="en">
-          {{ point.region }}<span v-if="point.regionGuessed" lang="nl" class="not-italic text-text-parchment/60"> (geschat)</span>
+          {{ point.region }}<span v-if="point.regionGuessed" class="not-italic text-text-parchment/60"> (estimated)</span>
         </LocationText>
         <PowerBadge v-if="power !== undefined" :power="power" />
         <span class="font-sans text-sm text-text-parchment/65 tabular-nums">
-          <span class="sr-only">Coördinaten: </span>x {{ Math.round(point.x) }} · y {{ Math.round(point.y) }}
+          <span class="sr-only">Coordinates: </span>x {{ Math.round(point.x) }} · y {{ Math.round(point.y) }}
         </span>
       </div>
 
       <LocationText v-if="point.description" as="p" lang="en" class="leading-relaxed">{{ point.description }}</LocationText>
 
       <p v-if="!onMap" class="rounded-md bg-parchment-deep px-3 py-2 text-sm text-text-parchment/80">
-        Dit punt ligt in een vault of ander instanced gebied, buiten deze kaart.
+        This point is in a vault or another instanced area, off this map.
       </p>
 
       <div v-if="rewards.length || showMark" class="-mx-2.5 flex flex-col divide-y divide-gold-ink/15 border-y border-gold-ink/15">
@@ -133,11 +133,11 @@ function questPath(id: string) {
         >
           <span lang="en">{{ reward.name }}</span>
           <template #note>
-            {{ locked ? lockedNote : progress.hasReward(reward.id) ? 'In je verzameling' : 'Vink af als je deze unlock hebt' }}
+            {{ locked ? lockedNote : progress.hasReward(reward.id) ? 'In your collection' : 'Tick it once you have this unlock' }}
           </template>
         </CheckRow>
         <CheckRow v-if="showMark" :checked="foundState.marked" :disabled="locked" @update:checked="setMarked">
-          Gevonden
+          Found
           <template #note>{{ markNote }}</template>
         </CheckRow>
       </div>
@@ -150,20 +150,20 @@ function questPath(id: string) {
           </RouterLink>
         </Button>
         <Button v-if="vault" as-child variant="outline" class="justify-start">
-          <RouterLink :to="`/verzamelingen#vault-${slug(vault.id)}`">
+          <RouterLink :to="`/collections#vault-${slug(vault.id)}`">
             <Gem aria-hidden="true" />
-            <span class="truncate">Bekijk in Verzamelingen</span>
+            <span class="truncate">View in Collections</span>
           </RouterLink>
         </Button>
         <Button v-if="collectionsLink" as-child variant="outline" class="justify-start">
           <RouterLink :to="collectionsLink">
             <Sparkles aria-hidden="true" />
-            <span class="truncate">Bekijk bij Unieke unlocks</span>
+            <span class="truncate">View in Unique unlocks</span>
           </RouterLink>
         </Button>
       </div>
 
-      <WikiLink v-if="wikiPage" :page="wikiPage" class="self-start text-[0.95rem]"><span lang="en">{{ wikiPage }}</span> op de wiki</WikiLink>
+      <WikiLink v-if="wikiPage" :page="wikiPage" class="self-start text-[0.95rem]"><span lang="en">{{ wikiPage }}</span> on the wiki</WikiLink>
     </div>
   </ParchmentPanel>
 </template>

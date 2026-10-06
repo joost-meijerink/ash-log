@@ -11,12 +11,12 @@ import { useTone, type Tone } from '@/composables/useTone'
 const props = withDefaults(
   defineProps<{
     modelValue: string
-    /** Placeholder and accessible name. Default 'Zoeken'. */
+    /** Placeholder and accessible name. Default 'Search'. */
     placeholder?: string
     tone?: Tone
     class?: HTMLAttributes['class']
   }>(),
-  { placeholder: 'Zoeken', tone: undefined },
+  { placeholder: 'Search', tone: undefined },
 )
 
 const emit = defineEmits<{
@@ -69,7 +69,7 @@ defineExpose({ focus: () => input.value?.focus() })
     <button
       v-if="modelValue"
       type="button"
-      aria-label="Zoekterm wissen"
+      aria-label="Clear search"
       :class="
         cn(
           'absolute top-0 right-0 grid size-11 cursor-pointer place-content-center rounded-md transition-colors outline-none focus-visible:ring-2',

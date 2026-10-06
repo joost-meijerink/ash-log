@@ -86,7 +86,7 @@ describe('parseQuests', () => {
     const pages = fixturePages('quests/pages.json')
     expect(pages).toHaveLength(40)
     expect(quests).toHaveLength(37)
-    const skipped = warnings.filter((w) => w.message === 'Geen Quest details/qtype, overgeslagen').map((w) => w.page)
+    const skipped = warnings.filter((w) => w.message === 'No Quest details/qtype, skipped').map((w) => w.page)
     expect(skipped.sort()).toEqual(['Consumable Recipes', 'Statues of Saradomin'])
     expect(quests.map((q) => q.id)).not.toContain('Consumable Recipes')
     expect(quests.map((q) => q.id)).not.toContain('Statues of Saradomin')
@@ -95,7 +95,7 @@ describe('parseQuests', () => {
   it('skips Warding Off Danger, removed from the game ({{Gone}}), with one warning', () => {
     expect(quests.map((q) => q.id)).not.toContain('Warding Off Danger')
     expect(warnings.filter((w) => w.page === 'Warding Off Danger')).toEqual([
-      { message: 'Verwijderd uit het spel ({{Gone}}), overgeslagen', page: 'Warding Off Danger' },
+      { message: 'Removed from the game ({{Gone}}), skipped', page: 'Warding Off Danger' },
     ])
   })
 
@@ -216,7 +216,7 @@ describe('parseQuests', () => {
   })
 
   it('finds every fixture quest on the overview', () => {
-    expect(warnings.filter((w) => w.message.startsWith('Staat niet op de pagina'))).toEqual([])
+    expect(warnings.filter((w) => w.message.startsWith('Not on the page'))).toEqual([])
   })
 
   it('keeps only known quests in requires', () => {
@@ -243,7 +243,7 @@ describe('parseQuests', () => {
       }
     }
     expect(again.map((q) => q.steps.map((s) => s.id))).toEqual(quests.map((q) => q.steps.map((s) => s.id)))
-    expect(warnings.filter((w) => w.message === 'Geen stappen gevonden')).toEqual([])
+    expect(warnings.filter((w) => w.message === 'No steps found')).toEqual([])
   })
 
   it('keeps a note repeated under several headings once per heading', () => {
@@ -257,7 +257,7 @@ describe('parseQuests', () => {
     expect(same[0].id).toBe(questStepId("Doric's Quest", same[0].text))
     expect(same[1].id).toBe(questStepId("Doric's Quest", `Necromancer's Staff\n${same[1].text}`))
     expect(warnings.filter((w) => w.page === "Doric's Quest")).toEqual([])
-    expect(warnings.some((w) => /dubbele stap/.test(w.message))).toBe(false)
+    expect(warnings.some((w) => /duplicate step/.test(w.message))).toBe(false)
   })
 
   it('keeps {{Needed}} blocks as needs per section, outside the steps', () => {
@@ -292,7 +292,7 @@ describe('parseQuests', () => {
   })
 
   it('warns about no dropped template on the fixtures', () => {
-    expect(warnings.filter((w) => /niet overgenomen in de stappen/.test(w.message))).toEqual([])
+    expect(warnings.filter((w) => /left out of the steps/.test(w.message))).toEqual([])
   })
 
   it('does not glue text around a floated {{Map}}', () => {
@@ -358,9 +358,12 @@ describe('ids against data/wiki/quests.json', () => {
     const ilh = parsed.get("Icthlarin's Little Helper")
     const ilhOld = stepIds(comparable.find((q) => q.id === "Icthlarin's Little Helper"))
     expect(stepIds(ilh)).toHaveLength(51)
-    expect(stepIds(ilh).filter((id) => !ilhOld.includes(id))).toEqual(
-      ilhOld.length && !ilhOld.includes("Icthlarin's Little Helper:s:1ea2c356") ? ["Icthlarin's Little Helper:s:1ea2c356"] : [],
-    )
+    // Nothing to compare when data/wiki holds another revision of this quest than the fixture.
+    if (ilhOld.length) {
+      expect(stepIds(ilh).filter((id) => !ilhOld.includes(id))).toEqual(
+        ilhOld.includes("Icthlarin's Little Helper:s:1ea2c356") ? [] : ["Icthlarin's Little Helper:s:1ea2c356"],
+      )
+    }
     expect(ilhOld.filter((id) => !stepIds(ilh).includes(id)).every((id) => id === "Icthlarin's Little Helper:s:2260589e")).toBe(true)
 
     // Doric's Quest only gains the two repeated notes.
@@ -398,9 +401,9 @@ describe('parseQuests: page recognition', () => {
     expect(quests[0].startMatch).toBe('npc-name')
     const pageWarnings = warnings.filter((w) => w.page !== 'Quests')
     expect(pageWarnings).toEqual([
-      { message: 'Geen Quest details/qtype, overgeslagen', page: 'Plain page' },
-      { message: 'Geen Quest details/qtype, overgeslagen', page: 'No qtype' },
-      { message: "Onbekend qtype 'miniquest', overgeslagen", page: 'Mini' },
+      { message: 'No Quest details/qtype, skipped', page: 'Plain page' },
+      { message: 'No Quest details/qtype, skipped', page: 'No qtype' },
+      { message: "Unknown qtype 'miniquest', skipped", page: 'Mini' },
     ])
   })
 
@@ -417,8 +420,8 @@ describe('parseQuests: page recognition', () => {
     const { quests, warnings } = run(MAP, src)
     expect(quests.map((q) => q.id)).toEqual(['Still Here'])
     expect(warnings.filter((w) => w.page !== 'Quests')).toEqual([
-      { message: 'Verwijderd uit het spel ({{Gone}}), overgeslagen', page: 'Old One' },
-      { message: 'Verwijderd uit het spel ({{Removed}}), overgeslagen', page: 'Old Two' },
+      { message: 'Removed from the game ({{Gone}}), skipped', page: 'Old One' },
+      { message: 'Removed from the game ({{Removed}}), skipped', page: 'Old Two' },
     ])
   })
 
@@ -437,7 +440,7 @@ describe('parseQuests: page recognition', () => {
     expect(quests[0].steps.map((s) => s.text)).toEqual(['Go there.'])
     expect(quests[0].needs).toEqual([{ needed: 'A key' }])
     expect(warnings.filter((w) => w.page === 'Templated')).toEqual([
-      { message: 'Sjabloon {{Mystery box}} niet overgenomen in de stappen', page: 'Templated' },
+      { message: 'Template {{Mystery box}} left out of the steps', page: 'Templated' },
     ])
   })
 
@@ -451,9 +454,9 @@ describe('parseQuests: page recognition', () => {
     expect(quests[0]).toMatchObject({ steps: [], stepsSource: 'walkthrough', rewards: ['Nothing'], location: 'Somewhere' })
     expect(warnings.map((w) => w.message)).toEqual(
       expect.arrayContaining([
-        'Quick guide zonder stappen, Walkthrough gebruikt',
-        'Geen Walkthrough-sectie gevonden',
-        'Geen stappen gevonden',
+        'Quick guide without steps, using the Walkthrough',
+        'No Walkthrough section found',
+        'No steps found',
       ]),
     )
   })
@@ -712,7 +715,7 @@ describe('withStepIds', () => {
       (message) => warnings.push(message),
     )
     expect(steps.map((s) => s.id)).toEqual([questStepId('Q', 'Same.'), questStepId('Q', 'B\nSame.')])
-    expect(warnings).toEqual(['2 dubbele stap(pen) overgeslagen'])
+    expect(warnings).toEqual(['2 duplicate steps skipped'])
   })
 })
 

@@ -1,5 +1,5 @@
 // Moves a map category to another group by hand (overrides.categoryGroup), or back to the group
-// the sync picked. Handy for the categories the sync leaves under 'Overig'. The change is a hand
+// the sync picked. Handy for the categories the sync leaves under 'Other'. The change is a hand
 // correction in overrides.json, so a resync never undoes it.
 
 import { computed, onBeforeUnmount, ref, shallowRef } from 'vue'

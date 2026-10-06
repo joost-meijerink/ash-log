@@ -49,7 +49,7 @@ export function createContext(wiki: WikiClient, log: (message: string) => void, 
     }
 
     if (toFetch.length) {
-      log(`  ${toFetch.length} van ${unique.length} pagina's ophalen (rest ongewijzigd)`)
+      log(`  Fetching ${toFetch.length} of ${unique.length} pages (the rest is unchanged)`)
       const fetched = await wiki.pages(toFetch)
       for (const [title, page] of fetched.pages) {
         result.set(title, page)
@@ -57,7 +57,7 @@ export function createContext(wiki: WikiClient, log: (message: string) => void, 
       }
       missing.push(...fetched.missing)
     } else if (unique.length) {
-      log(`  ${unique.length} pagina's ongewijzigd, uit cache`)
+      log(`  ${unique.length} pages unchanged, read from cache`)
     }
 
     for (const page of result.values()) revisions.set(page.title, page.revid)

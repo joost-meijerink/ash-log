@@ -14,15 +14,15 @@ const step = (n: number, section?: string): QuestStep => ({ id: `Q:s:${n}`, text
 
 describe('questKindLabel', () => {
   it('shows the order for the main story', () => {
-    expect(questKindLabel({ kind: 'primary', order: 3 })).toBe('Hoofdverhaal · 3')
-    expect(questKindLabel({ kind: 'primary' })).toBe('Hoofdverhaal')
-    expect(questKindLabel({ kind: 'secondary', order: 4 })).toBe('Zijquest')
-    expect(questKindLabel({ kind: 'tertiary' })).toBe('Tertiair')
+    expect(questKindLabel({ kind: 'primary', order: 3 })).toBe('Main story · 3')
+    expect(questKindLabel({ kind: 'primary' })).toBe('Main story')
+    expect(questKindLabel({ kind: 'secondary', order: 4 })).toBe('Side quest')
+    expect(questKindLabel({ kind: 'tertiary' })).toBe('Tertiary')
   })
 
   it('names the step source', () => {
-    expect(stepsSourceLabel('quick-guide')).toBe('Uit de Quick guide')
-    expect(stepsSourceLabel('walkthrough')).toBe('Uit de walkthrough op de wiki')
+    expect(stepsSourceLabel('quick-guide')).toBe('From the Quick guide')
+    expect(stepsSourceLabel('walkthrough')).toBe('From the walkthrough on the wiki')
   })
 })
 

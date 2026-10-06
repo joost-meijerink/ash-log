@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The three real views together under the real shell (App.vue, AppHeader, <KeepAlive>). The other
 // suites each take one real view and stand-ins for the other two; here a real link in one view
-// lands in another real view that was kept: 'Toon op kaart', a map card into Verzamelingen, the
+// lands in another real view that was kept: 'Show on map', a map card into Collections, the
 // header tabs, back and forward. Plus a seeded random walk: after every step the address, the
 // view memory and what is on screen must agree.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -129,8 +129,8 @@ function testRouter(): Router {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests/:questId?', name: 'quests', component: QuestsView },
-      { path: '/kaart', name: 'map', component: MapView },
-      { path: '/verzamelingen', name: 'collections', component: CollectionsView },
+      { path: '/map', name: 'map', component: MapView },
+      { path: '/collections', name: 'collections', component: CollectionsView },
       { path: '/:pathMatch(.*)*', redirect: '/quests' },
     ],
   })
@@ -194,7 +194,7 @@ async function mountApp(path: string): Promise<Mounted> {
 }
 
 const tabOf = (wrapper: VueWrapper, label: string) =>
-  wrapper.findAll('nav[aria-label="Hoofdmenu"] a').filter((a) => a.text() === label)[0]!
+  wrapper.findAll('nav[aria-label="Main menu"] a').filter((a) => a.text() === label)[0]!
 
 async function clickTab(wrapper: VueWrapper, label: string) {
   await tabOf(wrapper, label).trigger('click')
@@ -211,13 +211,13 @@ async function clickLink(wrapper: VueWrapper, text: string) {
 }
 
 const at = (router: Router) => router.currentRoute.value.fullPath
-const questSearch = (wrapper: VueWrapper) => wrapper.get('aside[aria-label="Questlijst"] input[type="search"]')
+const questSearch = (wrapper: VueWrapper) => wrapper.get('aside[aria-label="Quest list"] input[type="search"]')
 const mapSearch = (wrapper: VueWrapper) => wrapper.get('#map-filters input[type="search"]')
 const unlockSearch = (wrapper: VueWrapper) => wrapper.get('#unlocks input[type="search"]')
 const valueOf = (field: { element: Element }) => (field.element as HTMLInputElement).value
 const unlocks = (wrapper: VueWrapper) => wrapper.findAll('#unlocks [data-slot="check-row"]').map((row) => row.text())
 const kindChip = (wrapper: VueWrapper, label: string) =>
-  wrapper.findAll('[aria-label="Soort unlock"] [data-slot="toggle-chip"]').find((chip) => chip.text().startsWith(label))!
+  wrapper.findAll('[aria-label="Kind of unlock"] [data-slot="toggle-chip"]').find((chip) => chip.text().startsWith(label))!
 
 /** Time passes: a click on the tab of the view you are on is a click of its own again. */
 function later() {
@@ -248,28 +248,28 @@ describe('the three views under the shell: the header tabs', () => {
     await questSearch(wrapper).setValue('rat')
     await flushPromises()
     expect(at(router)).toBe('/quests/Ratcatcher?q=rat')
-    await clickTab(wrapper, 'Kaart')
-    expect(at(router)).toBe('/kaart')
-    await clickTab(wrapper, 'Verzamelingen')
+    await clickTab(wrapper, 'Map')
+    expect(at(router)).toBe('/map')
+    await clickTab(wrapper, 'Collections')
     await kindChip(wrapper, 'Vestiges').trigger('click')
     await unlockSearch(wrapper).setValue('sword')
     await flushPromises()
-    expect(at(router)).toBe('/verzamelingen?soort=vestige')
+    expect(at(router)).toBe('/collections?kind=vestige')
     reset()
 
     await clickTab(wrapper, 'Quests')
     expect(at(router)).toBe('/quests/Ratcatcher?q=rat')
     expect(valueOf(questSearch(wrapper))).toBe('rat')
-    await clickTab(wrapper, 'Kaart')
-    await clickTab(wrapper, 'Verzamelingen')
-    expect(at(router)).toBe('/verzamelingen?soort=vestige')
+    await clickTab(wrapper, 'Map')
+    await clickTab(wrapper, 'Collections')
+    expect(at(router)).toBe('/collections?kind=vestige')
     expect(valueOf(unlockSearch(wrapper))).toBe('sword')
     expect(useViewMemoryStore().arrival).toMatchObject({ view: 'collections', kind: 'return', via: 'tab' })
     // Also not a little later (the map writes its search text after 300 ms).
     await new Promise((resolve) => setTimeout(resolve, 350))
     await flushPromises()
     expect(replaced()).toEqual([])
-    expect(pushed()).toEqual(['/quests/Ratcatcher?q=rat', '/kaart', '/verzamelingen?soort=vestige'])
+    expect(pushed()).toEqual(['/quests/Ratcatcher?q=rat', '/map', '/collections?kind=vestige'])
   })
 
   it('a double click on the tab of another view still ends where that view was left', async () => {
@@ -277,7 +277,7 @@ describe('the three views under the shell: the header tabs', () => {
     await questSearch(wrapper).setValue('mir')
     await flushPromises()
     const left = at(router)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
 
     await clickTab(wrapper, 'Quests')
     expect(at(router)).toBe(left)
@@ -301,12 +301,12 @@ describe('the three views under the shell: the header tabs', () => {
 describe('the three views under the shell: links from one view into another', () => {
   beforeEach(() => screen(true))
 
-  it("'Toon op kaart' flies there, back and forward are returns, and the same link again flies again", async () => {
+  it("'Show on map' flies there, back and forward are returns, and the same link again flies again", async () => {
     const { wrapper, router, replaced, reset } = await mountApp('/quests/Ratcatcher')
     const memory = useViewMemoryStore()
     const flyTo = vi.spyOn(L.Map.prototype, 'flyTo')
-    await clickLink(wrapper, 'Toon op kaart')
-    expect(at(router)).toBe('/kaart?quest=Ratcatcher')
+    await clickLink(wrapper, 'Show on map')
+    expect(at(router)).toBe('/map?quest=Ratcatcher')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'fresh', first: true })
     expect(wrapper.find('#map-filters').exists()).toBe(true)
     expect(wrapper.get('article').text()).toContain('Ratcatcher')
@@ -318,14 +318,14 @@ describe('the three views under the shell: links from one view into another', ()
     expect(memory.arrival).toMatchObject({ view: 'quests', kind: 'return', via: 'history' })
     router.forward()
     await flushPromises()
-    expect(at(router)).toBe('/kaart?quest=Ratcatcher')
+    expect(at(router)).toBe('/map?quest=Ratcatcher')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'return', via: 'history' })
     expect(flyTo).not.toHaveBeenCalled()
 
     router.back()
     await flushPromises()
     reset()
-    await clickLink(wrapper, 'Toon op kaart')
+    await clickLink(wrapper, 'Show on map')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'fresh', via: 'link', first: false })
     expect(flyTo).toHaveBeenCalledTimes(1)
     expect(replaced()).toEqual([])
@@ -335,8 +335,8 @@ describe('the three views under the shell: links from one view into another', ()
     const { wrapper, router } = await mountApp('/quests/Mirror%2C%20Mirror')
     await questSearch(wrapper).setValue('r')
     await flushPromises()
-    await clickTab(wrapper, 'Kaart')
-    await router.push('/kaart?quest=Ratcatcher')
+    await clickTab(wrapper, 'Map')
+    await router.push('/map?quest=Ratcatcher')
     await flushPromises()
 
     const open = wrapper.findAll('main a').filter((a) => (a.attributes('href') ?? '').startsWith('/quests/'))[0]!
@@ -348,13 +348,13 @@ describe('the three views under the shell: links from one view into another', ()
     expect(valueOf(questSearch(wrapper))).toBe('r')
 
     // The map is still where it was: its tab goes back to the quest card.
-    await clickTab(wrapper, 'Kaart')
-    expect(at(router)).toBe('/kaart?quest=Ratcatcher')
+    await clickTab(wrapper, 'Map')
+    expect(at(router)).toBe('/map?quest=Ratcatcher')
     expect(wrapper.get('article').text()).toContain('Ratcatcher')
   })
 
   it('search text typed on the map just before a link away is there after going back, and the address follows with a replace', async () => {
-    const { wrapper, router, replaced, pushed, reset } = await mountApp('/kaart?quest=Ratcatcher')
+    const { wrapper, router, replaced, pushed, reset } = await mountApp('/map?quest=Ratcatcher')
     await mapSearch(wrapper).setValue('diary')
     const open = wrapper.findAll('main a').filter((a) => (a.attributes('href') ?? '').startsWith('/quests/'))[0]!
     await open.trigger('click')
@@ -378,39 +378,39 @@ describe('the three views under the shell: links from one view into another', ()
   })
 
   it('a vault on a map card goes to that vault and keeps kind, hide switch and search text', async () => {
-    const { wrapper, router } = await mountApp('/verzamelingen')
+    const { wrapper, router } = await mountApp('/collections')
     await kindChip(wrapper, 'Vestiges').trigger('click')
     await wrapper.get('#hide-owned').trigger('click')
     await unlockSearch(wrapper).setValue('sword')
     await flushPromises()
-    await clickTab(wrapper, 'Kaart')
-    await router.push(`/kaart?focus=${VAULT}`)
+    await clickTab(wrapper, 'Map')
+    await router.push(`/map?focus=${VAULT}`)
     await flushPromises()
 
-    await clickLink(wrapper, 'Bekijk in Verzamelingen')
-    expect(at(router)).toBe('/verzamelingen?soort=vestige&verberg=1#vault-takla-kara')
+    await clickLink(wrapper, 'View in Collections')
+    expect(at(router)).toBe('/collections?kind=vestige&hide=1#vault-takla-kara')
     expect(document.activeElement?.id).toBe('vault-takla-kara')
     expect(valueOf(unlockSearch(wrapper))).toBe('sword')
     expect(unlocks(wrapper)).toHaveLength(1)
   })
 
-  it("'Bekijk bij Unieke unlocks' shows the unlocks of the point, whatever the list was narrowed to before", async () => {
-    const { wrapper, router } = await mountApp('/verzamelingen')
+  it("'View in Unique unlocks' shows the unlocks of the point, whatever the list was narrowed to before", async () => {
+    const { wrapper, router } = await mountApp('/collections')
     // Narrowed to something else: a kind, a search text and the hide switch.
     await kindChip(wrapper, 'Vestiges').trigger('click')
     await wrapper.get('#hide-owned').trigger('click')
     await unlockSearch(wrapper).setValue('sword')
     await flushPromises()
     expect(unlocks(wrapper)).toHaveLength(1)
-    await clickTab(wrapper, 'Kaart')
-    await router.push(`/kaart?focus=${BOOK}`)
+    await clickTab(wrapper, 'Map')
+    await router.push(`/map?focus=${BOOK}`)
     await flushPromises()
 
     // Unlocks of two kinds at this point: the link asks for all kinds.
-    expect(linkWith(wrapper, 'Bekijk bij Unieke unlocks').attributes('href')).toBe('/verzamelingen?soort=all#unlocks')
-    await clickLink(wrapper, 'Bekijk bij Unieke unlocks')
+    expect(linkWith(wrapper, 'View in Unique unlocks').attributes('href')).toBe('/collections?kind=all#unlocks')
+    await clickLink(wrapper, 'View in Unique unlocks')
     expect(useViewMemoryStore().arrival).toMatchObject({ view: 'collections', kind: 'fresh', via: 'link', first: false })
-    expect(at(router)).toBe('/verzamelingen#unlocks')
+    expect(at(router)).toBe('/collections#unlocks')
     expect(valueOf(unlockSearch(wrapper))).toBe('')
     expect(wrapper.get('#hide-owned').attributes('aria-checked')).toBe('false')
     expect(unlocks(wrapper).some((text) => text.includes('Meat Sandwich'))).toBe(true)
@@ -423,25 +423,25 @@ describe('the three views under the shell: a sync while a view is away', () => {
   beforeEach(() => screen(true))
 
   it('a point and a quest that are gone do not come back with the tab: the map drops the card, quests opens another quest', async () => {
-    const { wrapper, router } = await mountApp(`/kaart?focus=${LORE}`)
+    const { wrapper, router } = await mountApp(`/map?focus=${LORE}`)
     expect(wrapper.get('article').text()).toContain('Scrawled Diary Page')
     await clickTab(wrapper, 'Quests')
     expect(at(router)).toBe('/quests/Ratcatcher')
-    await clickTab(wrapper, 'Verzamelingen')
+    await clickTab(wrapper, 'Collections')
 
     useDataStore().data = appData({
       map: { categories, points: points.filter((p) => p.id !== LORE) },
       quests: [...QUESTS.filter((q) => q.id !== 'Ratcatcher'), quest('Brand New', { order: 1 })],
     })
     await flushPromises()
-    expect(at(router)).toBe('/verzamelingen')
+    expect(at(router)).toBe('/collections')
 
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(router.currentRoute.value.query.focus).toBeUndefined()
     expect(wrapper.find('article').exists()).toBe(false)
     await clickTab(wrapper, 'Quests')
     expect(at(router)).toBe('/quests/Brand%20New')
-    expect(wrapper.text()).not.toContain('Deze quest ken ik niet')
+    expect(wrapper.text()).not.toContain("I don't know this quest")
     expect(wrapper.get('h1').text()).toBe('Brand New')
   })
 })
@@ -465,9 +465,9 @@ function rng(seed: number) {
 const OWN_KEYS: Record<ViewName, string[]> = {
   quests: ['q', 'status'],
   map: ['c', 'p', 'ps', 'r', 'q', 'h', 'qs', 'focus', 'quest', 'pin'],
-  collections: ['soort', 'verberg'],
+  collections: ['kind', 'hide'],
 }
-const STATUS: Record<string, string> = { Alle: '', Open: 'open', Bezig: 'bezig', Voltooid: 'voltooid' }
+const STATUS: Record<string, string> = { All: '', 'Not started': 'open', 'In progress': 'active', Done: 'done' }
 
 interface Step {
   name: string
@@ -478,7 +478,7 @@ interface Step {
 function stepsFrom(wrapper: VueWrapper, router: Router, rand: () => number): Step[] {
   const out: Step[] = []
   const name = router.currentRoute.value.name as ViewName
-  for (const label of ['Quests', 'Kaart', 'Verzamelingen']) out.push({ name: `tab:${label}`, run: () => tabOf(wrapper, label).trigger('click') })
+  for (const label of ['Quests', 'Map', 'Collections']) out.push({ name: `tab:${label}`, run: () => tabOf(wrapper, label).trigger('click') })
   out.push({ name: 'back', run: () => router.back() })
   out.push({ name: 'forward', run: () => router.forward() })
   out.push({
@@ -493,28 +493,28 @@ function stepsFrom(wrapper: VueWrapper, router: Router, rand: () => number): Ste
   if (name === 'quests') {
     const text = word()
     out.push({ name: `q.search:${text}`, run: () => questSearch(wrapper).setValue(text) })
-    for (const chip of wrapper.findAll('aside[aria-label="Questlijst"] [role="group"] button[aria-pressed]')) {
+    for (const chip of wrapper.findAll('aside[aria-label="Quest list"] [role="group"] button[aria-pressed]')) {
       out.push({ name: `q.chip:${chip.text()}`, run: () => chip.trigger('click') })
     }
     for (const row of wrapper.findAll('[data-quest-id]')) out.push({ name: `q.row:${row.attributes('data-quest-id')}`, run: () => row.trigger('click') })
-    for (const a of links(/^\/(kaart|verzamelingen)/)) out.push({ name: `q.link:${a.attributes('href')}`, run: () => a.trigger('click') })
+    for (const a of links(/^\/(map|collections)/)) out.push({ name: `q.link:${a.attributes('href')}`, run: () => a.trigger('click') })
   }
   if (name === 'map') {
     const text = word()
     out.push({ name: `m.search:${text}`, run: () => mapSearch(wrapper).setValue(text) })
-    for (const a of links(/^\/(quests|verzamelingen)/)) out.push({ name: `m.link:${a.attributes('href')}`, run: () => a.trigger('click') })
-    out.push({ name: 'm.focus-book', run: () => router.push(`/kaart?focus=${BOOK}`) })
-    out.push({ name: 'm.focus-vault', run: () => router.push(`/kaart?focus=${VAULT}`) })
-    out.push({ name: 'm.quest', run: () => router.push('/kaart?quest=Ratcatcher') })
+    for (const a of links(/^\/(quests|collections)/)) out.push({ name: `m.link:${a.attributes('href')}`, run: () => a.trigger('click') })
+    out.push({ name: 'm.focus-book', run: () => router.push(`/map?focus=${BOOK}`) })
+    out.push({ name: 'm.focus-vault', run: () => router.push(`/map?focus=${VAULT}`) })
+    out.push({ name: 'm.quest', run: () => router.push('/map?quest=Ratcatcher') })
   }
   if (name === 'collections') {
-    for (const chip of wrapper.findAll('[aria-label="Soort unlock"] [data-slot="toggle-chip"]')) {
+    for (const chip of wrapper.findAll('[aria-label="Kind of unlock"] [data-slot="toggle-chip"]')) {
       out.push({ name: `c.kind:${chip.text()}`, run: () => chip.trigger('click') })
     }
     out.push({ name: 'c.hide', run: () => wrapper.get('#hide-owned').trigger('click') })
     const text = word()
     out.push({ name: `c.search:${text}`, run: () => unlockSearch(wrapper).setValue(text) })
-    for (const a of links(/^\/(quests|kaart)/)) out.push({ name: `c.link:${a.attributes('href')}`, run: () => a.trigger('click') })
+    for (const a of links(/^\/(quests|map)/)) out.push({ name: `c.link:${a.attributes('href')}`, run: () => a.trigger('click') })
     for (const a of links(/^#/)) out.push({ name: `c.anchor:${a.attributes('href')}`, run: () => a.trigger('click') })
   }
   return out
@@ -530,7 +530,7 @@ function problems(wrapper: VueWrapper, router: Router, settled: boolean): string
   if (memory.locations[name] !== route.fullPath) out.push(`remembered ${memory.locations[name]} != ${route.fullPath}`)
   for (const key of Object.keys(route.query)) if (!OWN_KEYS[name].includes(key)) out.push(`foreign key ${key} on ${name}: ${route.fullPath}`)
   const inPage: Record<ViewName, boolean> = {
-    quests: wrapper.find('aside[aria-label="Questlijst"]').exists(),
+    quests: wrapper.find('aside[aria-label="Quest list"]').exists(),
     map: wrapper.find('#map-filters').exists(),
     collections: wrapper.find('#unlocks').exists(),
   }
@@ -542,7 +542,7 @@ function problems(wrapper: VueWrapper, router: Router, settled: boolean): string
     const q = valueOf(questSearch(wrapper))
     if (q.trim() !== String(route.query.q ?? '').trim()) out.push(`quests search '${q}' != address '${route.query.q ?? ''}'`)
     const on = wrapper
-      .findAll('aside[aria-label="Questlijst"] [role="group"] button[aria-pressed="true"]')
+      .findAll('aside[aria-label="Quest list"] [role="group"] button[aria-pressed="true"]')
       .map((chip) => STATUS[chip.text().replace(/\d+$/, '').trim()])
     if (on.length !== 1 || on[0] !== String(route.query.status ?? '')) out.push(`quests status ${JSON.stringify(on)} != address '${route.query.status ?? ''}'`)
     const id = route.params.questId as string
@@ -556,11 +556,11 @@ function problems(wrapper: VueWrapper, router: Router, settled: boolean): string
     if (wrapper.find('#map-card-title').exists() !== state && wrapper.findAll('main article').length > 0 !== state) out.push(`map card does not match ${route.fullPath}`)
   }
   if (name === 'collections') {
-    const on = wrapper.findAll('[aria-label="Soort unlock"] [data-slot="toggle-chip"][aria-pressed="true"]').map((chip) => chip.text())
-    const kind = String(route.query.soort ?? '')
-    if (on.length !== 1 || (kind === '') !== on[0]!.startsWith('Alles')) out.push(`collections kind ${JSON.stringify(on)} != address '${kind}'`)
+    const on = wrapper.findAll('[aria-label="Kind of unlock"] [data-slot="toggle-chip"][aria-pressed="true"]').map((chip) => chip.text())
+    const kind = String(route.query.kind ?? '')
+    if (on.length !== 1 || (kind === '') !== on[0]!.startsWith('All')) out.push(`collections kind ${JSON.stringify(on)} != address '${kind}'`)
     const hide = wrapper.get('#hide-owned').attributes('aria-checked') === 'true'
-    if (hide !== (route.query.verberg === '1')) out.push(`collections hide ${hide} != address '${route.query.verberg}'`)
+    if (hide !== (route.query.hide === '1')) out.push(`collections hide ${hide} != address '${route.query.hide}'`)
   }
   return out
 }
@@ -568,7 +568,7 @@ function problems(wrapper: VueWrapper, router: Router, settled: boolean): string
 describe('the three views under the shell: random walks', () => {
   const SEEDS = 16
   const STEPS = 30
-  const STARTS = ['/quests', '/kaart', '/verzamelingen', '/quests/Ratcatcher?q=rat', '/kaart?quest=Ratcatcher', '/verzamelingen?soort=vestige#unlocks']
+  const STARTS = ['/quests', '/map', '/collections', '/quests/Ratcatcher?q=rat', '/map?quest=Ratcatcher', '/collections?kind=vestige#unlocks']
 
   it.each([true, false])('keep the address, the memory and the screen in step (wide screen: %s)', async (wide) => {
     const failures: string[] = []

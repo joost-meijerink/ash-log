@@ -43,7 +43,7 @@ export class PortInUseError extends Error {
     readonly port: number,
     readonly host: string,
   ) {
-    super(`Poort ${port} is al in gebruik (${host})`)
+    super(`Port ${port} is already in use (${host})`)
   }
 }
 
@@ -127,7 +127,7 @@ export interface ListenersOptions {
   /** Server key and certificate. Without them, TLS connections are closed at once. */
   tls?: TlsCredentials
   timeouts?: ListenerTimeouts
-  /** process.platform, for log lines that name the computer ('deze Mac', 'deze pc'). */
+  /** process.platform, for log lines that name the computer ('this Mac', 'this PC'). */
   platform?: string
 }
 
@@ -148,7 +148,7 @@ export class Listeners {
   private warnedNoTls = false
   private readonly tlsErrorsLogged = new Map<string, number>()
   private readonly timeouts: ListenerTimeouts
-  /** 'Mac', 'pc' or 'computer'. */
+  /** 'Mac', 'PC' or 'computer'. */
   private readonly computer: string
 
   constructor(handler: RequestListener, opts: ListenersOptions) {
@@ -227,8 +227,8 @@ export class Listeners {
       this.live = true
       return { ok: true }
     } catch (err) {
-      const message = err instanceof PortInUseError ? `Poort ${this.port} is op het netwerk al in gebruik` : (err as Error).message
-      this.log(`Live zetten mislukt: ${message}. Het Logboek blijft alleen op deze ${this.computer}.`)
+      const message = err instanceof PortInUseError ? `Port ${this.port} is already in use on the network` : (err as Error).message
+      this.log(`Couldn't turn on Live: ${message}. Ash Log stays on this ${this.computer} only.`)
       this.bound = await this.bindAll(this.loopbackHosts)
       this.live = false
       return { ok: false, error: message }
@@ -313,7 +313,7 @@ export class Listeners {
       } else if (this.secure) {
         this.secure.emit('connection', socket)
       } else {
-        if (!this.warnedNoTls) this.log('Een https-verbinding geweigerd: er is (nog) geen certificaat')
+        if (!this.warnedNoTls) this.log('Refused an https connection: there is no certificate (yet)')
         this.warnedNoTls = true
         socket.destroy()
       }
@@ -334,7 +334,7 @@ export class Listeners {
     if (now - (this.tlsErrorsLogged.get(address) ?? 0) < TLS_ERROR_LOG_MS) return
     if (this.tlsErrorsLogged.size > 100) this.tlsErrorsLogged.clear()
     this.tlsErrorsLogged.set(address, now)
-    this.log(`Beveiligde verbinding met ${address} mislukt (${err.code ?? err.message}). Vertrouwt dat apparaat het Ash Log-certificaat al?`)
+    this.log(`Secure connection with ${address} failed (${err.code ?? err.message}). Does that device trust the Ash Log certificate yet?`)
   }
 
   private async bindAll(hosts: string[]): Promise<Bound[]> {
@@ -345,7 +345,7 @@ export class Listeners {
       } catch (err) {
         const code = (err as NodeJS.ErrnoException).code ?? ''
         if (isIpv6(host) && IPV6_UNAVAILABLE.has(code)) {
-          this.log(`Geen IPv6 op ${host}, verder op IPv4`)
+          this.log(`No IPv6 on ${host}, carrying on with IPv4`)
           continue
         }
         for (const b of bound) b.server.close()
@@ -365,7 +365,7 @@ export class Listeners {
       server.once('error', reject)
       server.listen({ port: this.port, host, ipv6Only: isIpv6(host) }, () => {
         server.off('error', reject)
-        server.on('error', (err) => this.log(`Serverfout op ${host}: ${err.message}`))
+        server.on('error', (err) => this.log(`Server error on ${host}: ${err.message}`))
         if (this.port === 0) this.port = (server.address() as AddressInfo).port
         resolve(bound)
       })

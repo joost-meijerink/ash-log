@@ -62,7 +62,7 @@ useEventListener(window, 'focus', refreshFromDisk)
 const overridesError = computed(() => data.data?.overridesError ?? null)
 
 /**
- * A phone that cannot reach the Mac: the 'niet bereikbaar' screen over everything, unless you
+ * A phone that cannot reach the Mac: the 'can't be reached' screen over everything, unless you
  * chose to look at the last known data (read-only, with a banner).
  */
 const offlineScreen = computed(() => connection.offline && (!connection.browsing || !data.data))
@@ -87,9 +87,9 @@ const failedReport = computed(() => {
   return r && !r.ok ? r : null
 })
 
-const lastLine = computed(() => [...sync.log].reverse().find((l) => l.trim()) ?? 'Sync gestart')
+const lastLine = computed(() => [...sync.log].reverse().find((l) => l.trim()) ?? 'Sync started')
 
-/** Where to look when the server does not answer: npm run dev, the app on the Mac, or the laptop from the phone. */
+/** Where to look when the server does not answer: npm run dev, the app on the Mac, or the computer from the phone. */
 const unreachableText = computed(() => unreachableHint({ mode: server.status?.mode, hostname: window.location.hostname }))
 
 // main is the scroll container the views share. The views stay alive (KeepAlive below), so each
@@ -116,7 +116,7 @@ function firstSync() {
 
 <template>
   <TooltipProvider>
-    <!-- Phone without its Mac: 'niet bereikbaar' over everything; the app underneath keeps its place -->
+    <!-- Phone without its Mac: 'can't be reached' over everything; the app underneath keeps its place -->
     <OfflineScreen v-if="offlineScreen" class="fixed inset-0 z-[60]" />
 
     <!-- Side insets keep content clear of the notch in landscape on the iPhone home screen -->
@@ -129,7 +129,7 @@ function firstSync() {
         href="#main"
         class="sr-only z-50 rounded-md bg-gold px-4 py-3 text-ink focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
       >
-        Naar de inhoud
+        Skip to content
       </a>
       <AppHeader />
       <!-- Looking at the last known data while the Mac cannot be reached -->
@@ -144,10 +144,10 @@ function firstSync() {
       >
         <CloudOff class="size-4 shrink-0 text-[#e08a6c]" aria-hidden="true" />
         <p class="min-w-0 flex-1">
-          Verversen lukt niet: {{ data.error }}.
-          <span class="text-muted-light">Je ziet de laatst geladen data.</span>
+          Couldn't refresh: {{ data.error }}.
+          <span class="text-muted-light">You're seeing the last loaded data.</span>
         </p>
-        <Button variant="ghost" size="sm" @click="data.load()">Opnieuw proberen</Button>
+        <Button variant="ghost" size="sm" @click="data.load()">Try again</Button>
       </div>
 
       <!-- overrides.json is broken: its corrections are off and editing waits until it is fixed -->
@@ -158,11 +158,11 @@ function firstSync() {
       >
         <FileExclamationPoint class="size-4 shrink-0 text-[#e08a6c]" aria-hidden="true" />
         <p class="min-w-0 flex-1">
-          <span class="font-mono text-[0.8rem]">data/overrides.json</span> is niet te lezen.
-          <span class="text-muted-light">Je eigen correcties staan uit en aanpassen kan pas weer als je het bestand herstelt.</span>
+          <span class="font-mono text-[0.8rem]">data/overrides.json</span> can't be read.
+          <span class="text-muted-light">Your own corrections are off, and editing waits until you fix the file.</span>
           <span class="block font-mono text-xs break-words text-[#e08a6c]">{{ overridesError }}</span>
         </p>
-        <Button variant="ghost" size="sm" :disabled="data.loading" @click="data.load()">Opnieuw laden</Button>
+        <Button variant="ghost" size="sm" :disabled="data.loading" @click="data.load()">Reload</Button>
       </div>
 
       <main id="main" ref="mainEl" tabindex="-1" class="flex min-h-0 flex-1 flex-col overflow-y-auto pb-[env(safe-area-inset-bottom)] outline-none [overflow-anchor:none]">
@@ -170,7 +170,7 @@ function firstSync() {
         <div v-if="view === 'loading'" class="grid flex-1 place-content-center" role="status">
           <p class="flex items-center gap-2 text-muted-light">
             <LoaderCircle class="size-4 animate-spin text-gold motion-reduce:animate-none" aria-hidden="true" />
-            Logboek openen...
+            Opening Ash Log...
           </p>
         </div>
 
@@ -178,14 +178,14 @@ function firstSync() {
         <div v-else-if="view === 'error'" class="grid flex-1 place-content-center px-4">
           <EmptyState
             :icon="CloudOff"
-            title="Het logboek is niet bereikbaar"
+            title="Ash Log can't be reached"
             :text="unreachableText"
           >
             <p class="font-mono text-sm text-[#e08a6c]">{{ data.error }}</p>
             <template #action>
               <Button :disabled="data.loading" @click="data.load()">
                 <RefreshCw :class="data.loading && 'animate-spin motion-reduce:animate-none'" aria-hidden="true" />
-                Opnieuw proberen
+                Try again
               </Button>
             </template>
           </EmptyState>
@@ -195,29 +195,29 @@ function firstSync() {
         <div v-else-if="view === 'first-run'" class="grid flex-1 place-items-center px-4 py-10">
           <ParchmentPanel class="w-full max-w-lg px-6 py-10 text-center sm:px-10">
             <img :src="ashLogs" alt="" width="64" height="64" class="mx-auto size-16" />
-            <h1 class="mt-4 font-display text-xl font-semibold tracking-[0.08em] uppercase">Het logboek is nog leeg</h1>
+            <h1 class="mt-4 font-display text-xl font-semibold tracking-[0.08em] uppercase">Your log is still empty</h1>
             <p class="mx-auto mt-3 max-w-sm leading-relaxed text-text-parchment/75">
-              Alle spelinhoud komt van de wiki. De eerste sync haalt kaartpunten, quests, vaults en beloningen op en
-              downloadt de kaarttegels één keer. Dat duurt een paar minuten.
+              All game content comes from the wiki. The first sync fetches map points, quests, vaults and rewards,
+              and downloads the map tiles once. That takes a few minutes.
             </p>
 
             <div v-if="sync.running" class="mt-7 flex flex-col items-center gap-2" role="status" aria-live="polite">
               <p class="flex items-center gap-2 font-medium">
                 <LoaderCircle class="size-4 animate-spin text-gold-ink motion-reduce:animate-none" aria-hidden="true" />
-                Bezig met de eerste sync
+                Running the first sync
               </p>
               <p class="max-w-full truncate font-mono text-xs text-text-parchment/60" :title="lastLine">{{ lastLine }}</p>
-              <Button variant="link" size="xs" @click="sync.panelOpen = true">Bekijk log</Button>
+              <Button variant="link" size="xs" @click="sync.panelOpen = true">View log</Button>
             </div>
             <div v-else class="mt-7 flex flex-col items-center gap-3">
               <Button size="lg" :disabled="connection.readOnly" @click="firstSync">
                 <RefreshCw aria-hidden="true" />
-                {{ failedReport ? 'Opnieuw proberen' : 'Eerste sync starten' }}
+                {{ failedReport ? 'Try again' : 'Start first sync' }}
               </Button>
               <p v-if="failedReport" class="text-sm text-ember">
-                De vorige poging mislukte{{ failedReport.error ? `: ${failedReport.error}` : '.' }}
+                The last attempt failed{{ failedReport.error ? `: ${failedReport.error}` : '.' }}
               </p>
-              <p v-if="sync.error" class="text-sm text-ember">Sync starten lukt niet: {{ sync.error }}</p>
+              <p v-if="sync.error" class="text-sm text-ember">Couldn't start the sync: {{ sync.error }}</p>
             </div>
           </ParchmentPanel>
         </div>

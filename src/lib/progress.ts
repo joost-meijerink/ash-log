@@ -4,11 +4,11 @@ import type { Progress, Quest, QuestProgress, VaultProgress } from './types'
 
 export type QuestState = 'open' | 'active' | 'done'
 
-/** Dutch labels for QuestState. */
+/** Labels for QuestState. */
 export const QUEST_STATE_LABEL: Record<QuestState, string> = {
-  open: 'Open',
-  active: 'Bezig',
-  done: 'Voltooid',
+  open: 'Not started',
+  active: 'In progress',
+  done: 'Done',
 }
 
 /** Number of distinct checked steps that still exist in the quest (a hand-edited file may list one twice). */

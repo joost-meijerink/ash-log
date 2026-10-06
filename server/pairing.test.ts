@@ -14,6 +14,7 @@ import {
   RATE_LIMIT_WINDOW_MS,
   deviceCookie,
   deviceNameFromUserAgent,
+  englishDeviceName,
   hashToken,
   readCookie,
 } from './pairing.ts'
@@ -67,12 +68,22 @@ describe('cookie', () => {
 describe('device names', () => {
   it('names the device and browser', () => {
     expect(deviceNameFromUserAgent(IPHONE_SAFARI)).toBe('iPhone (Safari)')
-    expect(deviceNameFromUserAgent(IPHONE_WEBAPP)).toBe('iPhone (web-app)')
+    expect(deviceNameFromUserAgent(IPHONE_WEBAPP)).toBe('iPhone (web app)')
     expect(deviceNameFromUserAgent(IPHONE_CHROME)).toBe('iPhone (Chrome)')
-    expect(deviceNameFromUserAgent(ANDROID_CHROME)).toBe('Android-telefoon (Chrome)')
+    expect(deviceNameFromUserAgent(ANDROID_CHROME)).toBe('Android phone (Chrome)')
     expect(deviceNameFromUserAgent(MAC_SAFARI)).toBe('Mac (Safari)')
-    expect(deviceNameFromUserAgent(undefined)).toBe('Onbekend apparaat')
-    expect(deviceNameFromUserAgent('curl/8.7.1')).toBe('Onbekend apparaat')
+    expect(deviceNameFromUserAgent(undefined)).toBe('Unknown device')
+    expect(deviceNameFromUserAgent('curl/8.7.1')).toBe('Unknown device')
+  })
+
+  it('puts the names of the Dutch version into English', () => {
+    expect(englishDeviceName('Android-telefoon (Chrome) 2')).toBe('Android phone (Chrome) 2')
+    expect(englishDeviceName('Android-tablet')).toBe('Android tablet')
+    expect(englishDeviceName('Windows-pc (Edge)')).toBe('Windows PC (Edge)')
+    expect(englishDeviceName('Linux-pc (Firefox)')).toBe('Linux PC (Firefox)')
+    expect(englishDeviceName('Onbekend apparaat (Safari)')).toBe('Unknown device (Safari)')
+    expect(englishDeviceName('iPhone (Safari)')).toBe('iPhone (Safari)')
+    expect(englishDeviceName('Android-telefoonhoesje')).toBe('Android-telefoonhoesje')
   })
 })
 
@@ -153,7 +164,7 @@ describe('codes', () => {
     const wrong = code === '000000' ? '000001' : '000000'
     for (let i = 0; i < MAX_FAILURES_PER_CODE; i++) await p.redeem(wrong, `10.0.${i}.1`, undefined)
     expect(await p.redeem(code, '10.9.9.9', undefined)).toMatchObject({ ok: false, status: 410 })
-    expect(logs.some((l) => /ingetrokken/.test(l))).toBe(true)
+    expect(logs.some((l) => /revoked/.test(l))).toBe(true)
   })
 
   it('forgets addresses without recent tries once many addresses were tracked', async () => {
@@ -207,6 +218,15 @@ describe('devices', () => {
     expect(again.devices().map((d) => d.id)).toEqual([b.device.id])
   })
 
+  it('shows a device that the Dutch version paired under its English name', async () => {
+    const device = { id: 'd1', name: 'Android-telefoon (Chrome)', pairedAt: '2026-09-01T10:00:00.000Z', tokenHash: hashToken('t') }
+    await mkdir(join(dir, '.local'), { recursive: true })
+    await writeFile(file, JSON.stringify({ version: 1, devices: [device] }))
+    const p = make()
+    await p.load()
+    expect(p.devices().map((d) => d.name)).toEqual(['Android phone (Chrome)'])
+  })
+
   it('writes lastSeenAt now and then, and on flush', async () => {
     const p = make()
     const r = await p.redeem(p.createCode().code, '192.168.1.20', IPHONE_SAFARI)
@@ -227,9 +247,9 @@ describe('devices', () => {
     const broken = make()
     await broken.load()
     expect(broken.devices()).toEqual([])
-    expect(logs.some((l) => /server\.json is geen geldige JSON/.test(l))).toBe(true)
+    expect(logs.some((l) => /server\.json is not valid JSON/.test(l))).toBe(true)
     const files = await readdir(join(dir, '.local'))
-    expect(files.some((f) => f.startsWith('server.json.ongeldig-'))).toBe(true)
+    expect(files.some((f) => f.startsWith('server.json.invalid-'))).toBe(true)
   })
 
   it('skips entries without a valid token hash', async () => {
@@ -246,23 +266,23 @@ describe('devices', () => {
 })
 
 describe('texts that name the computer', () => {
-  it('say Mac on macOS, pc on Windows and computer elsewhere', () => {
-    expect(pairErrors('darwin').expired).toBe('Deze code is niet meer geldig. Maak op je Mac een nieuwe.')
-    expect(pairErrors('win32').expired).toBe('Deze code is niet meer geldig. Maak op je pc een nieuwe.')
-    expect(pairErrors('linux').expired).toBe('Deze code is niet meer geldig. Maak op je computer een nieuwe.')
+  it('say Mac on macOS, PC on Windows and computer elsewhere', () => {
+    expect(pairErrors('darwin').expired).toBe('That code has expired. Make a new one on your Mac.')
+    expect(pairErrors('win32').expired).toBe('That code has expired. Make a new one on your PC.')
+    expect(pairErrors('linux').expired).toBe('That code has expired. Make a new one on your computer.')
     expect(PAIR_ERRORS).toEqual(pairErrors(process.platform))
   })
 
-  it('a Pairing on Windows answers an expired code with the pc text', async () => {
+  it('a Pairing on Windows answers an expired code with the PC text', async () => {
     const p = new Pairing({ file, now: () => clock, platform: 'win32' })
     const { code } = p.createCode()
     clock += CODE_TTL_MS
     expect(await p.redeem(code, '192.168.1.20', ANDROID_CHROME)).toMatchObject({ ok: false, status: 410, error: pairErrors('win32').expired })
   })
 
-  it('the pairing page tells where the Logboek runs', () => {
-    expect(renderPairingPage({ platform: 'win32' })).toContain('Het Logboek draait op je pc.')
-    expect(renderPairingPage({ platform: 'darwin' })).toContain('Het Logboek draait op je Mac.')
-    expect(renderPairingPage({ platform: 'linux', error: 'Deze code klopt niet' })).toContain('Het Logboek draait op je computer.')
+  it('the pairing page tells where Ash Log runs', () => {
+    expect(renderPairingPage({ platform: 'win32' })).toContain('Ash Log runs on your PC.')
+    expect(renderPairingPage({ platform: 'darwin' })).toContain('Ash Log runs on your Mac.')
+    expect(renderPairingPage({ platform: 'linux', error: "That code isn't right" })).toContain('Ash Log runs on your computer.')
   })
 })

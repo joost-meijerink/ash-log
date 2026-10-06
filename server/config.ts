@@ -38,13 +38,13 @@ export function loadEnv(file = join(ROOT, '.env')): void {
   loadEnvFile(file)
 }
 
-/** APP_PORT as a port number, the default when unset. Throws a Dutch message for anything else. */
+/** APP_PORT as a port number, the default when unset. Throws a readable message for anything else. */
 export function parsePort(value: string | undefined): number {
   const text = (value ?? '').trim()
   if (!text) return DEFAULT_APP_PORT
   const port = Number(text)
   if (!/^\d+$/.test(text) || !Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error(`APP_PORT in .env is geen geldige poort: ${text}`)
+    throw new Error(`APP_PORT in .env is not a valid port: ${text}`)
   }
   return port
 }

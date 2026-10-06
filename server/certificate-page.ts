@@ -1,13 +1,13 @@
 // What a phone on the Wi-Fi can reach over plain http, before it trusts Ash Log's https:
 //
-//   GET /certificaat                        why, and the steps for the phone that asks (iPhone or
+//   GET /certificate                        why, and the steps for the phone that asks (iPhone or
 //                                           Android, from the user agent), the other one folded
-//   GET /certificaat/ash-log.mobileconfig   configuration profile with the CA (com.apple.security.root)
-//   GET /certificaat/ash-log-ca.crt         the CA certificate itself (DER), as a download: Android
+//   GET /certificate/ash-log.mobileconfig   configuration profile with the CA (com.apple.security.root)
+//   GET /certificate/ash-log-ca.crt         the CA certificate itself (DER), as a download: Android
 //                                           and other devices install it from their settings
 //
 // Any other plain-http request from the network gets the secure-connection page: Ash Log uses
-// https now, with links to /certificaat and to the https address. No silent redirect: without
+// https now, with links to /certificate and to the https address. No silent redirect: without
 // the certificate the https page would just fail.
 //
 // The certificate pages are served over every transport (loopback and https too); they only
@@ -20,19 +20,19 @@ import { sendEmpty } from './http.ts'
 import { escapeHtml, renderPage, sendPage } from './pairing-page.ts'
 import type { TlsMaterial } from './tls.ts'
 
-export const CERTIFICATE_PATH = '/certificaat'
-export const PROFILE_PATH = '/certificaat/ash-log.mobileconfig'
-export const CA_CERT_PATH = `/certificaat/${CA_CERT_FILE_NAME}`
+export const CERTIFICATE_PATH = '/certificate'
+export const PROFILE_PATH = '/certificate/ash-log.mobileconfig'
+export const CA_CERT_PATH = `/certificate/${CA_CERT_FILE_NAME}`
 
 /** Stable, so installing the profile again (also with a new CA) replaces the old one. */
 export const PROFILE_IDENTIFIER = 'nl.ashenfall.ashlog.ca'
-export const PROFILE_DISPLAY_NAME = 'Ash Log certificaat'
+export const PROFILE_DISPLAY_NAME = 'Ash Log certificate'
 export const PROFILE_CONTENT_TYPE = 'application/x-apple-aspen-config'
 /**
  * A plain download, not application/x-x509-ca-cert: Chrome on Android hands that type to the
  * system's certificate installer, which since Android 11 refuses CA certificates that do not
  * come from Settings, and then the file is not in Downloads either. As a download it lands in
- * Downloads, where Settings > ... > CA-certificaat picks it up.
+ * Downloads, where Settings > ... > CA certificate picks it up.
  */
 export const CA_CERT_CONTENT_TYPE = 'application/octet-stream'
 export { CA_CERT_FILE_NAME }
@@ -63,11 +63,11 @@ const xml = (text: string) => escapeHtml(text)
 
 /**
  * An iOS configuration profile that installs the CA certificate as a trusted root (after the
- * user turns it on). `computer` names the computer in its description ('Mac', 'pc').
+ * user turns it on). `computer` names the computer in its description ('Mac', 'PC').
  */
 export function renderMobileconfig(ca: { der: Buffer; fingerprint: string }, computer = 'computer'): string {
   const base64 = ca.der.toString('base64').replace(/.{1,64}/g, (line) => `\t\t\t${line}\n`)
-  const description = `Hiermee vertrouwt dit apparaat de beveiligde verbinding met Ash Log op je ${computer}. Het certificaat geldt alleen voor .local-adressen en adressen in je eigen netwerk.`
+  const description = `Lets this device trust the secure connection to Ash Log on your ${computer}. The certificate only covers .local addresses and addresses on your own network.`
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -129,7 +129,7 @@ const menuPath = (items: readonly string[]) => items.map(escapeHtml).join(' &gt;
 
 /** Where the https button is from the steps: right after them, or above (folded steps). */
 type LinkAt = 'below' | 'above'
-const linkStep = (prefix: string, at: LinkAt) => `${prefix} de beveiligde link${at === 'below' ? ':' : ' hierboven.'}`
+const linkStep = (at: LinkAt, where = '') => `Then open the secure link${at === 'below' ? `${where}:` : ` above${where}.`}`
 
 /** One phone's part of the page: the button and steps, and hints that go after the https link. */
 interface PhoneSteps {
@@ -140,28 +140,28 @@ interface PhoneSteps {
 /** The iPhone steps: the profile, then trust it; the last step points at the https button. */
 function iphoneSteps(computer: string, at: LinkAt): PhoneSteps {
   return {
-    steps: `<a class="button" href="${PROFILE_PATH}">Profiel downloaden</a>
+    steps: `<a class="button" href="${PROFILE_PATH}">Download Profile</a>
 <ol class="steps">
-<li>Tik op <strong>Sta toe</strong>. Open dan Instellingen, tik op <strong>Profiel gedownload</strong> en installeer het.</li>
-<li>Ga naar Instellingen &gt; Algemeen &gt; Info &gt; Instellingen voor certificaatvertrouwen (helemaal onderaan) en zet <strong>Ash Log</strong> aan.</li>
-<li>${linkStep('Open daarna', at)}</li>
+<li>Tap <strong>Allow</strong>. Then open Settings, tap <strong>Profile Downloaded</strong> and install it.</li>
+<li>Go to Settings &gt; General &gt; About &gt; Certificate Trust Settings (at the very bottom) and turn on <strong>Ash Log</strong>.</li>
+<li>${linkStep(at)}</li>
 </ol>`,
-    hints: `<p class="hint">Je iPhone meldt dat het profiel niet is ondertekend. Dat klopt: je ${escapeHtml(computer)} heeft het certificaat zelf gemaakt.</p>`,
+    hints: `<p class="hint">Your iPhone says the profile isn't signed. That's right: your ${escapeHtml(computer)} made the certificate itself.</p>`,
   }
 }
 
 /** The Android steps: download the certificate, install it from Settings as a CA certificate. */
 function androidSteps(at: LinkAt): PhoneSteps {
   return {
-    steps: `<a class="button" href="${CA_CERT_PATH}" download="${CA_CERT_FILE_NAME}">Certificaat downloaden</a>
+    steps: `<a class="button" href="${CA_CERT_PATH}" download="${CA_CERT_FILE_NAME}">Download certificate</a>
 <ol class="steps">
-<li>Het bestand <strong>${CA_CERT_FILE_NAME}</strong> komt in je Downloads.</li>
+<li>The file <strong>${CA_CERT_FILE_NAME}</strong> lands in your Downloads.</li>
 <li>Open ${menuPath(ANDROID_CA_MENU)}.</li>
-<li>Tik op <strong>Toch installeren</strong>, kies <strong>${CA_CERT_FILE_NAME}</strong> en bevestig met je pincode.</li>
-<li>${linkStep('Open daarna in Chrome', at)}</li>
+<li>Tap <strong>Install anyway</strong>, pick <strong>${CA_CERT_FILE_NAME}</strong> and confirm with your PIN.</li>
+<li>${linkStep(at, ' in Chrome')}</li>
 </ol>`,
-    hints: `<p class="hint">Heten de menu's op jouw telefoon anders? Zoek in Instellingen op <strong>CA-certificaat</strong> of <strong>Certificaat installeren</strong>.</p>
-<p class="hint">Andere browsers dan Chrome vertrouwen het certificaat soms niet.</p>`,
+    hints: `<p class="hint">Are the menus named differently on your phone? Search Settings for <strong>CA certificate</strong> or <strong>Install a certificate</strong>.</p>
+<p class="hint">Browsers other than Chrome sometimes don't trust the certificate.</p>`,
   }
 }
 
@@ -179,7 +179,7 @@ details[data-phone] { border-top: 1px solid rgba(122, 86, 26, .25); margin-top: 
 </style>`
 
 /**
- * GET /certificaat. The steps for the phone that asks come first (iPhone for anything that is
+ * GET /certificate. The steps for the phone that asks come first (iPhone for anything that is
  * not Android, such as an iPad or a computer); the other phone's steps are one tap away.
  * Without a fingerprint the certificate is not there (it could not be made).
  */
@@ -187,31 +187,31 @@ export function renderCertificatePage(opts: { httpsUrl: string; fingerprint?: st
   const computer = opts.computer ?? 'computer'
   if (!opts.fingerprint) {
     return renderPage({
-      title: 'Certificaat installeren',
-      card: `<h1>Certificaat installeren</h1>
-<p class="error" role="alert">Het certificaat is er nog niet. Kijk op je ${escapeHtml(computer)} of Ash Log goed draait en zet Live op wifi opnieuw aan.</p>`,
+      title: 'Install certificate',
+      card: `<h1>Install certificate</h1>
+<p class="error" role="alert">The certificate isn't there yet. Check on your ${escapeHtml(computer)} that Ash Log is running, then turn on Live on Wi-Fi again.</p>`,
     })
   }
   const android = opts.phone === 'android'
   const first = android ? androidSteps('below') : iphoneSteps(computer, 'below')
   const other = android ? iphoneSteps(computer, 'above') : androidSteps('above')
   return renderPage({
-    title: 'Certificaat installeren',
+    title: 'Install certificate',
     head: DISCLOSURE_CSS,
-    card: `<h1>Certificaat installeren</h1>
-<p>Ash Log gebruikt op je wifi een beveiligde verbinding. Zo kan de app op je telefoon ook iets laten zien als je ${escapeHtml(computer)} uit staat. Daarvoor moet je telefoon één keer het certificaat van je ${escapeHtml(computer)} vertrouwen. Het geldt alleen voor adressen in je eigen netwerk.</p>
+    card: `<h1>Install certificate</h1>
+<p>Ash Log uses a secure connection on your Wi-Fi. That way the app on your phone can still show something when your ${escapeHtml(computer)} is off. For that, your phone has to trust the certificate of your ${escapeHtml(computer)} once. It only covers addresses on your own network.</p>
 <section data-phone="${android ? 'android' : 'iphone'}">
 ${first.steps}
 ${httpsButton(opts.httpsUrl, 'Open Ash Log')}
 ${first.hints}
 </section>
 <details data-phone="${android ? 'iphone' : 'android'}">
-<summary>${android ? 'Heb je een iPhone?' : 'Heb je een Android-telefoon?'}</summary>
+<summary>${android ? 'Got an iPhone?' : 'Got an Android phone?'}</summary>
 ${other.steps}
 ${other.hints}
 </details>
 <details>
-<summary>Vingerafdruk (SHA-256)</summary>
+<summary>Fingerprint (SHA-256)</summary>
 <p class="mono">${escapeHtml(opts.fingerprint)}</p>
 </details>`,
   })
@@ -221,12 +221,12 @@ ${other.hints}
 export function renderSecureConnectionPage(opts: { httpsUrl: string; computer?: string }): string {
   const computer = opts.computer ?? 'computer'
   return renderPage({
-    title: 'Beveiligde verbinding',
-    card: `<h1>Beveiligde verbinding</h1>
-<p>Ash Log gebruikt op je wifi nu een beveiligde verbinding. Installeer eerst één keer het certificaat op dit apparaat en open daarna het beveiligde adres.</p>
-<a class="button" href="${CERTIFICATE_PATH}">Certificaat installeren</a>
-${httpsButton(opts.httpsUrl, 'Beveiligd openen')}
-<p class="hint">Stond Ash Log al op je beginscherm? Koppel opnieuw met de nieuwe QR-code op je ${escapeHtml(computer)} en zet Ash Log opnieuw op je beginscherm. Het oude icoon werkt niet meer.</p>`,
+    title: 'Secure connection',
+    card: `<h1>Secure connection</h1>
+<p>Ash Log now uses a secure connection on your Wi-Fi. First install the certificate on this device once, then open the secure address.</p>
+<a class="button" href="${CERTIFICATE_PATH}">Install certificate</a>
+${httpsButton(opts.httpsUrl, 'Open securely')}
+<p class="hint">Was Ash Log already on your home screen? Pair again with the new QR code on your ${escapeHtml(computer)} and add Ash Log to your home screen again. The old icon no longer works.</p>`,
   })
 }
 
@@ -237,7 +237,7 @@ export function sendSecureConnectionPage(req: IncomingMessage, res: ServerRespon
 /**
  * Serves the certificate paths. `material` is the TLS state in use (null when no certificate
  * could be made); `httpsUrl` the https address for the same host; `computer` how texts name
- * the computer ('Mac', 'pc'). Returns false for any other path.
+ * the computer ('Mac', 'PC'). Returns false for any other path.
  */
 export function handleCertificate(
   req: IncomingMessage,

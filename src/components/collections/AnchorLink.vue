@@ -3,7 +3,7 @@ import type { HTMLAttributes } from 'vue'
 import { useAnchorNavigator } from '@/composables/useCollectionAnchor'
 
 /**
- * Link to an anchor on the Verzamelingen page ('#vault-takla-kara'). A plain click scrolls
+ * Link to an anchor on the Collections page ('#vault-takla-kara'). A plain click scrolls
  * inside <main> via the view's anchor navigator; modified clicks behave like a normal link.
  */
 const props = defineProps<{

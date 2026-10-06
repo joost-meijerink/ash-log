@@ -1,4 +1,4 @@
-// 'Live op wifi' and phone pairing: the state of the server behind /api (GET /api/server).
+// 'Live on Wi-Fi' and phone pairing: the state of the server behind /api (GET /api/server).
 // Under `npm run dev` the status says mode 'dev' and there is nothing to manage. Under the app
 // server, the computer itself (local) can switch live mode, pair a phone and unpair devices.
 // Pairing takes two steps while live: a phone first installs the Ash Log certificate from the
@@ -93,7 +93,7 @@ export const useServerStore = defineStore('server', () => {
 
   /** Only the computer itself, under the app server, manages live mode and devices. */
   const canManage = computed(() => status.value?.mode === 'app' && status.value.local)
-  /** How texts name the computer the server runs on: 'Mac', 'pc' or 'computer'. */
+  /** How texts name the computer the server runs on: 'Mac', 'PC' or 'computer'. */
   const computer = computed(() => computerNoun(status.value?.platform))
   const live = computed(() => !!status.value?.live)
   /**
@@ -181,8 +181,8 @@ export const useServerStore = defineStore('server', () => {
       }
       if (status.value && status.value.live !== expected && !liveError.value) {
         liveError.value = expected
-          ? 'Live aanzetten is niet gelukt. Probeer het nog eens.'
-          : 'Live uitzetten is niet gelukt. Probeer het nog eens.'
+          ? "Couldn't turn Live on. Try again."
+          : "Couldn't turn Live off. Try again."
       }
     }, VERIFY_DELAY_MS)
   }

@@ -10,14 +10,14 @@ import { useProgressStore } from '@/stores/progress'
 
 export type OrphanKind = keyof Orphans
 
-/** Dutch labels per orphan kind, in display order. */
+/** Labels per orphan kind, in display order. */
 export const ORPHAN_KIND_LABEL: Record<OrphanKind, string> = {
   quests: 'Quests',
-  steps: 'Queststappen',
-  items: 'Questitems',
-  points: 'Kaartpunten',
+  steps: 'Quest steps',
+  items: 'Quest items',
+  points: 'Map points',
   vaults: 'Vaults',
-  rewards: 'Beloningen',
+  rewards: 'Rewards',
 }
 
 /** Looks up English wiki names for orphan ids. Anything it cannot resolve falls back to the id. */
@@ -70,7 +70,7 @@ export function orphanLabel(kind: OrphanKind, id: string, names: OrphanNames = {
 
 export interface OrphanGroup {
   kind: OrphanKind
-  /** Dutch label of the kind. */
+  /** Label of the kind. */
   label: string
   count: number
   /** English wiki names it concerns (quests for steps and items, categories for points), deduped. */

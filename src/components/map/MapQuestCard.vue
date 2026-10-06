@@ -36,8 +36,8 @@ const quests = computed<AppQuest[]>(() => {
 
 const sourceText = computed(() => {
   const start = props.quest.start
-  if (!start) return 'Nog geen startpunt'
-  return start.source === 'override' ? 'Je eigen pin' : 'Startpunt volgens de wiki'
+  if (!start) return 'No start point yet'
+  return start.source === 'override' ? 'Your own pin' : 'From the wiki'
 })
 
 function questPath(id: string) {
@@ -53,13 +53,13 @@ function questPath(id: string) {
       </span>
       <div class="min-w-0 flex-1 pt-0.5">
         <p class="font-display text-[0.7rem] font-semibold tracking-[0.14em] text-gold-ink uppercase">
-          Queststart · {{ sourceText }}
+          Quest start · {{ sourceText }}
         </p>
         <h2 id="map-card-title" lang="en" class="mt-0.5 font-display text-lg leading-snug font-semibold text-balance break-words">
           {{ quest.name }}
         </h2>
       </div>
-      <IconButton label="Sluiten" size="icon-sm" class="-mt-1 -mr-2 shrink-0" @click="emit('close')">
+      <IconButton label="Close" size="icon-sm" class="-mt-1 -mr-2 shrink-0" @click="emit('close')">
         <X />
       </IconButton>
     </header>
@@ -77,7 +77,7 @@ function questPath(id: string) {
         </div>
         <LocationText v-if="q.location" as="p" pin lang="en" class="leading-relaxed">{{ q.location }}</LocationText>
         <p v-if="!q.start" class="text-sm text-text-parchment/75">
-          De wiki geeft geen plek op de kaart. Zet zelf een pin, dan vind je de start terug.
+          The wiki doesn't give a spot on the map. Set a pin yourself so you can find the start again.
         </p>
         <div class="flex flex-wrap gap-2">
           <Button as-child :variant="i === 0 ? 'default' : 'outline'" size="sm">
@@ -88,7 +88,7 @@ function questPath(id: string) {
           </Button>
           <Button variant="outline" size="sm" :disabled="connection.readOnly" @click="state.startPin(q.id)">
             <MapPinPlus aria-hidden="true" />
-            {{ q.start ? 'Pin verplaatsen' : 'Pin zetten' }}
+            {{ q.start ? 'Move pin' : 'Set pin' }}
           </Button>
         </div>
       </li>

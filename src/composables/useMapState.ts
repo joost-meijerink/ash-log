@@ -1,6 +1,6 @@
 // Map filters, selection and pin mode, kept in the URL (see src/lib/map-url.ts for the params).
 // Every change goes through an action here, which writes the URL with a replace.
-// Navigation from elsewhere (a link to /kaart?focus=...) is parsed back in; our own writes are
+// Navigation from elsewhere (a link to /map?focus=...) is parsed back in; our own writes are
 // recognised by their query key and ignored, so typing never races the URL.
 // A URL without filter params gets the last filters of this session (src/stores/mapMemory.ts).
 //
@@ -115,7 +115,7 @@ export function useMapState(model: MapModel) {
     }
     if (s.quest && (arrived || s.quest !== prevQuest)) requestFly('quest', s.quest)
     if (s.pin && (arrived || s.pin !== prevPin) && !s.focus && !s.quest) requestFly('pin', s.pin)
-    // A link with filters and no spot (the chest counts in Verzamelingen): the map that was kept
+    // A link with filters and no spot (the chest counts in Collections): the map that was kept
     // may be zoomed in somewhere else, so show the whole land, as a map that opens does.
     if (arrived && !s.focus && !s.quest && !s.pin && hasFilterParams(query)) requestFly('land', '')
     // Unknown ids were dropped, or a category was added: bring the URL in line.
@@ -200,7 +200,7 @@ export function useMapState(model: MapModel) {
   // and its target must be handled once.
   watch([() => route.query, view.arrival], follow)
   follow()
-  // The URL may already match the empty start state (/kaart?c=), then nothing was applied above.
+  // The URL may already match the empty start state (/map?c=), then nothing was applied above.
   if (onMap()) memory.remember(filters)
 
   /* ---------------- actions ---------------- */
@@ -228,7 +228,7 @@ export function useMapState(model: MapModel) {
     write()
   }
 
-  /** 'Alleen met power level': hide points without a level too. Only while a level is picked. */
+  /** 'Only with a power level': hide points without a level too. Only while a level is picked. */
   function setStrictPower(on: boolean) {
     filters.strictPower = on && filters.powers.length > 0
     write()
@@ -256,7 +256,7 @@ export function useMapState(model: MapModel) {
     write()
   }
 
-  /** 'Wis filters': everything off, search cleared. The selection stays. */
+  /** 'Clear filters': everything off, search cleared. The selection stays. */
   function clearFilters() {
     Object.assign(filters, emptyFilters())
     write()
@@ -325,7 +325,7 @@ export function useMapState(model: MapModel) {
     write()
   }
 
-  /** After placing or removing a pin: /kaart?quest=<id> with the current filters. */
+  /** After placing or removing a pin: /map?quest=<id> with the current filters. */
   function finishPin(id: string) {
     pin.value = undefined
     focus.value = undefined

@@ -61,7 +61,7 @@ provideTone('dark')
         class="absolute top-2 right-2 grid size-11 cursor-pointer place-content-center rounded-md text-muted-light transition-colors outline-none hover:bg-line-dark/60 hover:text-gold focus-visible:ring-2 focus-visible:ring-gold [&_svg]:size-5"
       >
         <X />
-        <span class="sr-only">Sluiten</span>
+        <span class="sr-only">Close</span>
       </DialogClose>
     </DialogContent>
   </DialogPortal>

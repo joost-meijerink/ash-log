@@ -80,7 +80,7 @@ describe('progress ETag', () => {
     const onDisk = withStep('Q:s:other-tab')
     respond = (c) => {
       if (c.method === 'GET') return json(200, emptyProgress(), { ETag: '"v1"' })
-      if (c.headers['If-Match'] === '"v1"') return json(409, { error: 'Voortgang is elders gewijzigd', progress: onDisk }, { ETag: '"v9"' })
+      if (c.headers['If-Match'] === '"v1"') return json(409, { error: 'Progress was changed elsewhere', progress: onDisk }, { ETag: '"v9"' })
       return json(200, c.body, { ETag: '"v10"' })
     }
 
@@ -89,7 +89,7 @@ describe('progress ETag', () => {
     expect(err).toBeInstanceOf(ProgressConflictError)
     expect((err as InstanceType<typeof ProgressConflictError>).name).toBe('ProgressConflictError')
     expect((err as InstanceType<typeof ProgressConflictError>).progress).toEqual(onDisk)
-    expect((err as Error).message).toBe('Voortgang is elders gewijzigd')
+    expect((err as Error).message).toBe('Progress was changed elsewhere')
 
     await api.saveProgress(withStep('Q:s:merged'))
     expect(calls[2]!.headers['If-Match']).toBe('"v9"')
@@ -97,8 +97,8 @@ describe('progress ETag', () => {
 
   it('reports other errors with the server message', async () => {
     const { api } = await loadApi()
-    respond = () => json(400, { error: 'Ongeldige voortgang' })
-    await expect(api.saveProgress(emptyProgress())).rejects.toThrow('Ongeldige voortgang')
+    respond = () => json(400, { error: 'Invalid progress' })
+    await expect(api.saveProgress(emptyProgress())).rejects.toThrow('Invalid progress')
     respond = () => new Response('<html>oops</html>', { status: 502 })
     await expect(api.progress()).rejects.toThrow('HTTP 502')
   })
@@ -152,10 +152,10 @@ describe('server endpoints', () => {
     for (const c of calls.filter((c) => c.method === 'POST')) expect(c.headers['Content-Type']).toBe('application/json')
   })
 
-  it('passes the Dutch error of the server on', async () => {
+  it('passes the error of the server on', async () => {
     const { api } = await loadApi()
-    respond = () => json(409, { error: 'Poort 5199 is al in gebruik' })
-    await expect(api.setLive(true)).rejects.toThrow('Poort 5199 is al in gebruik')
+    respond = () => json(409, { error: 'Port 5199 is already in use' })
+    await expect(api.setLive(true)).rejects.toThrow('Port 5199 is already in use')
   })
 })
 
@@ -168,9 +168,9 @@ describe('an unpaired phone', () => {
     const reload = vi.fn()
     vi.stubGlobal('location', { reload })
     const { api } = await loadApi()
-    respond = () => json(401, { error: 'Koppel dit apparaat eerst' })
-    await expect(api.data()).rejects.toThrow('Koppel dit apparaat eerst')
-    await expect(api.progress()).rejects.toThrow('Koppel dit apparaat eerst')
+    respond = () => json(401, { error: 'Pair this device first' })
+    await expect(api.data()).rejects.toThrow('Pair this device first')
+    await expect(api.progress()).rejects.toThrow('Pair this device first')
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
@@ -178,8 +178,8 @@ describe('an unpaired phone', () => {
     const reload = vi.fn()
     vi.stubGlobal('location', { reload })
     const { api } = await loadApi()
-    respond = () => json(403, { error: 'Dit kan alleen op de Mac zelf' })
-    await expect(api.setLive(true)).rejects.toThrow('Dit kan alleen op de Mac zelf')
+    respond = () => json(403, { error: 'This only works on the Mac itself' })
+    await expect(api.setLive(true)).rejects.toThrow('This only works on the Mac itself')
     expect(reload).not.toHaveBeenCalled()
   })
 })

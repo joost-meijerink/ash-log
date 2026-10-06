@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { QUEST_STATE_LABEL, type QuestState } from '@/lib/progress'
 import type { Tone } from '@/composables/useTone'
 
-/** Quest status label: 'Open' (quiet), 'Bezig' (gold), 'Voltooid' (filled, with a check). */
+/** Quest status label: 'Not started' (quiet), 'In progress' (gold), 'Done' (filled, with a check). */
 const props = defineProps<{
   state: QuestState
   tone?: Tone

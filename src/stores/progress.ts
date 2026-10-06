@@ -1,4 +1,4 @@
-// Progress (checkmarks), persisted to /data/progress.json via PUT /api/progress (debounced).
+// Progress (ticks), persisted to /data/progress.json via PUT /api/progress (debounced).
 //
 // Another tab or a hand edit can change progress.json while this tab is open. The api sends the
 // ETag of the copy this tab last saw as If-Match; on a 409 the store merges its own changes onto
@@ -20,7 +20,7 @@ import { useConnectionStore } from './connection'
 const SAVE_DELAY_MS = 400
 
 /** Shown when progress changed on disk twice while this tab was saving, so its own changes were dropped. */
-export const PROGRESS_RELOADED_MESSAGE = 'Voortgang is elders gewijzigd en opnieuw geladen. Check je laatste vinkjes'
+export const PROGRESS_RELOADED_MESSAGE = 'Progress was changed elsewhere and reloaded. Check your last ticks'
 
 /** By name, not instanceof: tests mock '@/lib/api' without the class. */
 const isConflict = (err: unknown): err is ProgressConflictError =>
@@ -87,7 +87,7 @@ export const useProgressStore = defineStore('progress', () => {
   function load(): Promise<void> {
     return serial(async () => {
       try {
-        // An offline copy only when nothing is loaded yet; never over newer checkmarks.
+        // An offline copy only when nothing is loaded yet; never over newer ticks.
         receive(normalizeProgress(await api.progress({ acceptOffline: !loaded.value })))
         loaded.value = true
         setError(null)
@@ -113,7 +113,7 @@ export const useProgressStore = defineStore('progress', () => {
   }
 
   /**
-   * The Mac answers again after it could not be reached: fetch its copy (unsaved checkmarks
+   * The Mac answers again after it could not be reached: fetch its copy (unsaved ticks
    * stay on top, merged three-way) and send what was waiting. The ETag makes sure this never
    * overwrites a newer copy on disk.
    */
@@ -150,7 +150,7 @@ export const useProgressStore = defineStore('progress', () => {
       if (isConflict(err)) await resolveConflict(err.progress, init)
       else {
         dirty = true
-        setError(`Opslaan mislukt: ${(err as Error).message}`)
+        setError(`Couldn't save: ${(err as Error).message}`)
       }
     } finally {
       saving.value = false
@@ -183,7 +183,7 @@ export const useProgressStore = defineStore('progress', () => {
         setError(PROGRESS_RELOADED_MESSAGE, true)
       } else {
         dirty = true
-        setError(`Opslaan mislukt: ${(err as Error).message}`)
+        setError(`Couldn't save: ${(err as Error).message}`)
       }
     }
   }

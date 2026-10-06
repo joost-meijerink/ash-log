@@ -1,4 +1,4 @@
-// Map category groups: fixed order, Dutch headings, and which groups can be ticked off.
+// Map category groups: fixed order, headings, and which groups can be ticked off.
 // Pure, no DOM: this file is also type-checked by the Node config.
 
 import type { MapCategory, MapGroup, Overrides } from './types'
@@ -17,18 +17,18 @@ export const GROUP_ORDER: readonly MapGroup[] = [
   'other',
 ]
 
-/** Dutch headings for the sidebar. */
+/** Headings for the sidebar. */
 export const GROUP_LABEL: Record<MapGroup, string> = {
-  resource: 'Grondstoffen',
+  resource: 'Resources',
   chest: 'Chests',
-  unique: 'Unieke unlocks',
+  unique: 'Unique unlocks',
   lore: 'Lore',
   quest: 'Quests',
   vault: 'Vaults',
-  npc: "NPC's",
+  npc: 'NPCs',
   monster: 'Monsters',
-  location: 'Plaatsen',
-  other: 'Overig',
+  location: 'Places',
+  other: 'Other',
 }
 
 /**

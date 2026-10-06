@@ -75,7 +75,7 @@ function call(port, method, path, body) {
         })
       },
     )
-    req.on('timeout', () => req.destroy(new Error(`${method} ${path}: geen antwoord`)))
+    req.on('timeout', () => req.destroy(new Error(`${method} ${path}: no answer`)))
     req.on('error', fail)
     req.end(payload)
   })
@@ -148,48 +148,48 @@ async function main() {
     const deadline = Date.now() + START_TIMEOUT_MS
     let health = null
     while (Date.now() < deadline) {
-      if (exitInfo) throw new Error(`server stopte tijdens het starten (code ${exitInfo.code}, signaal ${exitInfo.signal})`)
+      if (exitInfo) throw new Error(`server stopped while starting (code ${exitInfo.code}, signal ${exitInfo.signal})`)
       health = await call(port, 'GET', '/api/health').catch(() => null)
       if (health?.status === 200) break
       await sleep(250)
     }
-    assert(health?.status === 200 && health.json?.ok === true && health.json?.mode === 'app', `geen gezonde server op poort ${port}: ${health?.status} ${health?.text}`)
-    ok(`GET /api/health op 127.0.0.1:${port}`)
+    assert(health?.status === 200 && health.json?.ok === true && health.json?.mode === 'app', `no healthy server on port ${port}: ${health?.status} ${health?.text}`)
+    ok(`GET /api/health on 127.0.0.1:${port}`)
 
     // 2. Live is off at start.
     const server = await call(port, 'GET', '/api/server')
-    assert(server.status === 200, `GET /api/server gaf ${server.status}`)
-    assert(server.json.live === false && server.json.local === true && Array.isArray(server.json.urls) && server.json.urls.length === 0, `live staat niet uit: ${server.text}`)
-    ok('live staat uit bij de start')
+    assert(server.status === 200, `GET /api/server returned ${server.status}`)
+    assert(server.json.live === false && server.json.local === true && Array.isArray(server.json.urls) && server.json.urls.length === 0, `live is not off: ${server.text}`)
+    ok('live is off at start')
 
     // 3. Only loopback listens: the LAN addresses refuse.
     const addresses = ownAddresses()
-    if (!addresses.length) ok('geen LAN-adres op deze machine, alleen-loopback niet extra gecontroleerd')
+    if (!addresses.length) ok('no LAN address on this machine, loopback-only not checked further')
     for (const address of addresses) {
       const result = await probe(address, port)
-      assert(result !== 'open', `${address}:${port} neemt verbindingen aan terwijl live uit staat`)
-      ok(`${address}:${port} weigert (${result})`)
+      assert(result !== 'open', `${address}:${port} accepts connections while live is off`)
+      ok(`${address}:${port} refuses (${result})`)
     }
 
     // 4. Reading creates no per-user files.
-    assert((await call(port, 'GET', '/api/data')).status === 200, 'GET /api/data mislukt')
-    assert((await call(port, 'GET', '/api/progress')).status === 200, 'GET /api/progress mislukt')
+    assert((await call(port, 'GET', '/api/data')).status === 200, 'GET /api/data failed')
+    assert((await call(port, 'GET', '/api/progress')).status === 200, 'GET /api/progress failed')
     const after = userFiles.map(fileState)
-    assert(JSON.stringify(before) === JSON.stringify(after), `lezen veranderde progress.json of overrides.json: ${before} -> ${after}`)
-    ok(`lezen laat progress.json en overrides.json met rust (${after.join(', ')})`)
+    assert(JSON.stringify(before) === JSON.stringify(after), `reading changed progress.json or overrides.json: ${before} -> ${after}`)
+    ok(`reading leaves progress.json and overrides.json alone (${after.join(', ')})`)
 
     // 5. A clean stop on request.
     const stop = await call(port, 'POST', '/api/server/stop', {})
-    assert(stop.status === 202, `POST /api/server/stop gaf ${stop.status}: ${stop.text}`)
+    assert(stop.status === 202, `POST /api/server/stop returned ${stop.status}: ${stop.text}`)
     const result = await Promise.race([exited, raceTimeout(STOP_TIMEOUT_MS).then(() => null)])
-    assert(result, `server stopte niet binnen ${STOP_TIMEOUT_MS / 1000} s`)
-    assert(result.code === 0, `server stopte met code ${result.code} (signaal ${result.signal})`)
-    assert(!existsSync(join(localDir, 'server.pid')), 'pid-bestand bleef staan')
-    ok('POST /api/server/stop: netjes gestopt, code 0, pid-bestand weg')
+    assert(result, `server did not stop within ${STOP_TIMEOUT_MS / 1000} s`)
+    assert(result.code === 0, `server stopped with code ${result.code} (signal ${result.signal})`)
+    assert(!existsSync(join(localDir, 'server.pid')), 'pid file was left behind')
+    ok('POST /api/server/stop: stopped cleanly, code 0, pid file gone')
   } catch (err) {
-    console.error(`FOUT ${err.message}`)
-    console.error('--- serveruitvoer ---')
-    console.error(output.join('') || '(niets)')
+    console.error(`FAIL ${err.message}`)
+    console.error('--- server output ---')
+    console.error(output.join('') || '(nothing)')
     if (!exitInfo) child.kill()
     process.exitCode = 1
   } finally {
@@ -200,9 +200,9 @@ async function main() {
     rmSync(localDir, { recursive: true, force: true })
   }
   if (!process.exitCode) {
-    console.log('--- serveruitvoer ---')
+    console.log('--- server output ---')
     console.log(output.join('').trimEnd())
-    console.log(`\nRooktest geslaagd: ${steps.length} stappen`)
+    console.log(`\nSmoke test passed: ${steps.length} steps`)
   }
 }
 

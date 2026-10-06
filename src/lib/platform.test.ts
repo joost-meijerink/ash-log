@@ -21,9 +21,9 @@ describe('the computer', () => {
     expect(serverPlatform('freebsd')).toBe('other')
   })
 
-  it('names it Mac, pc or computer', () => {
+  it('names it Mac, PC or computer', () => {
     expect(computerNoun('mac')).toBe('Mac')
-    expect(computerNoun('windows')).toBe('pc')
+    expect(computerNoun('windows')).toBe('PC')
     expect(computerNoun('linux')).toBe('computer')
     expect(computerNoun('other')).toBe('computer')
     // An older server without the field.
@@ -48,7 +48,7 @@ describe('the phone', () => {
 
   it('has the Android menu path and the file name the steps name', () => {
     expect(ANDROID_CA_MENU.join(' > ')).toBe(
-      'Instellingen > Beveiliging en privacy > Meer beveiligingsinstellingen > Versleuteling en inloggegevens > Certificaat installeren > CA-certificaat',
+      'Settings > Security & privacy > More security settings > Encryption & credentials > Install a certificate > CA certificate',
     )
     expect(CA_CERT_FILE_NAME).toBe('ash-log-ca.crt')
   })

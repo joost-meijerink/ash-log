@@ -70,7 +70,7 @@ const smallInt = (n: number) => unsigned(Buffer.from([n]))
 /** An OBJECT IDENTIFIER from dotted form. */
 export function oid(dotted: string): Buffer {
   const arcs = dotted.split('.').map(Number)
-  if (arcs.length < 2 || arcs.some((a) => !Number.isSafeInteger(a) || a < 0)) throw new Error(`Ongeldige OID: ${dotted}`)
+  if (arcs.length < 2 || arcs.some((a) => !Number.isSafeInteger(a) || a < 0)) throw new Error(`Invalid OID: ${dotted}`)
   const out: number[] = []
   for (const arc of [arcs[0]! * 40 + arcs[1]!, ...arcs.slice(2)]) {
     const bytes = [arc % 128]
@@ -100,13 +100,13 @@ function time(date: Date): Buffer {
 }
 
 function ipv4Bytes(ip: string): Buffer {
-  if (!isIPv4(ip)) throw new Error(`Geen IPv4-adres: ${ip}`)
+  if (!isIPv4(ip)) throw new Error(`Not an IPv4 address: ${ip}`)
   return Buffer.from(ip.split('.').map(Number))
 }
 
 /** An IA5String name for dNSName: plain ASCII without spaces or control characters. */
 function dnsBytes(name: string): Buffer {
-  if (!/^[\x21-\x7e]+$/.test(name)) throw new Error(`Ongeldige naam: ${JSON.stringify(name)}`)
+  if (!/^[\x21-\x7e]+$/.test(name)) throw new Error(`Invalid name: ${JSON.stringify(name)}`)
   return Buffer.from(name, 'ascii')
 }
 
@@ -134,19 +134,19 @@ interface Node {
 }
 
 function readNode(der: Buffer, offset: number, limit = der.length): Node {
-  if (offset + 2 > limit) throw new Error('DER is afgekapt')
+  if (offset + 2 > limit) throw new Error('DER is truncated')
   const tag = der[offset]!
-  if ((tag & 0x1f) === 0x1f) throw new Error('DER-tag wordt niet ondersteund')
+  if ((tag & 0x1f) === 0x1f) throw new Error('DER tag not supported')
   let len = der[offset + 1]!
   let p = offset + 2
   if (len & 0x80) {
     const n = len & 0x7f
-    if (n === 0 || n > 4 || p + n > limit) throw new Error('DER-lengte klopt niet')
+    if (n === 0 || n > 4 || p + n > limit) throw new Error('DER length is not right')
     len = 0
     for (let i = 0; i < n; i++) len = len * 256 + der[p++]!
   }
   const end = p + len
-  if (end > limit) throw new Error('DER is afgekapt')
+  if (end > limit) throw new Error('DER is truncated')
   return { tag, start: offset, content: p, end }
 }
 
@@ -161,7 +161,7 @@ function childrenOf(der: Buffer, node: Node): Node[] {
 }
 
 function expectTag(node: Node | undefined, tag: number, what: string): Node {
-  if (!node || node.tag !== tag) throw new Error(`Onverwachte opbouw van het certificaat (${what})`)
+  if (!node || node.tag !== tag) throw new Error(`Unexpected certificate structure (${what})`)
   return node
 }
 
@@ -222,17 +222,17 @@ function spkiOf(key: KeyObject): Buffer {
 function signatureAlgorithm(key: KeyObject): Buffer {
   if (key.asymmetricKeyType === 'ec') return seq(oid(OID.ecdsaWithSha256))
   if (key.asymmetricKeyType === 'rsa') return seq(oid(OID.sha256WithRsa), NULL)
-  throw new Error(`Sleuteltype ${key.asymmetricKeyType ?? 'onbekend'} wordt niet ondersteund`)
+  throw new Error(`Key type ${key.asymmetricKeyType ?? 'unknown'} is not supported`)
 }
 
 function checkSerial(serial: Buffer): void {
   if (!serial.length || serial.length > 20 || serial[0]! & 0x80 || serial.every((b) => b === 0)) {
-    throw new Error('Het serienummer moet positief zijn en hoogstens 20 bytes')
+    throw new Error('The serial number must be positive and at most 20 bytes')
   }
 }
 
 function checkValidity(notBefore: Date, notAfter: Date): void {
-  if (!(notBefore.getTime() < notAfter.getTime())) throw new Error('Geldigheid klopt niet')
+  if (!(notBefore.getTime() < notAfter.getTime())) throw new Error('Validity is not right')
 }
 
 interface TbsParts {
@@ -280,7 +280,7 @@ export interface CaCertificateOptions {
  * names: critical basicConstraints, keyUsage and nameConstraints, plus a subject key identifier.
  */
 export function createCaCertificate(o: CaCertificateOptions): Buffer {
-  if (!o.permitted.dns.length && !o.permitted.ipv4.length) throw new Error('Een CA zonder namen kan niets ondertekenen')
+  if (!o.permitted.dns.length && !o.permitted.ipv4.length) throw new Error('A CA without names cannot sign anything')
   const spki = spkiOf(o.key)
   const name = distinguishedName({ commonName: o.commonName, organization: o.organization })
   const permitted = [
@@ -326,7 +326,7 @@ export interface LeafCertificateOptions {
  * subject and authority key identifiers. The issuer is the CA's subject, byte for byte.
  */
 export function createLeafCertificate(o: LeafCertificateOptions): Buffer {
-  if (!o.dns.length && !o.ips.length) throw new Error('Een servercertificaat zonder namen werkt nergens')
+  if (!o.dns.length && !o.ips.length) throw new Error('A server certificate without names works nowhere')
   const spki = spkiOf(o.key)
   const ca = issuerInfo(o.issuer.der)
   const usage = o.key.asymmetricKeyType === 'rsa' ? [KEY_USAGE.digitalSignature, KEY_USAGE.keyEncipherment] : [KEY_USAGE.digitalSignature]

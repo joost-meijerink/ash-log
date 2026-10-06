@@ -1,8 +1,8 @@
 // URL state of the quests view and the cross-view links it builds. Pure functions only.
 //
-//   /quests/<encodeURIComponent(questId)>?q=<search>&status=open|bezig|voltooid
-//   /kaart?quest=<questId>   shows the quest start on the map
-//   /kaart?pin=<questId>     next click on the map sets the manual start pin
+//   /quests/<encodeURIComponent(questId)>?q=<search>&status=open|active|done
+//   /map?quest=<questId>   shows the quest start on the map
+//   /map?pin=<questId>     next click on the map sets the manual start pin
 
 import type { QuestState } from './progress'
 import type { StatusFilter } from './quests-list'
@@ -13,9 +13,9 @@ export interface QuestListState {
   status: StatusFilter
 }
 
-/** Dutch values in the URL, like the route names. */
-const STATUS_PARAM: Record<QuestState, string> = { open: 'open', active: 'bezig', done: 'voltooid' }
-const PARAM_STATUS: Record<string, QuestState> = { open: 'open', bezig: 'active', voltooid: 'done' }
+/** The values in the URL. Older Dutch addresses are rewritten first, see src/lib/legacy-url.ts. */
+const STATUS_PARAM: Record<QuestState, string> = { open: 'open', active: 'active', done: 'done' }
+const PARAM_STATUS: Record<string, QuestState> = { open: 'open', active: 'active', done: 'done' }
 
 type QueryValue = string | null | undefined | (string | null)[]
 
@@ -53,11 +53,11 @@ export function questPath(questId: string): string {
 }
 
 export function mapQuestLink(questId: string): { path: string; query: Record<string, string> } {
-  return { path: '/kaart', query: { quest: questId } }
+  return { path: '/map', query: { quest: questId } }
 }
 
 export function mapPinLink(questId: string): { path: string; query: Record<string, string> } {
-  return { path: '/kaart', query: { pin: questId } }
+  return { path: '/map', query: { pin: questId } }
 }
 
 /** The :questId route param as one string (vue-router has already decoded it). */

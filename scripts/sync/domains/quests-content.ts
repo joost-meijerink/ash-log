@@ -472,7 +472,7 @@ export function withStepIds(questId: string, raw: RawStep[], warn: Warn): QuestS
     seen.add(id)
     out.push({ id, text: step.text, ...(step.section ? { section: step.section } : {}) })
   }
-  if (duplicates) warn(`${duplicates} dubbele stap(pen) overgeslagen`, questId)
+  if (duplicates) warn(`${duplicates} duplicate ${duplicates === 1 ? 'step' : 'steps'} skipped`, questId)
   return out
 }
 

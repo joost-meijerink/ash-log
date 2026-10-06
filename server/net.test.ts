@@ -30,7 +30,7 @@ describe('normalizeAddress', () => {
   it('strips the IPv4-mapped prefix', () => {
     expect(normalizeAddress('::ffff:192.168.1.20')).toBe('192.168.1.20')
     expect(normalizeAddress('fe80::1')).toBe('fe80::1')
-    expect(normalizeAddress(undefined)).toBe('onbekend')
+    expect(normalizeAddress(undefined)).toBe('unknown')
   })
 })
 
@@ -80,8 +80,8 @@ describe('names and urls', () => {
   })
 
   it('puts the certificate page on plain http and the mDNS name', () => {
-    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local')).toBe('http://MacBook-Pro-van-Joost.local:5199/certificaat')
-    expect(certificateUrl(5200, 'joost-mbp.home')).toBe('http://joost-mbp.local:5200/certificaat')
+    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local')).toBe('http://MacBook-Pro-van-Joost.local:5199/certificate')
+    expect(certificateUrl(5200, 'joost-mbp.home')).toBe('http://joost-mbp.local:5200/certificate')
   })
 
   it('knows the private IPv4 ranges', () => {
@@ -167,7 +167,7 @@ describe('the address phones get', () => {
   it('follows LIVE_ADDRESS from .env, any case, and ignores anything else', () => {
     expect(liveAddressSetting({ LIVE_ADDRESS: 'name' })).toBe('name')
     expect(liveAddressSetting({ LIVE_ADDRESS: ' IP ' })).toBe('ip')
-    expect(liveAddressSetting({ LIVE_ADDRESS: 'naam' })).toBeNull()
+    expect(liveAddressSetting({ LIVE_ADDRESS: 'hostname' })).toBeNull()
     expect(liveAddressSetting({ LIVE_ADDRESS: '' })).toBeNull()
     expect(liveAddressSetting({})).toBeNull()
   })
@@ -178,30 +178,30 @@ describe('the address phones get', () => {
       'https://10.0.0.8:5199',
       'https://desktop-ab12cd.local:5199',
     ])
-    expect(certificateUrl(5199, 'desktop-ab12cd', ['192.168.1.23'], 'ip')).toBe('http://192.168.1.23:5199/certificaat')
+    expect(certificateUrl(5199, 'desktop-ab12cd', ['192.168.1.23'], 'ip')).toBe('http://192.168.1.23:5199/certificate')
   })
 
   it('takes an IPv4 address in place of the name (app.ts passes the host a phone should use)', () => {
     expect(mdnsName('192.168.1.23')).toBe('192.168.1.23')
-    expect(certificateUrl(5199, '192.168.1.23')).toBe('http://192.168.1.23:5199/certificaat')
+    expect(certificateUrl(5199, '192.168.1.23')).toBe('http://192.168.1.23:5199/certificate')
     expect(phoneHosts(5199, '192.168.1.23', ['10.0.0.8', '192.168.1.23'])).toEqual(['192.168.1.23:5199', '10.0.0.8:5199'])
-    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local')).toBe('http://MacBook-Pro-van-Joost.local:5199/certificaat')
+    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local')).toBe('http://MacBook-Pro-van-Joost.local:5199/certificate')
   })
 
   it('falls back to the .local name when there is no private LAN address', () => {
     expect(liveUrls(5199, 'desktop-ab12cd', [], 'ip')).toEqual(['https://desktop-ab12cd.local:5199'])
     expect(liveUrls(5199, 'desktop-ab12cd', ['100.64.0.7'], 'ip')).toEqual(['https://desktop-ab12cd.local:5199'])
-    expect(certificateUrl(5199, 'desktop-ab12cd', [], 'ip')).toBe('http://desktop-ab12cd.local:5199/certificaat')
+    expect(certificateUrl(5199, 'desktop-ab12cd', [], 'ip')).toBe('http://desktop-ab12cd.local:5199/certificate')
   })
 
   it('never puts a .local name a phone cannot resolve first', () => {
     expect(liveUrls(5199, 'joost_pc', ['192.168.1.23'], 'name')).toEqual(['https://192.168.1.23:5199', 'https://joost_pc.local:5199'])
-    expect(certificateUrl(5199, 'joost_pc', ['192.168.1.23'])).toBe('http://192.168.1.23:5199/certificaat')
+    expect(certificateUrl(5199, 'joost_pc', ['192.168.1.23'])).toBe('http://192.168.1.23:5199/certificate')
   })
 
   it('keeps the name first in name mode, as on the Mac today', () => {
     expect(liveUrls(5199, 'MacBook-Pro-van-Joost.local', ['192.168.1.20'], 'name')[0]).toBe('https://MacBook-Pro-van-Joost.local:5199')
-    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local', ['192.168.1.20'])).toBe('http://MacBook-Pro-van-Joost.local:5199/certificaat')
+    expect(certificateUrl(5199, 'MacBook-Pro-van-Joost.local', ['192.168.1.20'])).toBe('http://MacBook-Pro-van-Joost.local:5199/certificate')
     expect(liveUrls(5199, 'studio', ['192.168.1.20', '192.168.1.20'])).toEqual(['https://studio.local:5199', 'https://192.168.1.20:5199'])
   })
 })
@@ -243,6 +243,6 @@ describe('parsePort', () => {
     expect(parsePort(undefined)).toBe(5199)
     expect(parsePort(' ')).toBe(5199)
     expect(parsePort('5200')).toBe(5200)
-    for (const bad of ['0', '65536', 'abc', '51.5', '-1', '5199x']) expect(() => parsePort(bad), bad).toThrow(/geen geldige poort/)
+    for (const bad of ['0', '65536', 'abc', '51.5', '-1', '5199x']) expect(() => parsePort(bad), bad).toThrow(/not a valid port/)
   })
 })

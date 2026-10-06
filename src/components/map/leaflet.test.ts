@@ -74,8 +74,8 @@ describe('icons', () => {
   it('builds a readable cluster icon', () => {
     const fake = { getChildCount: () => 1234 } as unknown as L.MarkerCluster
     const icon = clusterIcon(fake)
-    expect(String(icon.options.html)).toContain('1,2k')
-    expect(String(icon.options.html)).toContain('1234 punten')
+    expect(String(icon.options.html)).toContain('1.2k')
+    expect(String(icon.options.html)).toContain('1234 points')
   })
 })
 

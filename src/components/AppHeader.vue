@@ -53,8 +53,8 @@ interface NavItem {
 
 const nav: NavItem[] = [
   { view: 'quests', to: VIEW_PATHS.quests, label: 'Quests', icon: ScrollText },
-  { view: 'map', to: VIEW_PATHS.map, label: 'Kaart', icon: MapIcon },
-  { view: 'collections', to: VIEW_PATHS.collections, label: 'Verzamelingen', icon: Gem },
+  { view: 'map', to: VIEW_PATHS.map, label: 'Map', icon: MapIcon },
+  { view: 'collections', to: VIEW_PATHS.collections, label: 'Collections', icon: Gem },
 ]
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(`${to}/`)
@@ -99,7 +99,7 @@ const lastLine = computed(() => {
     const line = sync.log[i]?.trim()
     if (line) return line
   }
-  return 'Sync gestart'
+  return 'Sync started'
 })
 
 function openReport() {
@@ -128,14 +128,14 @@ async function retryProgress() {
 }
 
 const progressLabel = computed(() =>
-  progress.conflict ? 'Opnieuw geladen' : progress.loaded ? 'Niet opgeslagen' : 'Voortgang niet geladen',
+  progress.conflict ? 'Reloaded' : progress.loaded ? 'Not saved' : 'Progress not loaded',
 )
 const progressHint = computed(() =>
   progress.conflict
-    ? 'Klik om dit te sluiten.'
+    ? 'Click to close this.'
     : progress.loaded
-      ? 'Klik om opnieuw op te slaan.'
-      : 'Vinkjes worden pas bewaard als dit lukt. Klik om opnieuw te laden.',
+      ? 'Click to save again.'
+      : "Ticks aren't kept until this works. Click to load again.",
 )
 </script>
 
@@ -148,7 +148,7 @@ const progressHint = computed(() =>
         <a
           :href="href"
           class="group -ml-1 flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-1 outline-none focus-visible:ring-2 focus-visible:ring-gold"
-          aria-label="Ash Log, naar Quests"
+          aria-label="Ash Log, go to Quests"
           @click="onTabClick($event, 'quests', navigate)"
         >
           <img
@@ -163,7 +163,7 @@ const progressHint = computed(() =>
       </RouterLink>
 
       <!-- Navigation, wide screens -->
-      <nav aria-label="Hoofdmenu" class="ml-2 hidden h-full items-stretch md:flex lg:ml-6">
+      <nav aria-label="Main menu" class="ml-2 hidden h-full items-stretch md:flex lg:ml-6">
         <RouterLink v-for="item in nav" :key="item.to" v-slot="{ href, navigate }" :to="target(item.view)" custom>
           <a
             :href="href"
@@ -188,7 +188,7 @@ const progressHint = computed(() =>
 
       <!-- Status and sync -->
       <div class="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
-        <!-- Live on wifi: only on the Mac itself, under the app server -->
+        <!-- Live on Wi-Fi: only on the computer itself, under the app server -->
         <LiveControl v-if="server.canManage && !connection.readOnly" />
 
         <!-- Progress save state -->
@@ -199,7 +199,7 @@ const progressHint = computed(() =>
               <CloudOff v-else aria-hidden="true" />
               <span class="hidden sm:inline">{{ progressLabel }}</span>
               <span class="sr-only sm:hidden">
-                {{ progress.conflict ? 'Voortgang opnieuw geladen, sluiten' : `${progress.loaded ? 'Voortgang niet opgeslagen' : 'Voortgang niet geladen'}, opnieuw proberen` }}
+                {{ progress.conflict ? 'Progress reloaded, close' : `${progress.loaded ? 'Progress not saved' : 'Progress not loaded'}, try again` }}
               </span>
             </Button>
           </TooltipTrigger>
@@ -211,39 +211,39 @@ const progressHint = computed(() =>
           role="status"
           data-slot="progress-offline"
           class="grid size-9 shrink-0 place-content-center text-muted-light/80"
-          title="Offline: alleen lezen"
+          title="Offline: read-only"
         >
           <CloudOff class="size-4" :stroke-width="1.75" aria-hidden="true" />
-          <span class="sr-only">Offline, alleen lezen</span>
+          <span class="sr-only">Offline, read-only</span>
         </span>
         <span
           v-else-if="progress.loaded"
           role="status"
           class="grid size-9 shrink-0 place-content-center text-muted-light/80"
-          :title="progress.saving ? 'Opslaan...' : 'Voortgang staat veilig in data/progress.json'"
+          :title="progress.saving ? 'Saving...' : 'Progress is safe in data/progress.json'"
         >
           <LoaderCircle v-if="progress.saving" class="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
           <CloudCheck v-else class="size-4" :stroke-width="1.75" aria-hidden="true" />
-          <span class="sr-only">{{ progress.saving ? 'Voortgang wordt opgeslagen' : 'Voortgang opgeslagen' }}</span>
+          <span class="sr-only">{{ progress.saving ? 'Saving progress' : 'Progress saved' }}</span>
         </span>
 
         <!-- Last sync time: one line on wide screens, a compact two-line stack below xl.
              The stack is the only part of the row that may shrink, so it truncates before anything overflows. -->
         <p class="hidden shrink-0 text-sm whitespace-nowrap text-muted-light xl:block">
-          <template v-if="data.meta">Gesynct <RelativeTime :value="data.meta.syncedAt" /></template>
-          <template v-else-if="data.data">Nog niet gesynct</template>
+          <template v-if="data.meta">Synced <RelativeTime :value="data.meta.syncedAt" /></template>
+          <template v-else-if="data.data">Not synced yet</template>
         </p>
         <p
           v-if="data.meta"
           data-slot="sync-time-compact"
           class="flex min-w-0 flex-col px-1 text-right text-[0.68rem] leading-tight whitespace-nowrap text-muted-light xl:hidden"
         >
-          <span class="truncate">Gesynct</span>
+          <span class="truncate">Synced</span>
           <RelativeTime short :value="data.meta.syncedAt" class="truncate text-text-light/85" />
         </p>
 
         <!-- Last report -->
-        <IconButton v-if="report" label="Laatste syncrapport" size="icon-sm" side="bottom" class="relative" @click="openReport">
+        <IconButton v-if="report" label="Last sync report" size="icon-sm" side="bottom" class="relative" @click="openReport">
           <FileClock :stroke-width="1.75" />
           <span
             v-if="reportNeedsAttention"
@@ -257,18 +257,19 @@ const progressHint = computed(() =>
           variant="outline"
           size="sm"
           :disabled="sync.running || connection.readOnly"
-          :aria-label="sync.running ? 'Sync loopt' : 'Wiki bijwerken'"
-          :title="data.meta ? `Laatste sync: ${formatDateTime(data.meta.syncedAt)}` : undefined"
+          :aria-label="sync.running ? 'Syncing' : 'Update from wiki'"
+          :title="data.meta ? `Last sync: ${formatDateTime(data.meta.syncedAt)}` : undefined"
           @click="startSync"
         >
           <RefreshCw :class="cn(sync.running && 'animate-spin motion-reduce:animate-none')" aria-hidden="true" />
-          <span class="hidden sm:inline">{{ sync.running ? 'Bezig' : 'Wiki bijwerken' }}</span>
+          <!-- Icon only between md (the tabs move into the row) and 900px, so the row never overflows -->
+          <span class="hidden sm:inline md:hidden min-[56.25rem]:inline">{{ sync.running ? 'Syncing' : 'Update from wiki' }}</span>
         </Button>
       </div>
     </div>
 
     <!-- Navigation, narrow screens -->
-    <nav aria-label="Hoofdmenu" class="grid grid-cols-3 border-t border-line-dark/70 md:hidden">
+    <nav aria-label="Main menu" class="grid grid-cols-3 border-t border-line-dark/70 md:hidden">
       <RouterLink v-for="item in nav" :key="item.to" v-slot="{ href, navigate }" :to="target(item.view)" custom>
         <a
           :href="href"
@@ -299,11 +300,11 @@ const progressHint = computed(() =>
       <template v-if="sync.running">
         <LoaderCircle class="size-3.5 shrink-0 animate-spin text-gold motion-reduce:animate-none" aria-hidden="true" />
         <span class="min-w-0 flex-1 truncate text-muted-light" :title="lastLine">{{ lastLine }}</span>
-        <Button variant="link" size="xs" class="shrink-0" @click="openLive">Bekijk log</Button>
+        <Button variant="link" size="xs" class="shrink-0" @click="openLive">View log</Button>
       </template>
       <template v-else>
-        <span class="min-w-0 flex-1 truncate text-[#e08a6c]">Sync starten lukt niet: {{ sync.error }}</span>
-        <Button variant="link" size="xs" class="shrink-0" :disabled="connection.readOnly" @click="startSync">Opnieuw</Button>
+        <span class="min-w-0 flex-1 truncate text-[#e08a6c]">Couldn't start the sync: {{ sync.error }}</span>
+        <Button variant="link" size="xs" class="shrink-0" :disabled="connection.readOnly" @click="startSync">Try again</Button>
       </template>
     </div>
 

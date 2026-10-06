@@ -69,21 +69,21 @@ describe('buildSections', () => {
   const sections = buildSections(QUESTS.map((q) => entry(q)))
 
   it('orders the main story by wiki order, quests without an order last', () => {
-    expect(sections[0]!.title).toBe('Hoofdverhaal')
+    expect(sections[0]!.title).toBe('Main story')
     expect(ids(sections[0]!.groups[0]!.entries)).toEqual(['First Steps', 'Ratcatcher', 'Warding Off Danger'])
   })
 
   it('groups side quests by region in order of first appearance, region-less last', () => {
     const side = sections[1]!
-    expect(side.title).toBe('Zijquests')
-    expect(side.groups.map((g) => g.label)).toEqual(['Brynmoor', 'Ghornfell', 'Overige'])
+    expect(side.title).toBe('Side quests')
+    expect(side.groups.map((g) => g.label)).toEqual(['Brynmoor', 'Ghornfell', 'Other'])
     expect(ids(side.groups[1]!.entries)).toEqual(['Heartstrings', 'Dog Days'])
   })
 
-  it('only adds Tertiair when there is a tertiary quest', () => {
+  it('only adds Tertiary when there is a tertiary quest', () => {
     expect(sections.map((s) => s.kind)).toEqual(['primary', 'secondary'])
     const withTertiary = buildSections([...QUESTS, quest('Odd Job', { kind: 'tertiary' })].map((q) => entry(q)))
-    expect(withTertiary.map((s) => s.title)).toEqual(['Hoofdverhaal', 'Zijquests', 'Tertiair'])
+    expect(withTertiary.map((s) => s.title)).toEqual(['Main story', 'Side quests', 'Tertiary'])
   })
 
   it('leaves out a kind when the filter removed all its quests', () => {

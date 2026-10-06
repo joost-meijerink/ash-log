@@ -11,7 +11,7 @@ const port = Number(process.env.APP_PORT)
 const mode = process.env.FIXTURE_MODE ?? 'ok'
 
 if (mode === 'crash') {
-  console.error('Poort 1234 is al in gebruik (fixture)')
+  console.error('Port 1234 is already in use (fixture)')
   process.exit(1)
 }
 
@@ -38,7 +38,7 @@ const server = createServer((req, res) => {
     return
   }
   res.writeHead(404, { 'Content-Type': 'application/json' })
-  res.end(JSON.stringify({ error: 'Onbekend' }))
+  res.end(JSON.stringify({ error: 'Unknown' }))
 })
 
-server.listen(port, '127.0.0.1', () => console.log(`fixture server op poort ${port}`))
+server.listen(port, '127.0.0.1', () => console.log(`fixture server on port ${port}`))

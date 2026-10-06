@@ -15,8 +15,8 @@ function testRouter(): Router {
     routes: [
       { path: '/', redirect: '/quests' },
       { path: '/quests/:questId?', name: 'quests', component: page },
-      { path: '/kaart', name: 'map', component: page },
-      { path: '/verzamelingen', name: 'collections', component: page },
+      { path: '/map', name: 'map', component: page },
+      { path: '/collections', name: 'collections', component: page },
       { path: '/los', name: 'other', component: page },
       { path: '/:pathMatch(.*)*', redirect: '/quests' },
     ],
@@ -94,28 +94,28 @@ describe('view memory: locations and own routes', () => {
     const { router, memory } = setup()
     await router.push('/quests/First%20Steps?q=rune')
     const questsRoute = memory.routes.quests
-    await router.push('/kaart?focus=a')
-    await router.replace('/kaart?focus=a&c=vaults')
+    await router.push('/map?focus=a')
+    await router.replace('/map?focus=a&c=vaults')
     expect(memory.active).toBe('map')
     expect(memory.routes.quests).toBe(questsRoute)
     expect(memory.routes.quests?.fullPath).toBe('/quests/First%20Steps?q=rune')
-    expect(memory.routes.map?.fullPath).toBe('/kaart?focus=a&c=vaults')
-    expect(memory.locations).toEqual({ quests: '/quests/First%20Steps?q=rune', map: '/kaart?focus=a&c=vaults', collections: null })
+    expect(memory.routes.map?.fullPath).toBe('/map?focus=a&c=vaults')
+    expect(memory.locations).toEqual({ quests: '/quests/First%20Steps?q=rune', map: '/map?focus=a&c=vaults', collections: null })
   })
 
   it('has no active view on a route outside the three views', async () => {
     const { router, memory } = setup()
-    await router.push('/kaart')
+    await router.push('/map')
     await router.push('/los')
     expect(memory.active).toBeNull()
     expect(memory.arrival?.view).toBe('map')
-    await router.push('/kaart')
+    await router.push('/map')
     expect(memory.arrival).toMatchObject({ seq: 2, view: 'map', from: null })
   })
 
   it('picks up the current route when it is attached after the first navigation, and attaches once', async () => {
     const router = testRouter()
-    await router.push('/kaart?c=vaults')
+    await router.push('/map?c=vaults')
     const memory = useViewMemoryStore()
     memory.attach(router)
     memory.attach(router)
@@ -127,10 +127,10 @@ describe('view memory: locations and own routes', () => {
 
   it('lets go of a router when it is attached to another one', async () => {
     const { router, memory } = setup()
-    await router.push('/kaart')
+    await router.push('/map')
     const other = testRouter()
     memory.attach(other)
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     expect(memory.active).toBe('map')
     await other.push('/quests')
     expect(memory.active).toBe('quests')
@@ -142,7 +142,7 @@ describe('view memory: return or fresh', () => {
     const ctx = setup()
     await ctx.router.push('/quests/First%20Steps?q=rune')
     ctx.memory.mount('quests')
-    await ctx.router.push('/kaart?quest=First%20Steps')
+    await ctx.router.push('/map?quest=First%20Steps')
     ctx.memory.mount('map')
     return ctx
   }
@@ -177,8 +177,8 @@ describe('view memory: return or fresh', () => {
     const { router, memory } = await questsThenMap()
     await tab(router, memory, 'quests')
     const mapRoute = memory.routes.map
-    // 'Toon op kaart' for the same quest as before.
-    await router.push('/kaart?quest=First%20Steps')
+    // 'Show on map' for the same quest as before.
+    await router.push('/map?quest=First%20Steps')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'fresh', via: 'link', first: false })
     // Same address: the own route object stays, so only the arrival tells the view about it.
     expect(memory.routes.map).toBe(mapRoute)
@@ -187,7 +187,7 @@ describe('view memory: return or fresh', () => {
   it('a view that is not mounted cannot be returned to', async () => {
     const { router, memory } = setup()
     await router.push('/quests/First%20Steps')
-    await router.push('/kaart')
+    await router.push('/map')
     await tab(router, memory, 'quests')
     expect(memory.arrival).toMatchObject({ view: 'quests', kind: 'fresh', via: 'tab', first: true })
 
@@ -205,7 +205,7 @@ describe('view memory: return or fresh', () => {
     memory.announceReturn('quests')
     await router.push('/quests/Rune%20Mysteries')
     expect(memory.arrival).toMatchObject({ kind: 'fresh', via: 'link' })
-    await router.push('/kaart')
+    await router.push('/map')
     await router.push('/quests/Rune%20Mysteries')
     expect(memory.arrival).toMatchObject({ view: 'quests', kind: 'fresh', via: 'link' })
   })
@@ -223,13 +223,13 @@ describe('view memory: return or fresh', () => {
 
   it('the tab of the active view is never a return', async () => {
     const { router, memory } = await questsThenMap()
-    expect(memory.linkTo('map')).toBe('/kaart')
+    expect(memory.linkTo('map')).toBe('/map')
     const before = memory.arrival
     await tab(router, memory, 'map')
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     expect(memory.arrival).toBe(before)
     expect(memory.routes.map).toBe(router.currentRoute.value)
-    expect(memory.locations.map).toBe('/kaart')
+    expect(memory.locations.map).toBe('/map')
   })
 
   it('back and forward: the remembered location is a return, another one is fresh', async () => {
@@ -237,7 +237,7 @@ describe('view memory: return or fresh', () => {
     await router.push('/quests/A')
     memory.mount('quests')
     await router.push('/quests/B')
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     memory.mount('map')
 
     router.back()
@@ -255,7 +255,7 @@ describe('view memory: return or fresh', () => {
 
     router.go(2)
     await flushPromises()
-    expect(memory.arrival).toMatchObject({ view: 'map', kind: 'return', via: 'history', fullPath: '/kaart?focus=p1' })
+    expect(memory.arrival).toMatchObject({ view: 'map', kind: 'return', via: 'history', fullPath: '/map?focus=p1' })
 
     // The entry before it is /quests/B, but quests was left at /quests/A.
     router.back()
@@ -272,14 +272,14 @@ describe('view memory: the same place written differently', () => {
     const at = (to: string) => router.resolve(to)
     expect(sameLocation(at("/quests/A?q=it's"), at('/quests/A?q=it%27s'))).toBe(true)
     expect(sameLocation(at('/quests/Mirror%2C%20Mirror'), at('/quests/Mirror,%20Mirror'))).toBe(true)
-    expect(sameLocation(at('/kaart?c=a&c=b#x'), at('/kaart?c=a&c=b#x'))).toBe(true)
-    expect(sameLocation(at('/kaart?c=a&c=b'), at('/kaart?c=b&c=a'))).toBe(false)
-    expect(sameLocation(at('/kaart?c=a'), at('/kaart?c=a&p=1'))).toBe(false)
-    expect(sameLocation(at('/kaart?c=a'), at('/kaart?c'))).toBe(false)
+    expect(sameLocation(at('/map?c=a&c=b#x'), at('/map?c=a&c=b#x'))).toBe(true)
+    expect(sameLocation(at('/map?c=a&c=b'), at('/map?c=b&c=a'))).toBe(false)
+    expect(sameLocation(at('/map?c=a'), at('/map?c=a&p=1'))).toBe(false)
+    expect(sameLocation(at('/map?c=a'), at('/map?c'))).toBe(false)
     expect(sameLocation(at('/quests/A'), at('/quests/B'))).toBe(false)
     expect(sameLocation(at('/quests/A'), at('/quests'))).toBe(false)
-    expect(sameLocation(at('/verzamelingen#vault-a'), at('/verzamelingen#vault-b'))).toBe(false)
-    expect(sameLocation(at('/kaart'), at('/verzamelingen'))).toBe(false)
+    expect(sameLocation(at('/collections#vault-a'), at('/collections#vault-b'))).toBe(false)
+    expect(sameLocation(at('/map'), at('/collections'))).toBe(false)
   })
 
   it('back to a history entry that the browser spelled differently is still a return', async () => {
@@ -288,13 +288,13 @@ describe('view memory: the same place written differently', () => {
     memory.mount('quests')
     const questsRoute = memory.routes.quests
     expect(questsRoute?.fullPath).toBe("/quests/A?q=it's")
-    await router.push('/kaart')
+    await router.push('/map')
     memory.mount('map')
 
     // What a browser makes of that entry: the quote escaped. Put it in the history and go back to it.
     const history = router.options.history
     history.push('/quests/A?q=it%27s')
-    history.push('/kaart')
+    history.push('/map')
     router.back()
     await flushPromises()
     expect(router.currentRoute.value.fullPath).toBe('/quests/A?q=it%27s')
@@ -316,7 +316,7 @@ describe('view memory: timing', () => {
 
     await router.push('/quests')
     memory.mount('quests')
-    await router.push('/kaart?c=vaults')
+    await router.push('/map?c=vaults')
     memory.mount('map')
     await tab(router, memory, 'quests')
     await tab(router, memory, 'map')
@@ -325,12 +325,12 @@ describe('view memory: timing', () => {
     expect(seen).toEqual([
       'sync /quests active=quests kind=fresh loc=null',
       'after /quests active=quests kind=fresh loc=null',
-      'sync /kaart?c=vaults active=map kind=fresh loc=/kaart?c=vaults',
-      'after /kaart?c=vaults active=map kind=fresh loc=/kaart?c=vaults',
-      'sync /quests active=quests kind=return loc=/kaart?c=vaults',
-      'after /quests active=quests kind=return loc=/kaart?c=vaults',
-      'sync /kaart?c=vaults active=map kind=return loc=/kaart?c=vaults',
-      'after /kaart?c=vaults active=map kind=return loc=/kaart?c=vaults',
+      'sync /map?c=vaults active=map kind=fresh loc=/map?c=vaults',
+      'after /map?c=vaults active=map kind=fresh loc=/map?c=vaults',
+      'sync /quests active=quests kind=return loc=/map?c=vaults',
+      'after /quests active=quests kind=return loc=/map?c=vaults',
+      'sync /map?c=vaults active=map kind=return loc=/map?c=vaults',
+      'after /map?c=vaults active=map kind=return loc=/map?c=vaults',
     ])
   })
 
@@ -347,7 +347,7 @@ describe('view memory: timing', () => {
 
     await router.replace('/quests/A')
     expect(calls).toEqual([])
-    await router.push('/kaart')
+    await router.push('/map')
     expect(calls).toEqual(['quests active=quests'])
     // A broken hook does not stop the navigation or the other hooks.
     expect(error).toHaveBeenCalledTimes(1)
@@ -356,7 +356,7 @@ describe('view memory: timing', () => {
     remove()
     await router.push('/quests')
     expect(calls).toEqual(['quests active=quests', 'map'])
-    await router.push('/kaart')
+    await router.push('/map')
     expect(calls).toEqual(['quests active=quests', 'map'])
     error.mockRestore()
   })
@@ -365,18 +365,18 @@ describe('view memory: timing', () => {
 describe('view memory: header links', () => {
   it('links to the base path without a memory, and for the view you are on', async () => {
     const { router, memory } = setup()
-    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests', '/kaart', '/verzamelingen'])
+    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests', '/map', '/collections'])
     await router.push('/quests/First%20Steps?q=rune')
-    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests', '/kaart', '/verzamelingen'])
+    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests', '/map', '/collections'])
   })
 
   it('links to where another view was left, hash included', async () => {
     const { router, memory } = setup()
     await router.push('/quests/First%20Steps?q=rune')
-    await router.push('/verzamelingen?soort=spell#vault-a')
-    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests/First%20Steps?q=rune', '/kaart', '/verzamelingen'])
-    await router.push('/kaart')
-    expect(memory.linkTo('collections')).toBe('/verzamelingen?soort=spell#vault-a')
+    await router.push('/collections?kind=spell#vault-a')
+    expect(VIEW_NAMES.map((v) => memory.linkTo(v))).toEqual(['/quests/First%20Steps?q=rune', '/map', '/collections'])
+    await router.push('/map')
+    expect(memory.linkTo('collections')).toBe('/collections?kind=spell#vault-a')
     // The link resolves to exactly the remembered address.
     expect(router.resolve(memory.linkTo('collections')).fullPath).toBe(memory.locations.collections)
     expect(router.resolve(memory.linkTo('quests')).fullPath).toBe(memory.locations.quests)
@@ -389,7 +389,7 @@ describe('view memory: a second click on the tab that just brought a view back',
     const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000)
     await router.push('/quests/A?q=rune')
     expect(memory.cameByTab('quests')).toBe(false)
-    await router.push('/kaart')
+    await router.push('/map')
     await tab(router, memory, 'quests')
     expect(memory.arrival).toMatchObject({ view: 'quests', via: 'tab' })
     expect(memory.cameByTab('quests')).toBe(true)
@@ -405,7 +405,7 @@ describe('view memory: a second click on the tab that just brought a view back',
   it('does not count a link or back and forward', async () => {
     const { router, memory } = setup()
     await router.push('/quests/A')
-    await router.push('/kaart?focus=p1')
+    await router.push('/map?focus=p1')
     expect(memory.cameByTab('map')).toBe(false)
     router.back()
     await flushPromises()
@@ -415,7 +415,7 @@ describe('view memory: a second click on the tab that just brought a view back',
     await tab(router, memory, 'map')
     expect(memory.cameByTab('map')).toBe(true)
     await router.push('/quests/B')
-    await router.push('/kaart?focus=p2')
+    await router.push('/map?focus=p2')
     expect(memory.cameByTab('map')).toBe(false)
   })
 })
@@ -425,7 +425,7 @@ describe('view memory: a navigation to another view that is on its way', () => {
   function slowRouter() {
     let loaded!: () => void
     const router = testRouter()
-    router.addRoute({ path: '/traag', name: 'collections', component: () => new Promise((resolve) => (loaded = () => resolve(page))) })
+    router.addRoute({ path: '/slow', name: 'collections', component: () => new Promise((resolve) => (loaded = () => resolve(page))) })
     const memory = useViewMemoryStore()
     memory.attach(router)
     return { router, memory, loaded: () => loaded() }
@@ -435,7 +435,7 @@ describe('view memory: a navigation to another view that is on its way', () => {
     const { router, memory, loaded } = slowRouter()
     await router.push('/quests/A')
     expect(memory.isLeaving('quests')).toBe(false)
-    const going = router.push('/traag')
+    const going = router.push('/slow')
     await flushPromises()
     expect(memory.active).toBe('quests')
     expect(memory.isLeaving('quests')).toBe(true)
@@ -449,7 +449,7 @@ describe('view memory: a navigation to another view that is on its way', () => {
   it('forgets it when a newer navigation inside the view takes its place', async () => {
     const { router, memory } = slowRouter()
     await router.push('/quests/A')
-    void router.push('/traag')
+    void router.push('/slow')
     await flushPromises()
     expect(memory.isLeaving('quests')).toBe(true)
     // You click a quest while the other view is still loading.
@@ -462,14 +462,14 @@ describe('view memory: a navigation to another view that is on its way', () => {
     const { router, memory } = setup()
     await router.push('/quests/A')
     const stop = router.beforeEach((to) => (to.name === 'map' ? false : true))
-    await router.push('/kaart')
+    await router.push('/map')
     expect(memory.active).toBe('quests')
     expect(memory.isLeaving('quests')).toBe(false)
     stop()
 
-    router.addRoute({ path: '/stuk', name: 'collections', component: () => Promise.reject(new Error('no chunk')) })
+    router.addRoute({ path: '/broken', name: 'collections', component: () => Promise.reject(new Error('no chunk')) })
     router.onError(() => undefined)
-    await router.push('/stuk').catch(() => undefined)
+    await router.push('/broken').catch(() => undefined)
     expect(memory.active).toBe('quests')
     expect(memory.isLeaving('quests')).toBe(false)
   })
@@ -500,7 +500,7 @@ describe('view memory: the scroll position of main', () => {
   it('saves the position of the view that is left and restores it on a return', async () => {
     const { router, memory, main } = await withMain()
     main.scrollTop = 300
-    await router.push('/kaart')
+    await router.push('/map')
     memory.mount('map')
     expect(memory.savedMain('quests')).toBe(300)
     // Not before the shell says the new view is in the page.
@@ -527,7 +527,7 @@ describe('view memory: the scroll position of main', () => {
     memory.settleMain()
     expect(main.scrollTop).toBe(300)
 
-    await router.push('/kaart')
+    await router.push('/map')
     memory.mount('map')
     memory.settleMain()
     await router.push('/quests/C')
@@ -538,7 +538,7 @@ describe('view memory: the scroll position of main', () => {
 
   it('settles once per arrival', async () => {
     const { router, memory, main } = await withMain()
-    await router.push('/kaart')
+    await router.push('/map')
     memory.settleMain()
     main.scrollTop = 120
     memory.settleMain()
@@ -548,7 +548,7 @@ describe('view memory: the scroll position of main', () => {
   it('lets the view decide, before and after the shell settled', async () => {
     const { router, memory, main } = await withMain()
     main.scrollTop = 300
-    await router.push('/kaart')
+    await router.push('/map')
     memory.mount('map')
     memory.settleMain()
 
@@ -581,7 +581,7 @@ describe('view memory: the scroll position of main', () => {
     memory.scrollMain('map', 10)
     expect(main.scrollTop).toBe(300)
 
-    await router.push('/kaart')
+    await router.push('/map')
     memory.mount('map')
     memory.scrollMain('map', 55)
     // The wish was for the arrival at the map; quests arrives before the shell got to it.
@@ -600,7 +600,7 @@ describe('view memory: the scroll position of main', () => {
     expect(main.scrollTop).toBe(90)
 
     memory.setMain(null)
-    await router.push('/kaart')
+    await router.push('/map')
     memory.settleMain()
     memory.scrollMain('map', 5)
     expect(main.scrollTop).toBe(90)

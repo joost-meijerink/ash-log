@@ -4,9 +4,9 @@ import { useOrphans } from '@/composables/useOrphans'
 import ConfirmDialog from './ConfirmDialog.vue'
 
 /**
- * Asks before orphaned checkmarks are removed for good, with what goes per kind.
+ * Asks before orphaned ticks are removed for good, with what goes per kind.
  * A quest page that is broken on the wiki for a moment drops out of the data, so its
- * checkmarks look orphaned until the next sync brings it back.
+ * ticks look orphaned until the next sync brings it back.
  */
 const open = defineModel<boolean>('open', { required: true })
 const emit = defineEmits<{ cleaned: [count: number] }>()
@@ -15,8 +15,8 @@ const { count, summary, cleanUp } = useOrphans()
 
 const description = computed(() => {
   const n = count.value
-  const what = n === 1 ? '1 vinkje gaat' : `${n} vinkjes gaan`
-  return `${what} voorgoed weg. Staat iets maar even niet op de wiki, wacht dan liever een sync af.`
+  const what = n === 1 ? '1 tick' : `${n} ticks`
+  return `${what} will be gone for good. If something is just missing from the wiki for a moment, better wait for the next sync.`
 })
 
 function confirm() {
@@ -27,9 +27,9 @@ function confirm() {
 <template>
   <ConfirmDialog
     v-model:open="open"
-    title="Verweesde vinkjes opruimen?"
+    title="Clean up orphaned ticks?"
     :description="description"
-    confirm-label="Opruimen"
+    confirm-label="Clean up"
     @confirm="confirm"
   >
     <ul class="divide-y divide-line-dark rounded-md border border-line-dark">

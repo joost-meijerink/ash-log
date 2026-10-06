@@ -10,7 +10,7 @@ import { decodeEnvText, parseEnvText } from './env'
 import { ROOT } from './paths'
 import { API_URL, BATCH_SIZE, WIKI_ORIGIN, WikiClient, WikiError, userAgentProblem } from './wiki'
 
-const UA = 'AshenfallLogboek-test/0.1 (test@ash-log.test)'
+const UA = 'AshLog-test/0.1 (test@ash-log.test)'
 
 interface Call {
   url: URL
@@ -62,17 +62,17 @@ afterAll(() => {
 describe('WikiClient: constructor', () => {
   it('rejects a User-Agent without contact details', () => {
     expect(() => new WikiClient({ userAgent: '' })).toThrow(WikiError)
-    expect(() => new WikiClient({ userAgent: 'AshenfallLogboek/0.1' })).toThrow(/contactgegevens/)
+    expect(() => new WikiClient({ userAgent: 'AshLog/0.1' })).toThrow(/no contact details/)
   })
 
   it('accepts an e-mail address or a URL as contact', () => {
-    expect(() => new WikiClient({ userAgent: 'AshenfallLogboek/0.1 (test@ash-log.test)' })).not.toThrow()
-    expect(() => new WikiClient({ userAgent: 'AshenfallLogboek/0.1 (https://github.com/someone/ash-log)' })).not.toThrow()
+    expect(() => new WikiClient({ userAgent: 'AshLog/0.1 (test@ash-log.test)' })).not.toThrow()
+    expect(() => new WikiClient({ userAgent: 'AshLog/0.1 (https://github.com/someone/ash-log)' })).not.toThrow()
     expect(() => new WikiClient({ userAgent: 'AshLog/1.0 (https://my-example.org; mail@examples.com)' })).not.toThrow()
   })
 
   it('rejects the placeholder from .env.example and other example domains', () => {
-    expect(() => new WikiClient({ userAgent: 'AshLog/1.0 (jouw-email@example.com)' })).toThrow(/voorbeeldadres uit \.env\.example/)
+    expect(() => new WikiClient({ userAgent: 'AshLog/1.0 (your-email@example.com)' })).toThrow(/example address from \.env\.example/)
     for (const agent of ['AshLog/1.0 (me@EXAMPLE.ORG)', 'AshLog/1.0 (https://example.net/contact)', 'AshLog/1.0 (me@mail.example)', 'AshLog/1.0 (https://www.example.com; a@example.com)']) {
       expect(userAgentProblem(agent), agent).toBe('example')
     }
@@ -85,7 +85,7 @@ describe('WikiClient: constructor', () => {
   })
 
   it('accepts a real contact next to an example one', () => {
-    expect(userAgentProblem('AshLog/1.0 (https://github.com/someone/ash-log; jouw-email@example.com)')).toBeNull()
+    expect(userAgentProblem('AshLog/1.0 (https://github.com/someone/ash-log; your-email@example.com)')).toBeNull()
   })
 
   it('says what is missing', () => {
@@ -186,10 +186,10 @@ describe('WikiClient: every request', () => {
 
   it('throws a WikiError for API errors other than maxlag', async () => {
     const { wiki } = client(() => json({ error: { code: 'badvalue', info: 'Unrecognized value for parameter "list".' } }))
-    await expect(wiki.api({ action: 'query', list: 'nope' })).rejects.toThrow(/Wiki-API-fout badvalue/)
+    await expect(wiki.api({ action: 'query', list: 'nope' })).rejects.toThrow(/Wiki API error badvalue/)
   })
 
-  it('wraps a network failure after the last retry in a Dutch WikiError', async () => {
+  it('wraps a network failure after the last retry in a WikiError', async () => {
     const { wiki, calls } = client(
       () => {
         throw new TypeError('fetch failed')
@@ -198,7 +198,7 @@ describe('WikiClient: every request', () => {
     )
     const result = wiki.api({ action: 'query', meta: 'siteinfo' })
     await expect(result).rejects.toThrow(WikiError)
-    await expect(result).rejects.toThrow(/Wiki niet bereikbaar na 1 poging: fetch failed/)
+    await expect(result).rejects.toThrow(/Can't reach the wiki after 1 attempt: fetch failed/)
     expect(calls).toHaveLength(1)
   })
 })
@@ -258,7 +258,7 @@ describe('WikiClient: backing off', () => {
   it('gives up after maxRetries', async () => {
     const { wiki, calls } = client(() => new Response('slow down', { status: 429, headers: { 'Retry-After': '1' } }), { maxRetries: 1 })
     const result = wiki.api({ action: 'query', meta: 'siteinfo' })
-    const settled = expect(result).rejects.toThrow(/Opgegeven na 2 pogingen: HTTP 429/)
+    const settled = expect(result).rejects.toThrow(/Gave up after 2 attempts: HTTP 429/)
     await untilSleeping()
     await vi.advanceTimersByTimeAsync(1000)
     await settled
@@ -288,7 +288,7 @@ describe('WikiClient: backing off', () => {
 
     await expect(result).resolves.toEqual({ batchcomplete: true })
     expect(calls).toHaveLength(2)
-    expect(log).toHaveBeenCalledWith(expect.stringMatching(/^Netwerkfout, opnieuw over 2000 ms: terminated/))
+    expect(log).toHaveBeenCalledWith(expect.stringMatching(/^Network error, retrying in 2000 ms: terminated/))
   })
 
   it('retries a 200 whose body is not JSON (an HTML error page)', async () => {
@@ -306,13 +306,13 @@ describe('WikiClient: backing off', () => {
 
     await expect(result).resolves.toEqual({ batchcomplete: true })
     expect(calls).toHaveLength(2)
-    expect(log).toHaveBeenCalledWith('geen geldige JSON, 5 s wachten')
+    expect(log).toHaveBeenCalledWith('no valid JSON, waiting 5 s')
   })
 
   it('gives up on a body that never becomes JSON', async () => {
     const { wiki, calls } = client(() => new Response('<html>nope</html>'), { maxRetries: 1 })
     const result = wiki.api({ action: 'query', meta: 'siteinfo' })
-    const settled = expect(result).rejects.toThrow(/Geen geldige JSON van https:\/\/dragonwilds\.runescape\.wiki\/api\.php.* \(na 2 pogingen\)/)
+    const settled = expect(result).rejects.toThrow(/No valid JSON from https:\/\/dragonwilds\.runescape\.wiki\/api\.php.* \(after 2 attempts\)/)
     await untilSleeping()
     await vi.advanceTimersByTimeAsync(5000)
     await settled
@@ -321,7 +321,7 @@ describe('WikiClient: backing off', () => {
 
   it('does not retry a 404', async () => {
     const { wiki, calls } = client(() => new Response('Not Found', { status: 404 }))
-    await expect(wiki.raw('Nope')).rejects.toThrow(/404 \(niet gevonden\)/)
+    await expect(wiki.raw('Nope')).rejects.toThrow(/404 \(not found\)/)
     expect(calls).toHaveLength(1)
   })
 })

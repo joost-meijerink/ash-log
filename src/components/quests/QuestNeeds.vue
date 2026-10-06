@@ -4,7 +4,7 @@ import type { QuestNeed } from '@/lib/types'
 
 /**
  * The {{Needed}} blocks of a walkthrough: what you need and what is recommended. Labels in
- * Dutch, the wiki text in English italics. Nothing to tick off, it is a reminder.
+ * plain text, the wiki text in italics. Nothing to tick off, it is a reminder.
  */
 withDefaults(
   defineProps<{
@@ -25,10 +25,10 @@ withDefaults(
     >
       <p v-if="showSection && need.section" lang="en" class="font-serif text-text-parchment/75 italic">{{ need.section }}</p>
       <p v-if="need.needed">
-        <span class="font-semibold text-gold-ink">Nodig:</span> <LocationText lang="en">{{ need.needed }}</LocationText>
+        <span class="font-semibold text-gold-ink">Needed:</span> <LocationText lang="en">{{ need.needed }}</LocationText>
       </p>
       <p v-if="need.recommended">
-        <span class="font-semibold text-gold-ink">Aanbevolen:</span> <LocationText lang="en">{{ need.recommended }}</LocationText>
+        <span class="font-semibold text-gold-ink">Recommended:</span> <LocationText lang="en">{{ need.recommended }}</LocationText>
       </p>
     </div>
   </div>

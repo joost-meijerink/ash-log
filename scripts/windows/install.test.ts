@@ -110,7 +110,7 @@ describe('shortcuts', () => {
     expect(parseCommandLine(`node.exe ${launcherArguments(launcher, ['--stop'])}`)).toEqual(['node.exe', '--import', 'tsx', launcher, '--gui', '--stop'])
   })
 
-  it('are Ash Log and Ash Log stoppen in the Start menu, minimized, with the icon', () => {
+  it('are Ash Log and Stop Ash Log in the Start menu, minimized, with the icon', () => {
     const specs = shortcutSpecs({ projectDir: PROJECT, nodePath: NODE, desktop: false, launcherFile: launcher, iconFile: icon })
     expect(specs).toEqual([
       {
@@ -120,17 +120,17 @@ describe('shortcuts', () => {
         arguments: `--import tsx "${launcher}" --gui`,
         workingDirectory: PROJECT,
         icon,
-        description: 'Ash Log: je logboek voor RuneScape: Dragonwilds',
+        description: 'Ash Log: your progress log for RuneScape: Dragonwilds',
         windowStyle: WINDOW_MINIMIZED,
       },
       {
         folder: 'Programs',
-        name: 'Ash Log stoppen',
+        name: 'Stop Ash Log',
         target: NODE,
         arguments: `--import tsx "${launcher}" --gui --stop`,
         workingDirectory: PROJECT,
         icon,
-        description: 'Ash Log stoppen: de server en het venster',
+        description: 'Stop Ash Log: the server and the window',
         windowStyle: WINDOW_MINIMIZED,
       },
     ])
@@ -144,6 +144,7 @@ describe('shortcuts', () => {
     expect(command.command).toBe('C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
     expect(command.args).toEqual(['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', SHORTCUTS_SCRIPT, '-Action', 'Install'])
     expect(JSON.parse(String(command.env.ASH_LOG_SHORTCUTS))).toEqual(specs)
+    expect(JSON.parse(String(command.env.ASH_LOG_OBSOLETE_SHORTCUTS))).toEqual([{ folder: 'Programs', name: 'Ash Log stoppen' }])
     expect(command.env.Path).toBe('x')
   })
 })
@@ -169,6 +170,7 @@ describe('shortcuts.ps1', () => {
 
   it('parses the JSON as an argument (in a pipeline, PowerShell 5.1 would hand over the array as one item)', () => {
     expect(script).toContain('ConvertFrom-Json -InputObject $env:ASH_LOG_SHORTCUTS')
+    expect(script).toContain('ConvertFrom-Json -InputObject $env:ASH_LOG_OBSOLETE_SHORTCUTS')
   })
 })
 
@@ -213,19 +215,19 @@ describe('installWindows and uninstallWindows', () => {
     expect(deps.calls[0]!.command).toBe('C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
     expect(deps.calls[0]!.args.at(-1)).toBe('Install')
     const specs = JSON.parse(String(deps.calls[0]!.env.ASH_LOG_SHORTCUTS)) as ShortcutSpec[]
-    expect(specs.map((s) => `${s.folder}/${s.name}`)).toEqual(['Programs/Ash Log', 'Programs/Ash Log stoppen', 'Desktop/Ash Log'])
+    expect(specs.map((s) => `${s.folder}/${s.name}`)).toEqual(['Programs/Ash Log', 'Programs/Stop Ash Log', 'Desktop/Ash Log'])
     expect(specs.every((s) => s.target === NODE && s.workingDirectory === PROJECT)).toBe(true)
     expect(specs[0]!.icon).toBe(join(PROJECT, 'scripts', 'windows', 'ash-log.ico'))
-    expect(deps.lines).toContain('Ash Log staat in je Startmenu en op je bureaublad.')
+    expect(deps.lines).toContain('Ash Log is in your Start menu and on your desktop.')
     expect(deps.lines).toContain(`  Node:    ${NODE}`)
   })
 
   it('stops before it starts when something is missing', async () => {
     for (const [missing, message] of [
-      ['tsx', /tsx ontbreekt\. Draai eerst npm install/],
-      ['launcher.ts', /Launcher niet gevonden/],
-      ['ash-log.ico', /Icoon niet gevonden/],
-      ['powershell.exe', /Windows PowerShell niet gevonden/],
+      ['tsx', /tsx is missing\. Run npm install/],
+      ['launcher.ts', /Launcher not found/],
+      ['ash-log.ico', /Icon not found/],
+      ['powershell.exe', /Windows PowerShell not found/],
     ] as const) {
       const deps = fake({ missing })
       expect(await installWindows({ desktop: false }, deps)).toBe(1)
@@ -237,7 +239,7 @@ describe('installWindows and uninstallWindows', () => {
   it('reports a failed PowerShell run and the way around it', async () => {
     const deps = fake({ code: 1 })
     expect(await installWindows({ desktop: false }, deps)).toBe(1)
-    expect(deps.lines).toContain('ERR Snelkoppelingen maken is mislukt (zie hierboven).')
+    expect(deps.lines).toContain("ERR Couldn't create the shortcuts (see above).")
   })
 
   it('stops Ash Log, then removes every shortcut and the browser profile', async () => {
@@ -246,7 +248,7 @@ describe('installWindows and uninstallWindows', () => {
     expect(deps.stops).toBe(1)
     expect(deps.calls[0]!.args.at(-1)).toBe('Uninstall')
     const specs = JSON.parse(String(deps.calls[0]!.env.ASH_LOG_SHORTCUTS)) as ShortcutSpec[]
-    expect(specs.map((s) => `${s.folder}/${s.name}`)).toEqual(['Programs/Ash Log', 'Programs/Ash Log stoppen', 'Desktop/Ash Log'])
+    expect(specs.map((s) => `${s.folder}/${s.name}`)).toEqual(['Programs/Ash Log', 'Programs/Stop Ash Log', 'Desktop/Ash Log'])
     expect(deps.removed).toEqual(['C:\\Users\\Jan de Vries\\AppData\\Local\\Ash Log'])
   })
 
@@ -254,15 +256,15 @@ describe('installWindows and uninstallWindows', () => {
     const deps = fake({ missing: 'Ash Log' })
     expect(await uninstallWindows(deps)).toBe(0)
     expect(deps.removed).toEqual([])
-    expect(deps.lines.join('\n')).not.toMatch(/Weggehaald/)
+    expect(deps.lines.join('\n')).not.toMatch(/Removed/)
   })
 
   it('goes on when stopping fails, and reports what it could not do', async () => {
-    const deps = fake({ stopError: new Error('kapot'), code: 1 })
+    const deps = fake({ stopError: new Error('broken'), code: 1 })
     expect(await uninstallWindows(deps)).toBe(1)
-    expect(deps.lines[0]).toBe('ERR Ash Log stoppen lukte niet: kapot')
+    expect(deps.lines[0]).toBe("ERR Couldn't stop Ash Log: broken")
     expect(deps.removed).toHaveLength(1)
-    expect(deps.lines.join('\n')).toMatch(/Haal Ash Log en Ash Log stoppen zelf uit het Startmenu/)
+    expect(deps.lines.join('\n')).toMatch(/Remove Ash Log and Stop Ash Log from the Start menu yourself/)
   })
 })
 

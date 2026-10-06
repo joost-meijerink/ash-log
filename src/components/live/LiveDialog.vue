@@ -19,7 +19,7 @@ import { useServerStore } from '@/stores/server'
 import { formatCode, formatCountdown, svgDataUri } from './format'
 
 /**
- * 'Live op wifi' on the computer: the switch, the addresses on the network, pairing a phone and
+ * 'Live on Wi-Fi' on the computer: the switch, the addresses on the network, pairing a phone and
  * the list of paired devices. Only for the computer itself under the app server. Pairing takes
  * two steps: install the Ash Log certificate (once per device, a QR code to the plain-http
  * certificate page), then pair with a one-time code (a QR code to the https address). Both
@@ -123,44 +123,44 @@ const PHONE_LABELS: Record<PhoneKind, string> = { iphone: 'iPhone', android: 'An
 
 const CERTIFICATE_STEPS: Record<PhoneKind, string[]> = {
   iphone: [
-    'Scan de code en download het profiel op de pagina die opent.',
-    'Open Instellingen, tik op Profiel gedownload en installeer het.',
-    'Zet Ash Log aan bij Instellingen > Algemeen > Info > Instellingen voor certificaatvertrouwen.',
+    'Scan the code, tap Download Profile on the page that opens, then Allow.',
+    'Open Settings, tap Profile Downloaded and install it.',
+    'Turn on Ash Log under Settings > General > About > Certificate Trust Settings.',
   ],
   android: [
-    'Scan de code en tik op de pagina die opent op Certificaat downloaden.',
+    'Scan the code and tap Download certificate on the page that opens.',
     `Open ${ANDROID_CA_MENU.join(' > ')}.`,
-    `Tik op Toch installeren en kies ${CA_CERT_FILE_NAME} uit je Downloads.`,
+    `Tap Install anyway and pick ${CA_CERT_FILE_NAME} from your Downloads.`,
   ],
 }
 
 /** Under the steps: what differs per phone. */
 const CERTIFICATE_NOTES: Record<PhoneKind, string | null> = {
   iphone: null,
-  android: "Heten de menu's op jouw telefoon anders? Zoek in Instellingen op CA-certificaat.",
+  android: "Menus named differently on your phone? Search Settings for 'CA certificate'.",
 }
 
 const PAIR_STEPS: Record<PhoneKind, string[]> = {
   iphone: [
-    'Scan de code met de camera van je iPhone.',
-    'Open de link in Safari. Je iPhone wordt dan gekoppeld.',
-    'Tik in Safari op Deel > Zet op beginscherm.',
+    'Scan the code with the camera of your iPhone.',
+    'Open the link in Safari. That pairs your iPhone.',
+    'In Safari, tap Share > Add to Home Screen.',
   ],
   android: [
-    'Scan de code met de camera van je telefoon.',
-    'Open de link in Chrome. Je telefoon wordt dan gekoppeld.',
-    'Tik in Chrome op de drie puntjes > Toevoegen aan startscherm.',
+    'Scan the code with the camera of your phone.',
+    'Open the link in Chrome. That pairs your phone.',
+    'In Chrome, tap the three dots > Add to Home screen.',
   ],
 }
 
-/** The browser to open a link in, as in 'Open ... in Safari op je iPhone'. */
-const BROWSER_ON_PHONE: Record<PhoneKind, string> = { iphone: 'Safari op je iPhone', android: 'Chrome op je telefoon' }
+/** The browser to open a link in, as in 'Open ... in Safari on your iPhone'. */
+const BROWSER_ON_PHONE: Record<PhoneKind, string> = { iphone: 'Safari on your iPhone', android: 'Chrome on your phone' }
 const HOME_SCREEN: Record<PhoneKind, string> = {
-  iphone: 'tik in Safari op Deel > Zet op beginscherm',
-  android: 'tik in Chrome op de drie puntjes > Toevoegen aan startscherm',
+  iphone: 'in Safari, tap Share > Add to Home Screen',
+  android: 'in Chrome, tap the three dots > Add to Home screen',
 }
 
-/** The kind of phone a paired device is, from its name ('iPhone (Safari)', 'Android-telefoon (Chrome)'). */
+/** The kind of phone a paired device is, from its name ('iPhone (Safari)', 'Android phone (Chrome)'). */
 function deviceKind(device: ServerDevice): PhoneKind {
   if (/^Android/i.test(device.name)) return 'android'
   if (/^(iPhone|iPad|iPod)/.test(device.name)) return 'iphone'
@@ -181,8 +181,8 @@ const listBadgeClass =
   <Dialog v-model:open="open">
     <DialogContent data-live-dialog class="gap-5 sm:max-w-xl">
       <DialogHeader>
-        <DialogTitle>Live op wifi</DialogTitle>
-        <DialogDescription>Open het logboek ook op je telefoon, via hetzelfde wifi-netwerk als deze {{ server.computer }}.</DialogDescription>
+        <DialogTitle>Live on Wi-Fi</DialogTitle>
+        <DialogDescription>Open Ash Log on your phone too, over the same Wi-Fi network as this {{ server.computer }}.</DialogDescription>
       </DialogHeader>
 
       <!-- The switch -->
@@ -194,7 +194,7 @@ const listBadgeClass =
       >
         <div class="min-w-0 flex-1">
           <Label :for="ids.switch" class="min-h-11 cursor-pointer font-display text-[0.85rem] font-semibold tracking-[0.12em] uppercase">
-            Live op wifi
+            Live on Wi-Fi
             <span
               data-slot="live-state"
               aria-hidden="true"
@@ -203,12 +203,12 @@ const listBadgeClass =
                 switchOn ? 'text-gold' : 'text-muted-light',
               ]"
             >
-              <template v-if="server.switching">{{ server.switchingTo ? 'aanzetten...' : 'uitzetten...' }}</template>
-              <template v-else>{{ server.live ? 'staat aan' : 'staat uit' }}</template>
+              <template v-if="server.switching">{{ server.switchingTo ? 'turning on...' : 'turning off...' }}</template>
+              <template v-else>{{ server.live ? 'on' : 'off' }}</template>
             </span>
           </Label>
           <p :id="ids.hint" class="-mt-1.5 pb-2 text-sm leading-snug text-muted-light">
-            Je telefoon kan het logboek openen zolang dit aan staat. Deze {{ server.computer }} gaat dan niet vanzelf slapen. Na een herstart staat het weer uit.
+            Your phone can open Ash Log while this is on. This {{ server.computer }} won't go to sleep on its own in the meantime. After a restart, it's off again.
           </p>
         </div>
         <Switch
@@ -229,7 +229,7 @@ const listBadgeClass =
       <template v-if="server.live">
         <!-- Addresses -->
         <section :aria-labelledby="ids.urls">
-          <SectionHeading :id="ids.urls" as="h3" title="Adres op je wifi" />
+          <SectionHeading :id="ids.urls" as="h3" title="Address on your Wi-Fi" />
           <ul class="mt-1 flex flex-col gap-1">
             <li
               v-for="(url, i) in server.urls"
@@ -238,26 +238,26 @@ const listBadgeClass =
               class="flex min-h-11 items-center gap-2 rounded-md border border-line-dark bg-ink/40 pl-3"
             >
               <span :class="['min-w-0 flex-1 font-mono text-[0.85rem] [overflow-wrap:anywhere] select-all', i === 0 ? 'text-text-light' : 'text-muted-light']">{{ url }}</span>
-              <IconButton :label="copied === url ? 'Gekopieerd' : 'Kopieer adres'" size="icon-sm" class="mr-1" @click="copy(url)">
+              <IconButton :label="copied === url ? 'Copied' : 'Copy address'" size="icon-sm" class="mr-1" @click="copy(url)">
                 <Check v-if="copied === url" class="text-gold" />
                 <Copy v-else />
               </IconButton>
             </li>
             <li v-if="!server.urls.length" class="text-sm text-muted-light">
-              Geen netwerkadres gevonden. Is deze {{ server.computer }} met wifi verbonden?
+              No network address found. Is this {{ server.computer }} connected to Wi-Fi?
             </li>
           </ul>
           <p v-if="isWindows" data-slot="live-firewall" class="mt-2 text-sm leading-snug text-muted-light">
-            Komt je telefoon er niet bij? Sta Node.js toe als Windows Firewall erom vraagt, en zet je wifi in Windows op Privénetwerk (Instellingen > Netwerk en internet > Wi-Fi > je netwerk).
+            Phone can't connect? Allow Node.js when Windows Firewall asks, and set your Wi-Fi in Windows to Private network (Settings > Network &amp; internet > Wi-Fi > your network > Network profile type).
           </p>
         </section>
 
         <!-- Pairing, in two steps -->
         <section :aria-labelledby="ids.pair">
-          <SectionHeading :id="ids.pair" as="h3" title="Koppel een apparaat" />
+          <SectionHeading :id="ids.pair" as="h3" title="Pair a device" />
 
           <div role="group" :aria-labelledby="ids.phone" data-slot="live-phone" class="mt-2 flex flex-wrap items-center gap-2">
-            <span :id="ids.phone" class="mr-1 text-sm text-muted-light">Welke telefoon?</span>
+            <span :id="ids.phone" class="mr-1 text-sm text-muted-light">Which phone?</span>
             <ToggleChip
               v-for="kind in PHONE_KINDS"
               :key="kind"
@@ -276,9 +276,9 @@ const listBadgeClass =
               <div class="flex min-h-11 items-center gap-3">
                 <span aria-hidden="true" :class="stepBadgeClass">1</span>
                 <h4 :id="ids.certificateStep" class="min-w-0 flex-1 leading-snug">
-                  <span class="sr-only">Stap 1: </span>
-                  <span :class="stepTitleClass">Certificaat installeren</span>
-                  {{ ' ' }}<span class="text-sm whitespace-nowrap text-muted-light">(eenmalig per apparaat)</span>
+                  <span class="sr-only">Step 1: </span>
+                  <span :class="stepTitleClass">Install the certificate</span>
+                  {{ ' ' }}<span class="text-sm whitespace-nowrap text-muted-light">(once per device)</span>
                 </h4>
                 <Button
                   v-if="certificateFolds"
@@ -290,7 +290,7 @@ const listBadgeClass =
                   @click="certificateExpanded = !certificateExpanded"
                 >
                   <ShieldCheck aria-hidden="true" />
-                  {{ certificateOpen ? 'Verberg QR-code' : 'Toon QR-code' }}
+                  {{ certificateOpen ? 'Hide QR code' : 'Show QR code' }}
                 </Button>
               </div>
 
@@ -307,12 +307,12 @@ const listBadgeClass =
                       :src="certificateSrc"
                       width="180"
                       height="180"
-                      alt="QR-code om het certificaat te installeren"
+                      alt="QR code to install the certificate"
                       class="size-[180px]"
                     />
                     <span v-else-if="server.certificateBusy" role="status" class="flex flex-col items-center gap-2 text-center text-sm text-text-parchment/70">
                       <LoaderCircle class="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                      QR-code laden...
+                      Loading QR code...
                     </span>
                     <QrCode v-else class="size-12 text-gold-ink/30" :stroke-width="1.25" aria-hidden="true" />
                   </div>
@@ -329,7 +329,7 @@ const listBadgeClass =
                 </div>
 
                 <p v-if="certificateLink" class="border-t border-gold-ink/15 pt-3 text-sm leading-snug text-text-parchment/70">
-                  Geen camera bij de hand? Open
+                  No camera at hand? Open
                   <span data-slot="live-certificate-url" class="font-mono [overflow-wrap:anywhere] text-text-parchment select-all">{{ certificateLink }}</span>
                   in {{ BROWSER_ON_PHONE[server.phone] }}.
                 </p>
@@ -337,8 +337,8 @@ const listBadgeClass =
 
               <div v-if="server.certificateError" role="alert" :class="[noticeClass, 'items-center border-ember/50 bg-ember/10']">
                 <TriangleAlert class="size-4 shrink-0 text-[#e08a6c]" aria-hidden="true" />
-                <span class="min-w-0 flex-1">De QR-code voor het certificaat laden lukt niet: {{ server.certificateError }}</span>
-                <Button variant="ghost" size="sm" @click="server.loadCertificate()">Opnieuw</Button>
+                <span class="min-w-0 flex-1">Couldn't load the certificate QR code: {{ server.certificateError }}</span>
+                <Button variant="ghost" size="sm" @click="server.loadCertificate()">Try again</Button>
               </div>
             </li>
 
@@ -347,16 +347,16 @@ const listBadgeClass =
               <div class="flex min-h-11 items-center gap-3">
                 <span aria-hidden="true" :class="stepBadgeClass">2</span>
                 <h4 :id="ids.pairStep" class="min-w-0 flex-1 leading-snug">
-                  <span class="sr-only">Stap 2: </span>
-                  <span :class="stepTitleClass">Koppelen</span>
+                  <span class="sr-only">Step 2: </span>
+                  <span :class="stepTitleClass">Pair</span>
                 </h4>
               </div>
 
               <div v-if="server.pairedDevice" role="status" :class="[noticeClass, 'border-gold/45 bg-gold/[0.07]']">
                 <CircleCheck class="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
                 <span class="min-w-0 flex-1">
-                  <strong class="font-semibold">{{ server.pairedDevice.name }}</strong> is gekoppeld. Zet het logboek nu op je
-                  beginscherm: {{ HOME_SCREEN[deviceKind(server.pairedDevice)] }}.
+                  <strong class="font-semibold">{{ server.pairedDevice.name }}</strong> is paired. Now put Ash Log on your
+                  home screen: {{ HOME_SCREEN[deviceKind(server.pairedDevice)] }}.
                 </span>
               </div>
 
@@ -367,14 +367,14 @@ const listBadgeClass =
                       :src="qrSrc"
                       width="220"
                       height="220"
-                      :alt="`QR-code om je ${server.phone === 'iphone' ? 'iPhone' : 'telefoon'} te koppelen`"
+                      :alt="`QR code to pair your ${server.phone === 'iphone' ? 'iPhone' : 'phone'}`"
                       :class="['size-[220px] transition-opacity', expired && 'opacity-15']"
                     />
                     <span
                       v-if="expired"
                       class="absolute inset-0 grid place-content-center font-display text-sm font-semibold tracking-[0.12em] text-text-parchment uppercase"
                     >
-                      Verlopen
+                      Expired
                     </span>
                   </div>
 
@@ -392,14 +392,14 @@ const listBadgeClass =
                         {{ formatCode(server.pairing.code) }}
                       </p>
                       <p class="text-sm text-text-parchment/70" data-slot="live-countdown">
-                        <template v-if="expired"><span role="status">Deze code is verlopen.</span></template>
-                        <template v-else>Nog <span class="tabular-nums">{{ formatCountdown(remainingMs) }}</span> geldig, één keer te gebruiken.</template>
+                        <template v-if="expired"><span role="status">This code has expired.</span></template>
+                        <template v-else>Valid for <span class="tabular-nums">{{ formatCountdown(remainingMs) }}</span> more, works once.</template>
                       </p>
                     </div>
                     <Button :variant="expired ? 'default' : 'outline'" size="sm" :disabled="server.pairingBusy" @click="server.createPairing()">
                       <LoaderCircle v-if="server.pairingBusy" class="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                       <RefreshCw v-else aria-hidden="true" />
-                      Nieuwe code
+                      New code
                     </Button>
                   </div>
                 </div>
@@ -412,25 +412,25 @@ const listBadgeClass =
                 </ol>
 
                 <p v-if="pairingBase" data-slot="live-pairing-url" class="border-t border-gold-ink/15 pt-3 text-sm leading-snug text-text-parchment/70">
-                  Geen camera bij de hand? Open <span class="font-mono [overflow-wrap:anywhere] text-text-parchment">{{ pairingBase }}</span> in
-                  {{ BROWSER_ON_PHONE[server.phone] }} en typ de code.
+                  No camera at hand? Open <span class="font-mono [overflow-wrap:anywhere] text-text-parchment">{{ pairingBase }}</span> in
+                  {{ BROWSER_ON_PHONE[server.phone] }} and type the code.
                 </p>
               </ParchmentPanel>
 
               <div v-else class="flex flex-col items-start gap-3">
                 <p class="text-[0.95rem] leading-snug text-muted-light">
-                  Staat het certificaat erop? Koppel het apparaat dan met een code. Daarna opent het logboek daar vanzelf, zolang Live op wifi aan staat.
+                  Certificate installed? Then pair the device with a code. After that, Ash Log opens there by itself, as long as Live on Wi-Fi is on.
                 </p>
                 <Button :disabled="server.pairingBusy" @click="server.createPairing()">
                   <LoaderCircle v-if="server.pairingBusy" class="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                   <QrCode v-else aria-hidden="true" />
-                  {{ server.pairedDevice ? 'Nog een apparaat koppelen' : 'Koppel een apparaat' }}
+                  {{ server.pairedDevice ? 'Pair another device' : 'Pair a device' }}
                 </Button>
               </div>
 
               <p v-if="server.pairingError" role="alert" :class="[noticeClass, 'border-ember/50 bg-ember/10']">
                 <TriangleAlert class="mt-0.5 size-4 shrink-0 text-[#e08a6c]" aria-hidden="true" />
-                <span>Een code maken lukt niet: {{ server.pairingError }}</span>
+                <span>Couldn't make a code: {{ server.pairingError }}</span>
               </p>
             </li>
           </ol>
@@ -440,9 +440,9 @@ const listBadgeClass =
           <p v-if="server.devices.length" data-slot="live-repair-note" :class="[noticeClass, 'mt-5 border-line-dark bg-ink/40 text-muted-light']">
             <Info class="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
             <span>
-              <strong class="font-semibold text-text-light">Werkt het icoon op je beginscherm niet meer?</strong> Bijvoorbeeld omdat deze
-              {{ server.computer }} een ander adres kreeg. Koppel dat apparaat dan opnieuw met een nieuwe code en zet Ash Log weer op je
-              beginscherm. Staat het certificaat er nog niet op? Doe dan eerst stap 1.
+              <strong class="font-semibold text-text-light">Home screen icon stopped working?</strong> For example because this
+              {{ server.computer }} got a new address. Then pair that device again with a new code and put Ash Log back on your
+              home screen. Certificate not on it yet? Do step 1 first.
             </span>
           </p>
         </section>
@@ -450,15 +450,15 @@ const listBadgeClass =
 
       <!-- Paired devices -->
       <section :aria-labelledby="ids.devices">
-        <SectionHeading :id="ids.devices" as="h3" title="Gekoppelde apparaten" :count="server.devices.length || null" />
-        <p v-if="!server.devices.length" class="mt-1 text-[0.95rem] text-muted-light">Nog geen apparaten gekoppeld.</p>
+        <SectionHeading :id="ids.devices" as="h3" title="Paired devices" :count="server.devices.length || null" />
+        <p v-if="!server.devices.length" class="mt-1 text-[0.95rem] text-muted-light">No paired devices yet.</p>
         <ul v-else class="mt-1 flex flex-col divide-y divide-line-dark/70">
           <li v-for="device in server.devices" :key="device.id" data-slot="live-device" class="flex items-center gap-3 py-2">
             <Smartphone class="size-5 shrink-0 text-gold" :stroke-width="1.5" aria-hidden="true" />
             <div class="min-w-0 flex-1 leading-snug">
               <p class="truncate font-medium">{{ device.name }}</p>
               <p class="text-sm text-muted-light">
-                Gekoppeld op {{ formatDateTime(device.pairedAt) }}<template v-if="device.lastSeenAt">, laatst gezien <RelativeTime :value="device.lastSeenAt" /></template>
+                Paired {{ formatDateTime(device.pairedAt) }}<template v-if="device.lastSeenAt">, last seen <RelativeTime :value="device.lastSeenAt" /></template>
               </p>
             </div>
             <Button
@@ -466,17 +466,17 @@ const listBadgeClass =
               size="sm"
               class="text-[#e08a6c] hover:text-[#f0a488]"
               :disabled="server.revoking === device.id"
-              :aria-label="`Ontkoppel ${device.name}`"
+              :aria-label="`Unpair ${device.name}`"
               @click="toRevoke = device"
             >
               <LoaderCircle v-if="server.revoking === device.id" class="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-              Ontkoppel
+              Unpair
             </Button>
           </li>
         </ul>
         <p v-if="server.deviceError" role="alert" :class="[noticeClass, 'mt-2 border-ember/50 bg-ember/10']">
           <TriangleAlert class="mt-0.5 size-4 shrink-0 text-[#e08a6c]" aria-hidden="true" />
-          <span>Ontkoppelen lukt niet: {{ server.deviceError }}</span>
+          <span>Couldn't unpair: {{ server.deviceError }}</span>
         </p>
       </section>
     </DialogContent>
@@ -484,9 +484,9 @@ const listBadgeClass =
 
   <ConfirmDialog
     v-model:open="confirmOpen"
-    :title="`${toRevoke?.name ?? 'Apparaat'} ontkoppelen?`"
-    description="Dit apparaat kan het logboek dan niet meer openen of bijwerken. Opnieuw koppelen kan altijd."
-    confirm-label="Ontkoppel"
+    :title="`Unpair ${toRevoke?.name ?? 'this device'}?`"
+    description="This device won't be able to open or update Ash Log anymore. You can always pair it again."
+    confirm-label="Unpair"
     @confirm="revoke"
   />
 </template>

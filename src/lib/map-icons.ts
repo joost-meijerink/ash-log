@@ -108,10 +108,10 @@ export function questStartHtml(count: number): string {
   )
 }
 
-/** Cluster count: 7, 84, 950, 1,2k, 12k (Dutch decimal comma). */
+/** Cluster count: 7, 84, 950, 1.2k, 12k (English decimal point). */
 export function formatClusterCount(count: number): string {
   if (count < 1000) return String(count)
-  if (count < 10000) return `${(Math.floor(count / 100) / 10).toString().replace('.', ',')}k`
+  if (count < 10000) return `${(Math.floor(count / 100) / 10).toString()}k`
   return `${Math.floor(count / 1000)}k`
 }
 

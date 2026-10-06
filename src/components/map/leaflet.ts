@@ -97,7 +97,7 @@ export function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   return L.divIcon({
     html:
       `<span class="ash-cluster__count" aria-hidden="true">${formatClusterCount(count)}</span>` +
-      `<span class="ash-sr">${count} punten, inzoomen</span>`,
+      `<span class="ash-sr">${count} points, zoom in</span>`,
     className: `ash-cluster ash-cluster--${size}`,
     iconSize: [size, size],
   })

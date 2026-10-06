@@ -1,5 +1,5 @@
 // Ash Log service worker: lets the home-screen app on the iPhone open when the Mac is off,
-// asleep or not live on wifi, and show its own 'niet bereikbaar' screen instead of an error.
+// asleep or not live on wifi, and show its own 'can't be reached' screen instead of an error.
 // Registered by src/sw-register.ts, only in a production build, only over https (a secure
 // context) and only on a phone; the Mac itself never runs it. A plain classic script: the app
 // server serves it from public/ as /sw.js with Cache-Control: no-cache.
@@ -8,7 +8,7 @@
 //   navigations               network first. A real app page (index.html, header X-Ash-Log-App: 1)
 //                             is kept under '/' (without ?device= and the like). Without an
 //                             answer the kept app opens (app routes only); with nothing kept, a
-//                             small 'niet bereikbaar' page. Pairing, certificate and error pages
+//                             small 'can't be reached' page. Pairing, certificate and error pages
 //                             are never kept.
 //   /assets/*                 cache first (hashed build files), filled as they are used; files
 //                             not used for the longest time go first when there are too many
@@ -40,18 +40,21 @@ const CACHED_AT_HEADER = 'X-Ash-Log-Cached-At'
 
 const SHELL_PATH = '/'
 const DATA_PATHS = ['/api/data', '/api/progress']
-/** Paths the server answers itself: never the app, so never the kept app either. */
-const SERVER_PATHS = /^\/(?:api|koppel|certificaat|assets|icons|wiki-img)(?:\/|$)/
+/**
+ * Paths the server answers itself: never the app, so never the kept app either. /koppel and
+ * /certificaat are the Dutch paths of older QR codes and links; the server redirects them.
+ */
+const SERVER_PATHS = /^\/(?:api|pair|certificate|koppel|certificaat|assets|icons|wiki-img)(?:\/|$)/
 
 /** With the app kept: how long a navigation waits for the Mac before opening the kept app. */
 const NAVIGATION_TIMEOUT_MS = 4000
-/** With nothing kept: how long before the 'niet bereikbaar' page. */
+/** With nothing kept: how long before the 'can't be reached' page. */
 const OFFLINE_PAGE_TIMEOUT_MS = 10000
 /** How long /api/data and /api/progress wait for the Mac before the offline copy. */
 const DATA_TIMEOUT_MS = 6000
 /**
  * Right after a request found no Mac (a cold start that just opened the kept app), the data
- * GETs give up much sooner: the 'niet bereikbaar' screen then follows in a second or two.
+ * GETs give up much sooner: the 'can't be reached' screen then follows in a second or two.
  */
 const DATA_TIMEOUT_AFTER_FAILURE_MS = 1500
 const RECENT_FAILURE_MS = 30000
@@ -63,10 +66,10 @@ const MAX_IMAGE_ENTRIES = 3000
 const MAX_WARM_URLS = 200
 
 // Same texts as the app's own screen (src/components/offline/texts.ts); a test keeps them in step.
-const OFFLINE_TITLE = 'Ash Log is niet bereikbaar'
+const OFFLINE_TITLE = "Ash Log can't be reached"
 const OFFLINE_TEXT =
-  'Je computer staat uit of slaapt, of Live op wifi staat uit. Zorg dat je telefoon op hetzelfde wifi zit.'
-const RETRY_LABEL = 'Opnieuw proberen'
+  'Your computer is off or asleep, or Live on Wi-Fi is off. Make sure your phone is on the same Wi-Fi.'
+const RETRY_LABEL = 'Try again'
 
 /* ------------------------------------------------------------------ */
 /* Routing                                                             */
@@ -391,12 +394,12 @@ async function precache(origin) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 'Niet bereikbaar' page, when not even the app is kept               */
+/* 'Can't be reached' page, when not even the app is kept              */
 /* ------------------------------------------------------------------ */
 
 function offlinePageHtml() {
   return `<!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -431,7 +434,7 @@ button:focus-visible { outline: 2px solid #c9a24a; outline-offset: 2px; }
 <h1>${OFFLINE_TITLE}</h1>
 <p>${OFFLINE_TEXT}</p>
 <button type="button" id="retry">${RETRY_LABEL}</button>
-<p class="hint">Ash Log probeert het vanzelf opnieuw.</p>
+<p class="hint">Ash Log will try again on its own.</p>
 </main>
 <script>
 (function () {

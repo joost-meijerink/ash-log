@@ -1,5 +1,5 @@
 // The last map filters of this session, in memory only (nothing is written to disk).
-// A link to /kaart without filter params ('Toon op kaart' from a quest) keeps them, so a link
+// A link to /map without filter params ('Show on map' from a quest) keeps them, so a link
 // with a target does not throw away your setup. See useMapState.
 //
 // The map view itself stays alive between visits (<KeepAlive> in App.vue) and keeps its whole

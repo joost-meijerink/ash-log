@@ -74,13 +74,13 @@ export function validateDrafts(questId: string, drafts: ItemDraft[]): ItemsValid
 
     const rowErrors: ItemDraftErrors = {}
     const key = slug(name)
-    if (!name) rowErrors.name = 'Vul een naam in'
-    else if (!key) rowErrors.name = 'Gebruik letters of cijfers'
-    else if (seen.has(key)) rowErrors.name = 'Dit item staat er al'
+    if (!name) rowErrors.name = 'Fill in a name'
+    else if (!key) rowErrors.name = 'Use letters or digits'
+    else if (seen.has(key)) rowErrors.name = "This item's already on the list"
     if (key) seen.add(key)
 
     const qty = parseQty(draft.qty)
-    if (qty === null) rowErrors.qty = 'Een heel getal vanaf 1'
+    if (qty === null) rowErrors.qty = 'A whole number from 1'
 
     if (rowErrors.name || rowErrors.qty) {
       errors[draft.key] = rowErrors

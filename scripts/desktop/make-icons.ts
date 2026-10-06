@@ -406,11 +406,11 @@ export function writeIco(file = ICO_FILE): string {
 function main(args: string[], platform: NodeJS.Platform = process.platform) {
   const all = !['--web', '--ico', '--icns'].some((flag) => args.includes(flag))
   if (all || args.includes('--web')) {
-    for (const file of writeWebIcons()) console.log(`geschreven: ${file}`)
+    for (const file of writeWebIcons()) console.log(`written: ${file}`)
   }
-  if (all || args.includes('--ico')) console.log(`geschreven: ${writeIco()}`)
+  if (all || args.includes('--ico')) console.log(`written: ${writeIco()}`)
   // iconutil only exists on macOS.
-  if (args.includes('--icns') || (all && platform === 'darwin')) console.log(`geschreven: ${writeIcns()}`)
+  if (args.includes('--icns') || (all && platform === 'darwin')) console.log(`written: ${writeIcns()}`)
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

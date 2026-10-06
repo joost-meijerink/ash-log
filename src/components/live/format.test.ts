@@ -36,15 +36,15 @@ describe('unreachableHint', () => {
   it('sends the Mac back to the app icon', () => {
     for (const hostname of ['localhost', '127.0.0.1', '[::1]']) {
       expect(isLoopbackHost(hostname)).toBe(true)
-      expect(unreachableHint({ hostname })).toContain('via het icoon')
+      expect(unreachableHint({ hostname })).toContain('from its icon')
     }
   })
 
-  it('tells the phone to check the laptop, the app and live mode', () => {
+  it('tells the phone to check the computer, the app and live mode', () => {
     const hint = unreachableHint({ mode: 'app', hostname: 'MacBook-Pro-van-Joost.local' })
     expect(isLoopbackHost('192.168.1.20')).toBe(false)
-    expect(hint).toContain('laptop')
-    expect(hint).toContain('Live op wifi')
+    expect(hint).toContain('your computer')
+    expect(hint).toContain('Live on Wi-Fi')
     expect(hint).not.toContain('npm')
   })
 })

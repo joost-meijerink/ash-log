@@ -75,7 +75,7 @@ describe('StayAwake', () => {
     children[0]!.emit('exit', 1)
     expect(awake.active).toBe(false)
     expect(logs).toHaveLength(1)
-    expect(logs[0]).toMatch(/^Wakker houden lukt niet: .*powershell\.exe stopte met code 1/)
+    expect(logs[0]).toMatch(/^Couldn't keep the computer awake: .*powershell\.exe stopped with code 1/)
 
     awake.start()
     awake.stop()
@@ -130,7 +130,7 @@ describe('awakeCommand on Windows', () => {
   })
 
   it('refuses a pid that is not a positive whole number', () => {
-    for (const pid of [0, -1, 1.5, Number.NaN]) expect(() => windowsAwakeScript(pid), String(pid)).toThrow(/proces-id/)
+    for (const pid of [0, -1, 1.5, Number.NaN]) expect(() => windowsAwakeScript(pid), String(pid)).toThrow(/process id/)
   })
 })
 

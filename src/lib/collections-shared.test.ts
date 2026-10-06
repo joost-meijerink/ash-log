@@ -32,7 +32,7 @@ describe('compareNames', () => {
 
 describe('search', () => {
   it('normalises case, accents, quotes and spaces', () => {
-    expect(searchKey('  Vistrofeeën  ‘Hope’s’   Fall ')).toBe("vistrofeeen 'hope's' fall")
+    expect(searchKey('  Trophées  ‘Hope’s’   Fall ')).toBe("trophees 'hope's' fall")
   })
 
   it('needs every word', () => {

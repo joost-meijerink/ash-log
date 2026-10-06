@@ -2,7 +2,7 @@
  * npm run app:install: Ash Log as an app on this computer.
  *
  *   macOS    builds Ash Log.app and puts it in ~/Applications (scripts/desktop/install-app.sh)
- *   Windows  Ash Log and Ash Log stoppen in the Start menu (scripts/windows/install.ts)
+ *   Windows  Ash Log and Stop Ash Log in the Start menu (scripts/windows/install.ts)
  *   other    not supported: npm run app starts the server in a terminal
  *
  *   npm run app:install -- --desktop   Windows: also a shortcut on the desktop
@@ -17,9 +17,9 @@ export const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url))
 export const MAC_INSTALLER = join(SCRIPTS_DIR, 'desktop', 'install-app.sh')
 
 export const INSTALL_USAGE = [
-  'Gebruik: npm run app:install [-- optie]',
-  '  --desktop     Windows: ook een snelkoppeling op het bureaublad',
-  '  --uninstall   Ash Log weer weghalen (ook: npm run app:uninstall)',
+  'Usage: npm run app:install [-- option]',
+  '  --desktop     Windows: also a shortcut on the desktop',
+  '  --uninstall   remove Ash Log again (also: npm run app:uninstall)',
 ].join('\n')
 
 export interface InstallArgs {
@@ -34,9 +34,9 @@ export function parseInstallArgs(argv: readonly string[]): InstallArgs | { error
     if (arg === '--uninstall') args.uninstall = true
     else if (arg === '--desktop') args.desktop = true
     else if (arg === '--help' || arg === '-h') args.help = true
-    else return { error: `Onbekende optie: ${arg}` }
+    else return { error: `Unknown option: ${arg}` }
   }
-  if (args.uninstall && args.desktop) return { error: '--desktop hoort bij installeren, niet bij --uninstall' }
+  if (args.uninstall && args.desktop) return { error: '--desktop goes with installing, not with --uninstall' }
   return args
 }
 
@@ -51,12 +51,12 @@ export interface InstallDeps {
 }
 
 export const MAC_UNINSTALL =
-  'Ash Log weghalen op je Mac: stop de app (Cmd+Q) en sleep Ash Log uit Programma\'s in je thuismap (~/Applications) naar de prullenmand.'
+  'To remove Ash Log from your Mac: quit the app (Cmd+Q) and drag Ash Log from Applications in your home folder (~/Applications) to the Trash.'
 
 export const UNSUPPORTED = [
-  'Ash Log heeft (nog) geen app voor dit systeem. Start de server zelf in een terminal:',
+  "Ash Log doesn't have an app for this system (yet). Start the server yourself in a terminal:",
   '  npm run app',
-  'Open daarna http://localhost:5199 in je browser (of de poort uit APP_PORT in .env). Ctrl+C stopt de server.',
+  'Then open http://localhost:5199 in your browser (or the port from APP_PORT in .env). Ctrl+C stops the server.',
 ].join('\n')
 
 export async function runInstall(argv: readonly string[], deps: InstallDeps): Promise<number> {
@@ -76,7 +76,7 @@ export async function runInstall(argv: readonly string[], deps: InstallDeps): Pr
         deps.out(MAC_UNINSTALL)
         return 0
       }
-      if (args.desktop) deps.out('--desktop is voor Windows. Op je Mac sleep je Ash Log zelf naar het Dock.')
+      if (args.desktop) deps.out('--desktop is for Windows. On your Mac, drag Ash Log to the Dock yourself.')
       return deps.installMac() ?? 1
     case 'win32':
       return args.uninstall ? deps.uninstallWindows() : deps.installWindows({ desktop: args.desktop })

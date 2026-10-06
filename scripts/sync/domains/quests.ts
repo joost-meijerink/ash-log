@@ -48,12 +48,12 @@ export async function fetchQuestSources(ctx: SyncContext): Promise<QuestSources>
     (d) => d.query?.categorymembers ?? [],
   )
   const titles = questTitles(members.filter((m) => (m.ns ?? 0) === 0).map((m) => m.title))
-  ctx.log(`  ${titles.length} pagina's in ${QUESTS_CATEGORY}`)
+  ctx.log(`  ${titles.length} pages in ${QUESTS_CATEGORY}`)
 
   const { pages, missing } = await ctx.pages([...titles, OVERVIEW_TITLE])
   const overview = pages.get(OVERVIEW_TITLE)
-  if (!overview) throw new Error(`Pagina '${OVERVIEW_TITLE}' niet gevonden op de wiki`)
-  if (missing.length) ctx.log(`  Niet gevonden: ${missing.join(', ')}`)
+  if (!overview) throw new Error(`Page '${OVERVIEW_TITLE}' not found on the wiki`)
+  if (missing.length) ctx.log(`  Not found: ${missing.join(', ')}`)
   const quests = titles.flatMap((t) => pages.get(t) ?? [])
 
   // Most quests have no Quick guide; missing subpages are normal.
@@ -73,17 +73,17 @@ export function parseQuests(src: QuestSources, map: MapData, warn: Warn): Quest[
   for (const page of src.quests) {
     const removed = findTemplates(lead(page.content), REMOVED)[0]
     if (removed) {
-      warn(`Verwijderd uit het spel ({{${removed.name}}}), overgeslagen`, page.title)
+      warn(`Removed from the game ({{${removed.name}}}), skipped`, page.title)
       continue
     }
     const details = findTemplates(page.content, 'Quest details')[0]
     const qtype = details ? plain(details.params.qtype ?? '').toLowerCase() : ''
     if (!details || !qtype) {
-      warn('Geen Quest details/qtype, overgeslagen', page.title)
+      warn('No Quest details/qtype, skipped', page.title)
       continue
     }
     if (!isKind(qtype)) {
-      warn(`Onbekend qtype '${qtype}', overgeslagen`, page.title)
+      warn(`Unknown qtype '${qtype}', skipped`, page.title)
       continue
     }
     recognised.push({ page, details, kind: qtype })
@@ -97,7 +97,7 @@ export function parseQuests(src: QuestSources, map: MapData, warn: Warn): Quest[
     const id = page.title
     const p = details.params
     const row = overview.get(id)
-    if (!row && kind !== 'tertiary') warn(`Staat niet op de pagina '${OVERVIEW_TITLE}', geen volgorde of regio`, id)
+    if (!row && kind !== 'tertiary') warn(`Not on the page '${OVERVIEW_TITLE}', so no order or region`, id)
 
     const location = plain(p.start ?? '') || row?.start || ''
     const description = plain(p.desc ?? '')
@@ -109,18 +109,18 @@ export function parseQuests(src: QuestSources, map: MapData, warn: Warn): Quest[
     if (guide) {
       raw = quickGuideSteps(guide.content, dropped)
       if (raw.length) stepsSource = 'quick-guide'
-      else warn('Quick guide zonder stappen, Walkthrough gebruikt', guide.title)
+      else warn('Quick guide without steps, using the Walkthrough', guide.title)
     }
     if (!raw?.length) {
       dropped = new Set()
       raw = walkthroughSteps(page.content, dropped)
-      if (!raw) warn('Geen Walkthrough-sectie gevonden', id)
+      if (!raw) warn('No Walkthrough section found', id)
     }
     const steps = withStepIds(id, raw ?? [], warn)
-    if (!steps.length) warn('Geen stappen gevonden', id)
+    if (!steps.length) warn('No steps found', id)
     if (dropped.size) {
       const names = [...dropped].map((n) => `{{${n}}}`).join(', ')
-      warn(`${dropped.size === 1 ? 'Sjabloon' : 'Sjablonen'} ${names} niet overgenomen in de stappen`, stepsSource === 'quick-guide' ? guide!.title : id)
+      warn(`${dropped.size === 1 ? 'Template' : 'Templates'} ${names} left out of the steps`, stepsSource === 'quick-guide' ? guide!.title : id)
     }
     const needs = walkthroughNeeds(page.content)
 
@@ -198,7 +198,7 @@ export function parseOverview(page: RawPage, resolve: (target: string) => string
     const names = header?.map((c) => plain(c.text).toLowerCase()) ?? []
     const questCol = names.findIndex((n) => n === 'quests' || n === 'quest')
     if (questCol < 0) {
-      warn('Tabel zonder kolom Quests op de Quests-pagina, overgeslagen', page.title)
+      warn('Table without a Quests column on the Quests page, skipped', page.title)
       continue
     }
     recognised++
@@ -214,7 +214,7 @@ export function parseOverview(page: RawPage, resolve: (target: string) => string
       order++
       const id = resolve(link.target)
       if (!id) {
-        warn(`'${link.target}' staat in de questtabel maar is geen bekende quest`, page.title)
+        warn(`'${link.target}' is in the quest table but isn't a known quest`, page.title)
         return
       }
       if (out.has(id)) return
@@ -223,6 +223,6 @@ export function parseOverview(page: RawPage, resolve: (target: string) => string
       out.set(id, { order, ...(region ? { region } : {}), ...(start ? { start } : {}) })
     })
   }
-  if (!recognised) warn('Geen questtabellen herkend, quests krijgen geen volgorde of regio', page.title)
+  if (!recognised) warn('No quest tables recognised, quests get no order or region', page.title)
   return out
 }

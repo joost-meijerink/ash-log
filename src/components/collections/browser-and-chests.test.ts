@@ -60,8 +60,8 @@ function makeRouter(): Router {
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/verzamelingen', name: 'collections', component: Empty },
-      { path: '/kaart', name: 'map', component: Empty },
+      { path: '/collections', name: 'collections', component: Empty },
+      { path: '/map', name: 'map', component: Empty },
       { path: '/quests/:questId?', name: 'quests', component: Empty },
     ],
   })
@@ -87,9 +87,9 @@ describe('RewardBrowser', () => {
     return () => h(RewardBrowser, { owned: owned.value, haystacks: new Map() })
   }
 
-  it('shows the tracked kinds under Alles (no plans) and switches kind through ?soort=', async () => {
+  it('shows the tracked kinds under All (no plans) and switches kind through ?kind=', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen#vault-takla-kara')
+    await router.push('/collections#vault-takla-kara')
     const w = await mountWith(router, render())
     expect(w.findAll('[data-slot="check-row"]')).toHaveLength(rewards.filter((r) => r.kind !== 'plan').length)
     expect(w.text()).not.toContain('Blue Standing Torch')
@@ -102,7 +102,7 @@ describe('RewardBrowser', () => {
     expect(chipTexts.some((t) => t.startsWith('Patterns'))).toBe(false)
     await chips.find((c) => c.text().startsWith('Vestiges'))!.trigger('click')
     await flushPromises()
-    expect(router.currentRoute.value.query).toEqual({ soort: 'vestige' })
+    expect(router.currentRoute.value.query).toEqual({ kind: 'vestige' })
     expect(router.currentRoute.value.hash).toBe('#vault-takla-kara')
     expect(w.findAll('[data-slot="check-row"]')).toHaveLength(2)
     expect(w.text()).toContain('via An Educational Blade')
@@ -110,7 +110,7 @@ describe('RewardBrowser', () => {
 
   it('searches and hides owned rewards, keeping counts', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen?verberg=1')
+    await router.push('/collections?hide=1')
     const w = await mountWith(router, render())
     useProgressStore().toggleReward('vestige:wooden-training-sword', true)
     await flushPromises()
@@ -120,15 +120,15 @@ describe('RewardBrowser', () => {
     await w.get('input[type="search"]').setValue('garou')
     expect(w.findAll('[data-slot="check-row"]')).toHaveLength(1)
     expect(w.text()).toContain('Garou Greataxe')
-    expect(w.text()).toContain('1 van 4 zichtbaar')
+    expect(w.text()).toContain('1 of 4 shown')
 
     await w.get('input[type="search"]').setValue('zzz')
-    expect(w.text()).toContain('Niets gevonden')
+    expect(w.text()).toContain('Nothing found')
   })
 
   it('links quests and vaults', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     const w = await mountWith(router, render())
     const hrefs = w.findAll('a').map((a) => a.attributes('href'))
     expect(hrefs).toContain('/quests/Dragon%20Slayer')
@@ -173,16 +173,16 @@ describe('RewardBrowser notes and map links', () => {
 
   const render = () => () => h(RewardBrowser, { owned: new Set<string>(), haystacks: new Map() })
 
-  it('shows what a group shares once under its heading: via in Dutch, the source as wiki text', async () => {
+  it('shows what a group shares once under its heading: via as interface text, the source as wiki text', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     const w = await mountWith(router, render())
 
     const notes = w.findAll('[data-group-note]')
     expect(notes).toHaveLength(1)
     const note = notes[0]!
-    expect(note.text()).toContain('Drop van monsters')
-    expect(note.text()).toContain('Bij 3 van de 4:')
+    expect(note.text()).toContain('Dropped by monsters')
+    expect(note.text()).toContain('For 3 of the 4:')
     expect(note.get('[data-slot="location-text"]').attributes('lang')).toBe('en')
     // The long source is shown once, not on every grave.
     expect(w.text().split(graveSource)).toHaveLength(2)
@@ -191,11 +191,11 @@ describe('RewardBrowser notes and map links', () => {
     const row = (name: string) => rows.find((r) => r.text().includes(name))!
     expect(row('Grave 01').find('[data-slot="reward-note"]').exists()).toBe(false)
     expect(row('Spectral Book').text()).toContain('Reward from the activity X Marks the Spot.')
-    expect(row('Spectral Book').text()).not.toContain('Drop van monsters')
+    expect(row('Spectral Book').text()).not.toContain('Dropped by monsters')
 
     // A group of one keeps everything on its row, labels in the interface font.
     const sword = row('Black Sword')
-    expect(sword.get('[data-slot="reward-via"]').text()).toBe('Drop van monsters, te koop in winkels')
+    expect(sword.get('[data-slot="reward-via"]').text()).toBe('Dropped by monsters, sold in shops')
     expect(sword.get('[data-slot="reward-via"]').attributes('lang')).toBeUndefined()
     expect(sword.get('[data-slot="location-text"]').text()).toBe('Also found in chests in Dowdun Reach.')
     expect(sword.get('[data-slot="location-text"]').attributes('lang')).toBe('en')
@@ -204,19 +204,19 @@ describe('RewardBrowser notes and map links', () => {
 
   it('links an unlock to its first map spot', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     const w = await mountWith(router, render())
     const links = w.findAll('a[data-map-link]')
     expect(links).toHaveLength(1)
-    expect(links[0]!.text()).toContain('Toon op kaart')
-    expect(decodeURIComponent(links[0]!.attributes('href')!)).toBe('/kaart?focus=vestige-spot:10:20')
+    expect(links[0]!.text()).toContain('Show on map')
+    expect(decodeURIComponent(links[0]!.attributes('href')!)).toBe('/map?focus=vestige-spot:10:20')
   })
 
-  it('finds unlocks by their Dutch via label and by a shared source', async () => {
+  it('finds unlocks by their via label and by a shared source', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     const w = await mountWith(router, render())
-    await w.get('input[type="search"]').setValue('winkels')
+    await w.get('input[type="search"]').setValue('sold in shops')
     expect(w.findAll('[data-slot="check-row"]').map((r) => r.text())).toEqual([expect.stringContaining('Black Sword')])
     await w.get('input[type="search"]').setValue('spectral platforming')
     expect(w.findAll('[data-slot="check-row"]')).toHaveLength(3)
@@ -233,33 +233,33 @@ describe('ChestMatrix', () => {
 
   it('counts chest points per region and power level and links to the map', async () => {
     const router = makeRouter()
-    await router.push('/verzamelingen')
+    await router.push('/collections')
     const w = await mountWith(router, () => h(ChestMatrix))
     const rows = w.findAll('tbody tr').map((tr) => tr.findAll('th, td').map((c) => c.text().replace(/\s+/g, ' ').trim()))
-    // Columns: region, PL 2, PL 6, Onbekend, Totaal
+    // Columns: region, PL 2, PL 6, Unknown, Total
     expect(rows).toEqual([
       ['Brynmoor', '2', '·0', '·0', '2'],
       ['Dowdun Reach', '·0', '1', '1', '2'],
     ])
     const hrefs = w.findAll('tbody a').map((a) => decodeURIComponent(a.attributes('href')!))
     // A power level cell uses the strict power filter, so the map shows exactly that count.
-    expect(hrefs).toContain('/kaart?c=buried-treasure,treasure-chest&r=Brynmoor&p=2&ps=1')
-    expect(hrefs).toContain('/kaart?c=buried-treasure,treasure-chest&r=Dowdun+Reach&p=6&ps=1')
+    expect(hrefs).toContain('/map?c=buried-treasure,treasure-chest&r=Brynmoor&p=2&ps=1')
+    expect(hrefs).toContain('/map?c=buried-treasure,treasure-chest&r=Dowdun+Reach&p=6&ps=1')
     // Totals have no power filter, so they also show chests without a level.
-    expect(hrefs).toContain('/kaart?c=buried-treasure,treasure-chest&r=Dowdun+Reach')
+    expect(hrefs).toContain('/map?c=buried-treasure,treasure-chest&r=Dowdun+Reach')
     const footHrefs = w.findAll('tfoot a').map((a) => decodeURIComponent(a.attributes('href')!))
     expect(footHrefs).toEqual([
-      '/kaart?c=buried-treasure,treasure-chest&p=2&ps=1',
-      '/kaart?c=buried-treasure,treasure-chest&p=6&ps=1',
-      '/kaart?c=buried-treasure,treasure-chest',
+      '/map?c=buried-treasure,treasure-chest&p=2&ps=1',
+      '/map?c=buried-treasure,treasure-chest&p=6&ps=1',
+      '/map?c=buried-treasure,treasure-chest',
     ])
-    expect(w.text()).toContain('Die kisten zie je op de kaart via een totaal')
+    expect(w.text()).toContain("To see those chests on the map, pick a total")
     expect(w.get('tbody th').attributes('lang')).toBe('en')
 
     // Switch Buried Treasure off: counts and links follow.
     await w.findAll('[data-slot="toggle-chip"]').find((c) => c.text().startsWith('Buried Treasure'))!.trigger('click')
     const first = w.findAll('tbody tr')[0]!.findAll('td')
     expect(first[0]!.text()).toBe('1')
-    expect(decodeURIComponent(first[0]!.get('a').attributes('href')!)).toBe('/kaart?c=treasure-chest&r=Brynmoor&p=2&ps=1')
+    expect(decodeURIComponent(first[0]!.get('a').attributes('href')!)).toBe('/map?c=treasure-chest&r=Brynmoor&p=2&ps=1')
   })
 })

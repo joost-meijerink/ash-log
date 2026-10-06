@@ -8,7 +8,7 @@ import { LIVE_POLL_MS, useServerStore } from '@/stores/server'
 import LiveDialog from './LiveDialog.vue'
 
 /**
- * Header button for 'Live op wifi', with a gold dot while live. Opens the live dialog.
+ * Header button for 'Live on Wi-Fi', with a gold dot while live. Opens the live dialog.
  * The header shows it only on the computer itself under the app server (server.canManage).
  */
 const server = useServerStore()
@@ -40,7 +40,7 @@ onBeforeUnmount(stopPolling)
         size="sm"
         data-slot="live-control"
         aria-haspopup="dialog"
-        :aria-label="server.live ? 'Live op wifi: aan' : 'Live op wifi: uit'"
+        :aria-label="server.live ? 'Live on Wi-Fi: on' : 'Live on Wi-Fi: off'"
         :class="cn(server.live ? 'text-gold hover:text-gold' : 'text-muted-light')"
         @click="open = true"
       >
@@ -58,7 +58,7 @@ onBeforeUnmount(stopPolling)
       </Button>
     </TooltipTrigger>
     <TooltipContent side="bottom">
-      {{ server.live ? 'Live op wifi staat aan: je telefoon kan erbij' : 'Live op wifi staat uit' }}
+      {{ server.live ? 'Live on Wi-Fi is on: your phone can connect' : 'Live on Wi-Fi is off' }}
     </TooltipContent>
   </Tooltip>
   <LiveDialog v-model:open="open" />

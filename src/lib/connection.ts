@@ -1,6 +1,6 @@
 // Whether the server behind /api can be reached. The api client (api.ts) reports what every
 // request found out; the connection store (stores/connection.ts) listens and decides when the
-// app shows 'niet bereikbaar' or runs read-only. No DOM in here: src/lib is also type-checked
+// app shows 'can't be reached' or runs read-only. No DOM in here: src/lib is also type-checked
 // without it (tsconfig.node.json).
 
 /**
@@ -54,7 +54,7 @@ export class OfflineCopyError extends Error {
   readonly at: string
 
   constructor(at: string) {
-    super('Je computer is niet bereikbaar')
+    super("Your computer can't be reached")
     this.name = 'OfflineCopyError'
     this.at = at
   }

@@ -10,7 +10,7 @@ import { useDataStore } from '@/stores/data'
 import { BROWSE_LABEL, OFFLINE_TEXT, OFFLINE_TITLE, RETRY_LABEL, retryHint } from './texts'
 
 /**
- * Full-screen 'niet bereikbaar' state on a phone that cannot reach the Mac. Retries on its own
+ * Full-screen 'can't be reached' state on a phone that cannot reach the Mac. Retries on its own
  * (connection store); with data on hand (the service worker's copy, or what was on screen)
  * the last known data can be looked at, read-only.
  */
@@ -55,7 +55,7 @@ onMounted(() => title.value?.focus({ preventScroll: true }))
         {{ OFFLINE_TITLE }}
       </h1>
       <p class="mt-3 max-w-sm leading-relaxed text-pretty text-muted-light">{{ OFFLINE_TEXT }}</p>
-      <p v-if="!online" data-slot="phone-offline" class="mt-2 text-sm text-[#e08a6c]">Je telefoon heeft nu zelf geen netwerk.</p>
+      <p v-if="!online" data-slot="phone-offline" class="mt-2 text-sm text-[#e08a6c]">Your phone itself has no network right now.</p>
 
       <div class="mt-8 flex w-full flex-col items-center gap-3">
         <Button
@@ -69,7 +69,7 @@ onMounted(() => title.value?.focus({ preventScroll: true }))
           <span class="flex flex-col items-start text-left leading-tight">
             <span>{{ BROWSE_LABEL }}</span>
             <span v-if="connection.knownAt" class="text-[0.8rem] font-normal opacity-80">
-              bijgewerkt <RelativeTime :value="connection.knownAt" />
+              updated <RelativeTime :value="connection.knownAt" />
             </span>
           </span>
         </Button>

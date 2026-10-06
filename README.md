@@ -1,169 +1,163 @@
 # Ash Log
 
-**English:** Ash Log is a free, unofficial progress tracker for *RuneScape: Dragonwilds*. Tick off quest steps, find chests, ores and lore on an interactive map, and keep track of unique unlocks such as armour set patterns. All game content comes from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) through its API. It runs on your own computer (Windows or macOS) and, over your home Wi-Fi, on your phone. The interface is in Dutch; the game texts stay in English. Installation steps are below (in Dutch).
+Ash Log is a free, unofficial progress tracker for *RuneScape: Dragonwilds*. Tick off quest steps, find chests, ores and lore on a map, and keep track of which unique unlocks (like the patterns of armour sets) you already have. All game content comes from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) through its API.
 
----
+Ash Log runs on your own computer, Windows or Mac. There's no account and no cloud: your progress lives in a file on your computer. Turn on **Live on Wi-Fi** and you can use it on your phone too, as long as it's on the same Wi-Fi.
 
-Ash Log is een logboek voor *RuneScape: Dragonwilds*. Je vinkt queststappen af, zoekt kisten, ertsen en lore op een kaart, en houdt bij welke unieke unlocks (zoals de patterns van armour sets) je al hebt. Alle spelinhoud komt van de [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki).
+## Contents
 
-Ash Log draait op je eigen computer, Windows of Mac. Er is geen account en geen cloud: je voortgang staat in een bestand op je computer. Zet je **Live op wifi** aan, dan gebruik je het ook op je telefoon, zolang die op hetzelfde wifi zit.
+- [What you need](#what-you-need)
+- [Installing](#installing)
+- [On Windows](#on-windows)
+- [On a Mac](#on-a-mac)
+- [On your phone](#on-your-phone)
+- [Updating](#updating)
+- [Your data](#your-data)
+- [Troubleshooting](#troubleshooting)
+- [Development](#development)
+- [Source and license](#source-and-license)
 
-De schermen zijn Nederlands. Quests, stappen en itemnamen blijven Engels, zoals in het spel.
+## What you need
 
-## Inhoud
+- **Windows 10 or 11**, or **macOS 13 or later**.
+- **Node.js 22.12 or later.** Get the LTS version from [nodejs.org](https://nodejs.org). npm comes with it.
+- **On Windows:** Microsoft Edge (built into Windows) or Google Chrome, for Ash Log's own window.
+- **On a Mac:** the Xcode Command Line Tools, for the Mac app. Install them with `xcode-select --install` in Terminal.
+- **Git** makes updating easier later, but you don't need it: you can also download the project as a ZIP.
+- **For your phone:** an iPhone with Safari or an Android phone with Chrome, on the same Wi-Fi as your computer.
 
-- [Wat je nodig hebt](#wat-je-nodig-hebt)
-- [Installeren](#installeren)
-- [Op Windows](#op-windows)
-- [Op een Mac](#op-een-mac)
-- [Op je telefoon](#op-je-telefoon)
-- [Bijwerken](#bijwerken)
-- [Je gegevens](#je-gegevens)
-- [Problemen](#problemen)
-- [Ontwikkelen](#ontwikkelen)
-- [Bron en licentie](#bron-en-licentie)
+## Installing
 
-## Wat je nodig hebt
+These steps are the same on Windows and Mac. After that, each system has its own section on starting Ash Log from its own icon.
 
-- **Windows 10 of 11**, of **macOS 13 of nieuwer**.
-- **Node.js 22.12 of nieuwer.** Neem de LTS-versie van [nodejs.org](https://nodejs.org). npm zit erbij.
-- **Op Windows:** Microsoft Edge (zit in Windows) of Google Chrome, voor het eigen venster van Ash Log.
-- **Op een Mac:** de Command Line Tools van Xcode, voor de Mac-app. Installeer die met `xcode-select --install` in Terminal.
-- **Git** is handig om later bij te werken, maar niet verplicht: je kunt het project ook als ZIP downloaden.
-- **Voor je telefoon:** een iPhone met Safari of een Android-telefoon met Chrome, op hetzelfde wifi als je computer.
+### 1. Download the project
 
-## Installeren
-
-Deze stappen zijn voor Windows en Mac hetzelfde. Daarna volgt per systeem hoe je Ash Log met een eigen icoon start.
-
-### 1. Het project downloaden
-
-Met Git:
+With Git:
 
 ```
 git clone https://github.com/joost-meijerink/ash-log.git
 cd ash-log
 ```
 
-Zonder Git: kies op GitHub **Code > Download ZIP**, pak de ZIP uit naar een vaste plek (bijvoorbeeld je map Documenten) en open die map in een terminal.
+Without Git: on GitHub, choose **Code > Download ZIP**, unzip it to a place where it can stay (your Documents folder, for example) and open that folder in a terminal.
 
-Een terminal openen in de projectmap:
+To open a terminal in the project folder:
 
-- **Windows 11:** rechtsklik in de map in Verkenner en kies **Openen in Terminal**.
-- **Windows 10:** klik in de adresbalk van Verkenner, typ `cmd` en druk op Enter.
-- **Mac:** open Terminal, typ `cd ` (met een spatie), sleep de map in het venster en druk op Enter.
+- **Windows 11:** right-click inside the folder in File Explorer and choose **Open in Terminal**.
+- **Windows 10:** click the address bar of File Explorer, type `cmd` and press Enter.
+- **Mac:** open Terminal, type `cd ` (with a space), drag the folder into the window and press Enter.
 
-### 2. Installeren
+### 2. Install
 
 ```
 npm install
 ```
 
-Krijg je in PowerShell de melding dat het uitvoeren van scripts is uitgeschakeld? Typ dan `npm.cmd install`, of gebruik de Opdrachtprompt (`cmd`) in plaats van PowerShell. Dat geldt ook voor de andere `npm`-opdrachten hieronder.
+Does PowerShell tell you that running scripts is disabled on this system? Then type `npm.cmd install`, or use Command Prompt (`cmd`) instead of PowerShell. The same goes for the other `npm` commands below.
 
-### 3. Je contactgegevens voor de wiki
+### 3. Your contact details for the wiki
 
-Ash Log haalt de spelinhoud op via de API van de wiki. De wiki wil weten wie dat doet, zodat de beheerders je kunnen bereiken als er iets misgaat. Daarvoor maak je een bestand `.env`:
+Ash Log fetches the game content through the wiki's API. The wiki wants to know who's doing that, so its admins can reach you if something goes wrong. For that, you create a file called `.env`:
 
-- **Windows:** `copy .env.example .env` en daarna `notepad .env`
-- **Mac:** `cp .env.example .env` en daarna `open -e .env`
+- **Windows:** `copy .env.example .env`, then `notepad .env`
+- **Mac:** `cp .env.example .env`, then `open -e .env`
 
-Vervang in de regel `WIKI_USER_AGENT` het voorbeeldadres door je eigen e-mailadres, of door een URL waar je te bereiken bent (zoals je GitHub-pagina). Met het voorbeeldadres weigert de sync. `.env` blijft op je eigen computer.
+On the `WIKI_USER_AGENT` line, replace the example address with your own e-mail address, or with a URL where you can be reached (like your GitHub page). The sync refuses the example address. `.env` stays on your own computer.
 
-### 4. De eerste sync
+### 4. The first sync
 
-De quests, kaartpunten en beloningen zitten al in het project. De kaarttegels en iconen (zo'n 45 MB) haalt Ash Log één keer zelf op bij de wiki. Dat kan op twee manieren:
+The quests, map points and rewards already come with the project. Ash Log fetches the map tiles and icons (about 45 MB) from the wiki itself, once. There are two ways to do that:
 
-- Start Ash Log (zie hieronder) en klik rechtsboven op **Wiki bijwerken** (de knop met de pijlen).
-- Of in de terminal: `npm run sync`
+- Start Ash Log (see below) and click **Update from wiki** at the top right (the button with the arrows).
+- Or in the terminal: `npm run sync`
 
-De eerste keer duurt dat een paar minuten, want Ash Log vraagt de wiki rustig om de beurt om elk bestand. Daarna gaat een sync veel sneller: alleen wat op de wiki veranderd is, komt opnieuw binnen.
+The first time takes a few minutes, because Ash Log politely asks the wiki for one file at a time. After that, a sync is much faster: only what changed on the wiki comes in again.
 
-## Op Windows
-
-```
-npm run app:install
-```
-
-Dit zet **Ash Log** en **Ash Log stoppen** in je Startmenu, met het Ash Log-icoon. Ook een icoon op je bureaublad? Gebruik dan `npm run app:install -- --desktop`. Je hebt er geen beheerdersrechten voor nodig.
-
-- **Starten:** klik op Ash Log. De eerste keer bouwt Ash Log eerst de app, dat duurt even. Daarna opent het Logboek in een eigen venster (Edge of Chrome in app-modus, los van je gewone browser).
-- **Stoppen:** sluit het venster. Staat Live op wifi aan, dan vraagt Ash Log eerst of hij moet blijven draaien voor je telefoon. Je kunt ook **Ash Log stoppen** in het Startmenu kiezen.
-- **Weghalen:** `npm run app:uninstall`. Je voortgang blijft staan.
-
-Verplaats je de projectmap of installeer je een andere versie van Node? Draai `npm run app:install` dan opnieuw.
-
-Meer over het venster, de firewall en problemen op Windows: [scripts/windows/README.md](scripts/windows/README.md).
-
-## Op een Mac
+## On Windows
 
 ```
 npm run app:install
 ```
 
-Dit bouwt **Ash Log.app** en zet hem in de map Programma's van je gebruiker (`~/Applications`). Zoek hem met Spotlight of sleep hem naar je Dock.
+This puts **Ash Log** and **Stop Ash Log** in your Start menu, with the Ash Log icon. Want an icon on your desktop too? Use `npm run app:install -- --desktop`. You don't need admin rights.
 
-- **Starten:** klik op het icoon. De app start de server en toont het Logboek in een eigen venster.
-- **Venster sluiten** (Cmd+W): de server blijft draaien, zodat je telefoon er nog bij kan.
-- **Stoppen:** Cmd+Q, of rechtsklik op het icoon in het Dock en kies Stop.
+- **Start:** click Ash Log. The first time, Ash Log builds the app first, which takes a moment. Then it opens in its own window (Edge or Chrome in app mode, separate from your normal browser).
+- **Stop:** close the window. If Live on Wi-Fi is on, Ash Log first asks whether it should keep running for your phone. You can also pick **Stop Ash Log** in the Start menu.
+- **Remove:** `npm run app:uninstall`. Your progress stays.
 
-macOS vraagt een paar keer om toestemming: voor je map Documenten (als het project daar staat), voor inkomende verbindingen van node (bij Live op wifi) en voor apparaten op je lokale netwerk. Kies steeds Sta toe.
+Moved the project folder or installed another version of Node? Run `npm run app:install` again.
 
-Meer over de Mac-app, het icoon en problemen: [scripts/desktop/README.md](scripts/desktop/README.md).
+More about the window, the firewall and problems on Windows: [scripts/windows/README.md](scripts/windows/README.md).
 
-### Zonder app-icoon
+## On a Mac
 
-Op beide systemen (en op Linux) kan het ook vanuit de terminal:
+```
+npm run app:install
+```
+
+This builds **Ash Log.app** and puts it in the Applications folder in your home folder (`~/Applications`). Find it with Spotlight or drag it to your Dock.
+
+- **Start:** click the icon. The app starts the server and shows Ash Log in its own window.
+- **Close the window** (Cmd+W): the server keeps running, so your phone can still reach it.
+- **Quit:** Cmd+Q, or right-click the icon in the Dock and choose Quit.
+
+macOS asks for permission a few times: for your Documents folder (if the project is there), for incoming connections to node (with Live on Wi-Fi) and for devices on your local network. Choose Allow each time.
+
+More about the Mac app, the icon and problems: [scripts/desktop/README.md](scripts/desktop/README.md).
+
+### Without an app icon
+
+On both systems (and on Linux) you can also run it from the terminal:
 
 ```
 npm run app
 ```
 
-Open daarna `http://localhost:5199` in je browser. Ctrl+C in de terminal stopt Ash Log.
+Then open `http://localhost:5199` in your browser. Ctrl+C in the terminal stops Ash Log.
 
-## Op je telefoon
+## On your phone
 
-Met **Live op wifi** gebruik je Ash Log op je telefoon: noteren en opzoeken naast je game. Je voortgang blijft op je computer staan; je telefoon kijkt mee via je wifi.
+With **Live on Wi-Fi** you can use Ash Log on your phone: tick things off and look things up next to your game. Your progress stays on your computer; your phone reaches it over your Wi-Fi.
 
-### Voordat je begint
+### Before you start
 
-- Je computer en je telefoon zitten op **hetzelfde wifi**. Een gastnetwerk, of wifi waar apparaten elkaar niet mogen zien (zoals op veel kantoren en hotels), werkt niet.
-- Doe het koppelen **thuis**, op je eigen wifi.
-- **Windows:** zet je wifi op **Privénetwerk**. Ga naar Instellingen > Netwerk en internet > Wi-Fi, kies je netwerk en zet onder **Netwerkprofieltype** de optie **Privénetwerk** aan. Op een openbaar netwerk houdt de firewall je telefoon tegen.
-- Live op wifi staat na elke start uit. Alleen de computer zelf kan het aanzetten.
+- Your computer and your phone are on **the same Wi-Fi**. A guest network, or Wi-Fi where devices can't see each other (like in many offices and hotels), won't work.
+- Do the pairing **at home**, on your own Wi-Fi.
+- **Windows:** set your Wi-Fi to **Private network**. Go to Settings > Network & internet > Wi-Fi, pick your network and under **Network profile type** choose **Private network**. On a public network, the firewall blocks your phone.
+- Live on Wi-Fi is off after every start. Only the computer itself can turn it on.
 
-### Eén keer per telefoon
+### Once per phone
 
-1. Start Ash Log op je computer, klik rechtsboven op **Live** en zet **Live op wifi** aan.
-2. De eerste keer vraagt je computer of node (Node.js) verbindingen mag ontvangen. Op Windows vink je alleen privénetwerken aan en sta je het toe. Op een Mac kies je Sta toe.
-3. Kies in het Live-venster bij **Welke telefoon?** voor iPhone of Android.
-4. **Certificaat installeren.** Je telefoon praat via een beveiligde verbinding met je computer. Daarvoor installeer je één keer het certificaat van Ash Log. Ash Log maakt dat certificaat zelf, en het geldt alleen voor adressen in je eigen netwerk, nooit voor echte websites.
-   - **iPhone:** scan de QR-code met de camera en download het profiel op de pagina die opent (Sta toe). Open Instellingen, tik op **Profiel gedownload** en installeer het; de melding "niet ondertekend" hoort erbij. Zet daarna Ash Log aan bij Instellingen > Algemeen > Info > **Instellingen voor certificaatvertrouwen**.
-   - **Android:** scan de QR-code en tik op **Certificaat downloaden**. Open Instellingen > Beveiliging en privacy > Meer beveiligingsinstellingen > Versleuteling en inloggegevens > Certificaat installeren > **CA-certificaat**, tik op **Toch installeren** en kies `ash-log-ca.crt` uit je Downloads. Heten de menu's op jouw telefoon anders? Zoek in Instellingen op "CA-certificaat". Je hebt een schermvergrendeling nodig, en gebruik Chrome: andere browsers vertrouwen het certificaat niet altijd.
-5. **Koppelen.** Klik op je computer op **Koppel een apparaat**. Je krijgt een QR-code die 10 minuten geldig is. Scan hem en open de link in Safari (iPhone) of Chrome (Android). Lukt scannen niet? Open het adres dat erbij staat en typ de 6 cijfers.
-6. **Op je beginscherm zetten.** iPhone: tik in Safari op Deel > **Zet op beginscherm**. Android: tik in Chrome op de drie puntjes > **Toevoegen aan startscherm**.
+1. Start Ash Log on your computer, click **Live** at the top right and turn on **Live on Wi-Fi**.
+2. The first time, your computer asks whether node (Node.js) may accept connections. On Windows, tick only private networks and allow it. On a Mac, choose Allow.
+3. In the same window, under **Which phone?**, pick iPhone or Android.
+4. **Install the certificate.** Your phone talks to your computer over a secure connection. For that, you install Ash Log's certificate once. Ash Log makes that certificate itself, and it only covers addresses on your own network, never real websites.
+   - **iPhone:** scan the QR code with the camera, tap **Download Profile** on the page that opens and then **Allow**. Open Settings, tap **Profile Downloaded** and install it; the red "Not Signed" warning is expected. Then turn on Ash Log under Settings > General > About > **Certificate Trust Settings**.
+   - **Android:** scan the QR code and tap **Download certificate**. Open Settings > Security & privacy > More security settings > Encryption & credentials > Install a certificate > **CA certificate**, tap **Install anyway** and pick `ash-log-ca.crt` from your Downloads. Are the menus named differently on your phone? Search Settings for "CA certificate". You need a screen lock, and use Chrome: other browsers don't always trust the certificate.
+5. **Pair.** On your computer, click **Pair a device**. You get a QR code that works for 10 minutes. Scan it and open the link in Safari (iPhone) or Chrome (Android). Can't scan it? Open the address shown below it and type the 6 digits.
+6. **Add it to your home screen.** iPhone: in Safari, tap Share > **Add to Home Screen**. Android: in Chrome, tap the three dots > **Add to Home screen**.
 
-Open daarna Quests, Kaart en Verzamelingen één keer terwijl je computer bereikbaar is. Dan heeft je telefoon alles in huis.
+Then open Quests, Map and Collections once while your computer can be reached. That way your phone has everything it needs.
 
-### Daarna
+### After that
 
-- Zet Live op wifi aan op je computer en open Ash Log vanaf je beginscherm. Meer hoeft niet.
-- Zolang Live op wifi aan staat, gaat je computer niet vanzelf slapen (het scherm wel). Klap je een laptop dicht, dan slaapt hij toch.
-- Is je computer uit, in slaap of staat Live op wifi uit, dan zie je na een paar seconden **Ash Log is niet bereikbaar**. Met **Laatst bekende gegevens bekijken** lees je alles terug, maar vinkjes zetten kan dan niet. Komt je computer terug, dan gaat Ash Log vanzelf verder.
-- Gekoppelde apparaten zie je in het Live-venster op je computer. Daar kun je ze ook ontkoppelen.
+- Turn on Live on Wi-Fi on your computer and open Ash Log from your home screen. That's all.
+- While Live on Wi-Fi is on, your computer won't go to sleep by itself (the screen will). Close a laptop's lid, though, and it sleeps anyway.
+- If your computer is off or asleep, or Live on Wi-Fi is off, you'll see **Ash Log can't be reached** after a few seconds. With **View last known data** you can read everything back, but you can't tick anything off. Once your computer is back, Ash Log carries on by itself.
+- Your paired devices are listed in the Live on Wi-Fi window on your computer. You can unpair them there too.
 
-### Het adres van je telefoon
+### Your phone's address
 
-- **Mac met iPhone:** de naam van je Mac, zoals `https://Mijn-MacBook.local:5199`. Die blijft altijd hetzelfde.
-- **Windows, Linux, of een Android-telefoon:** het adres van je computer in je netwerk, zoals `https://192.168.1.23:5199`.
+- **Mac with an iPhone:** your Mac's name, like `https://My-MacBook.local:5199`. That never changes.
+- **Windows, Linux, or an Android phone:** your computer's address on your network, like `https://192.168.1.23:5199`.
 
-Krijgt je computer van de router een ander adres, dan werkt het icoon op je beginscherm niet meer. Koppel je telefoon dan opnieuw (stap 5 en 6; het certificaat hoeft niet opnieuw). Voorkomen kan door in je router een vast adres voor je computer in te stellen (dat heet vaak "DHCP-reservering" of "vast IP-adres").
+If your router gives your computer a different address, the icon on your home screen stops working. Pair your phone again then (steps 5 and 6; the certificate can stay). You can prevent this by giving your computer a fixed address in your router (often called "DHCP reservation" or "static IP address").
 
-Wil je zelf kiezen? Zet in `.env` de regel `LIVE_ADDRESS=name` (altijd de naam van je computer, `.local`) of `LIVE_ADDRESS=ip` (altijd het adres). De naam werkt alleen als je telefoon `.local`-namen kent: iPhones wel, Android pas vanaf versie 12.
+Want to choose yourself? Put the line `LIVE_ADDRESS=name` in `.env` (always your computer's name, `.local`) or `LIVE_ADDRESS=ip` (always the address). The name only works if your phone knows `.local` names: iPhones do, Android phones from version 12.
 
-## Bijwerken
+## Updating
 
-Met Git:
+With Git:
 
 ```
 git pull
@@ -171,48 +165,48 @@ npm install
 npm run app:install
 ```
 
-Stop Ash Log eerst. Klik daarna in Ash Log op **Wiki bijwerken** om de nieuwste spelinhoud van de wiki op te halen.
+Stop Ash Log first. Then click **Update from wiki** in Ash Log to fetch the latest game content from the wiki.
 
-Zonder Git: download de nieuwe ZIP en pak hem uit naar een nieuwe map. Kopieer uit je oude map `.env`, `data/progress.json`, `data/overrides.json` en de map `.local` (je gekoppelde telefoons en het certificaat) naar de nieuwe map. Draai daar `npm install` en `npm run app:install`.
+Without Git: download the new ZIP and unzip it to a new folder. Copy `.env`, `data/progress.json`, `data/overrides.json` and the `.local` folder (your paired phones and the certificate) from your old folder to the new one. Run `npm install` and `npm run app:install` there.
 
-## Je gegevens
+## Your data
 
-Alles blijft op je eigen computer:
+Everything stays on your own computer:
 
-| Bestand | Wat erin staat |
+| File | What's in it |
 |---|---|
-| `data/progress.json` | je vinkjes: queststappen, kaartpunten, unlocks en vaults |
-| `data/overrides.json` | je eigen correcties, zoals een questlocatie die je zelf op de kaart hebt gezet |
-| `.env` | je contactgegevens voor de wiki en eventueel een andere poort |
-| `.local/` | gekoppelde telefoons, het certificaat van Ash Log en het logbestand |
+| `data/progress.json` | your ticks: quest steps, map points, unlocks and vaults |
+| `data/overrides.json` | your own corrections, like a quest location you put on the map yourself |
+| `.env` | your contact details for the wiki, and maybe a different port |
+| `.local/` | paired phones, Ash Log's certificate and the log file |
 
-Deze bestanden staan niet in Git en gaan dus nooit mee naar GitHub. Maak af en toe een kopie van `data/progress.json`: dat is je voortgang.
+These files aren't in Git, so they never end up on GitHub. Make a copy of `data/progress.json` now and then: that's your progress.
 
-## Problemen
+## Troubleshooting
 
-- **Wat doet de server?** Alles staat in `.local/server.log` (op Windows `.local\server.log`).
-- **Poort bezet:** een ander programma gebruikt poort 5199. Sluit dat, of zet in `.env` een andere poort, bijvoorbeeld `APP_PORT=5200`. Draai op een Mac daarna `npm run app:install` opnieuw.
-- **De sync weigert:** zet je eigen e-mailadres of URL in `WIKI_USER_AGENT` in `.env` (zie [stap 3](#3-je-contactgegevens-voor-de-wiki)).
-- **Je telefoon kan er niet bij:** staat Live op wifi aan (de knop Live heeft dan een gouden stip)? Zitten beide op hetzelfde wifi, en is dat geen gastnetwerk? Op Windows: staat je wifi op Privénetwerk en mag Node.js door de firewall? Kijk in Windows-beveiliging > Firewall- en netwerkbeveiliging > Een app doorlaten door de firewall. Op een Mac: Systeeminstellingen > Netwerk > Firewall > Opties.
-- **"Deze verbinding is niet privé" op je telefoon:** het certificaat is niet (helemaal) geïnstalleerd. Doe stap 4 van [Op je telefoon](#op-je-telefoon) opnieuw. Op een iPhone vergeet je makkelijk de laatste stap: Instellingen voor certificaatvertrouwen.
-- **Het icoon op je beginscherm werkt niet meer:** waarschijnlijk heeft je computer een ander adres gekregen. Zie [Het adres van je telefoon](#het-adres-van-je-telefoon).
-- **npm geeft in PowerShell een fout over scripts:** gebruik `npm.cmd` in plaats van `npm`, of de Opdrachtprompt.
+- **What is the server doing?** It's all in `.local/server.log` (on Windows `.local\server.log`).
+- **Port in use:** another program uses port 5199. Close it, or set a different port in `.env`, for example `APP_PORT=5200`. On a Mac, run `npm run app:install` again after that.
+- **The sync refuses to run:** put your own e-mail address or URL in `WIKI_USER_AGENT` in `.env` (see [step 3](#3-your-contact-details-for-the-wiki)).
+- **Your phone can't reach it:** is Live on Wi-Fi on (the Live button then has a gold dot)? Are both on the same Wi-Fi, and isn't that a guest network? On Windows: is your Wi-Fi set to Private network, and is Node.js allowed through the firewall? Check Windows Security > Firewall & network protection > Allow an app through firewall. On a Mac: System Settings > Network > Firewall > Options.
+- **"This Connection Is Not Private" (Safari) or "Your connection is not private" (Chrome) on your phone:** the certificate isn't (fully) installed. Do step 4 of [On your phone](#on-your-phone) again. On an iPhone, the last step is easy to miss: Certificate Trust Settings.
+- **The icon on your home screen stopped working:** your computer probably got a different address. See [Your phone's address](#your-phones-address).
+- **npm gives an error about scripts in PowerShell:** use `npm.cmd` instead of `npm`, or Command Prompt.
 
-## Ontwikkelen
+## Development
 
 ```
-npm run dev         ontwikkelserver met hot reload op http://localhost:5173
-npm test            alle tests (tegen opgeslagen voorbeelden, nooit tegen de echte wiki)
-npm run typecheck   TypeScript controleren
-npm run sync        spelinhoud ophalen; ook --only=quests,rewards, --full en --no-tiles
+npm run dev         dev server with hot reload on http://localhost:5173
+npm test            all tests (against saved samples, never against the live wiki)
+npm run typecheck   check TypeScript
+npm run sync        fetch the game content; also --only=quests,rewards, --full and --no-tiles
 ```
 
-Gebouwd met Vite, Vue 3, TypeScript, Pinia, Tailwind CSS en Leaflet. De afspraken voor de code staan in [CLAUDE.md](CLAUDE.md), het oorspronkelijke plan en de beslissingen in [docs/](docs/).
+Built with Vite, Vue 3, TypeScript, Pinia, Tailwind CSS and Leaflet.
 
-Bijdragen zijn welkom. Houd je aan de regels voor de wiki in CLAUDE.md: een eigen User-Agent met contactgegevens, verzoeken één voor één, en alleen de API.
+Contributions are welcome. Be kind to the wiki: send your own User-Agent with contact details, make requests one at a time, and use only the API.
 
-## Bron en licentie
+## Source and license
 
-- **Code:** MIT-licentie, zie [LICENSE](LICENSE).
-- **Spelinhoud:** de quests, kaartpunten, beloningen, afbeeldingen en kaarttegels komen van de [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) en vallen onder [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Dat geldt ook voor `data/wiki`, de zeetexturen in `src/assets/sea` (gemaakt uit de kaarttegels) en de Ash Logs-sprite in het icoon. Gebruik die dus alleen niet-commercieel, met bronvermelding en onder dezelfde licentie.
-- *RuneScape* en *RuneScape: Dragonwilds* zijn van Jagex. Ash Log is een onofficiële fantool en is niet verbonden aan of goedgekeurd door Jagex of de wiki.
+- **Code:** MIT license, see [LICENSE](LICENSE).
+- **Game content:** the quests, map points, rewards, images and map tiles come from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) and fall under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). That also goes for `data/wiki`, the sea textures in `src/assets/sea` (made from the map tiles) and the Ash Logs sprite in the icon. So use those only non-commercially, with attribution and under the same license.
+- *RuneScape* and *RuneScape: Dragonwilds* belong to Jagex. Ash Log is an unofficial fan tool and isn't affiliated with or endorsed by Jagex or the wiki.

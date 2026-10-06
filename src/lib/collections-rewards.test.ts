@@ -43,17 +43,17 @@ const owned = new Set(['plan:blue-standing-torch', 'plan:armadyl-flag-02', 'vest
 const filter = (f: Partial<RewardFilter>): RewardFilter => ({ kind: 'all', query: '', hideOwned: false, ...f })
 
 describe('kind labels', () => {
-  it('has a Dutch label for every kind and Alles', () => {
+  it('has a label for every kind and All', () => {
     // Gear first, then recipe books and trophies. Plans are not tracked.
     expect(REWARD_KINDS.map(kindLabel)).toEqual([
       'Patterns',
       'Vestiges',
-      'Questbeloningen',
+      'Quest rewards',
       'Effigies',
-      'Receptenboeken',
-      'Vistrofeeën',
+      'Recipe books',
+      'Fishing trophies',
     ])
-    expect(kindLabel('all')).toBe('Alles')
+    expect(kindLabel('all')).toBe('All')
   })
 })
 
@@ -82,7 +82,7 @@ describe('compareGroups', () => {
 })
 
 describe('buildRewardList', () => {
-  it('shows the tracked kinds for Alles, gear first and without plans', () => {
+  it('shows the tracked kinds for All, gear first and without plans', () => {
     const view = buildRewardList(rewards, owned, filter({}))
     const tracked = rewards.filter((r) => r.kind !== 'plan')
     expect(view.blocks.map((b) => b.kind)).toEqual([
@@ -130,7 +130,7 @@ describe('buildRewardList', () => {
     const names = (query: string) =>
       buildRewardList(rewards, owned, filter({ query }))
         .blocks.flatMap((b) => b.groups.flatMap((g) => g.rewards.map((r) => r.name)))
-    // Plans are not tracked, so 'torch' and 'garou' find nothing under Alles.
+    // Plans are not tracked, so 'torch' and 'garou' find nothing under All.
     expect(names('torch')).toEqual([])
     expect(names('educational')).toEqual(['Wooden Training Sword'])
     expect(names('temple saradomin')).toEqual(['Wooden Training Sword'])
@@ -163,17 +163,17 @@ describe('via labels', () => {
     expect(rewardVia({ via: ['bogus' as never, 'shops'] })).toEqual(['shops'])
   })
 
-  it('writes Dutch labels as one phrase', () => {
+  it('writes the labels as one phrase', () => {
     expect(viaText([])).toBe('')
-    expect(viaText(['drops'])).toBe('Drop van monsters')
-    expect(viaText(['shops'])).toBe('Te koop in winkels')
-    expect(viaText(['shops', 'drops'])).toBe('Drop van monsters, te koop in winkels')
+    expect(viaText(['drops'])).toBe('Dropped by monsters')
+    expect(viaText(['shops'])).toBe('Sold in shops')
+    expect(viaText(['shops', 'drops'])).toBe('Dropped by monsters, sold in shops')
   })
 
-  it('makes the Dutch labels searchable', () => {
+  it('makes the labels searchable', () => {
     const r: Reward = { id: 'vestige:black-sword', kind: 'vestige', name: 'Black Sword', via: ['shops'], source: 'Also found in chests.' }
     const view = (query: string) => buildRewardList([r], new Set(), filter({ query })).visible
-    expect(view('te koop winkels')).toBe(1)
+    expect(view('sold shops')).toBe(1)
     expect(view('also found')).toBe(1)
     expect(view('monsters')).toBe(0)
   })
@@ -261,16 +261,16 @@ describe('reward notes', () => {
 })
 
 describe('URL state', () => {
-  it('parses soort and verberg with safe fallbacks', () => {
+  it('parses kind and hide with safe fallbacks', () => {
     expect(parseCollectionQuery({})).toEqual({ kind: 'all', hideOwned: false })
-    expect(parseCollectionQuery({ soort: 'vestige', verberg: '1' })).toEqual({ kind: 'vestige', hideOwned: true })
-    expect(parseCollectionQuery({ soort: ['effigy', 'plan'] })).toEqual({ kind: 'effigy', hideOwned: false })
-    expect(parseCollectionQuery({ soort: 'bogus', verberg: '0' })).toEqual({ kind: 'all', hideOwned: false })
+    expect(parseCollectionQuery({ kind: 'vestige', hide: '1' })).toEqual({ kind: 'vestige', hideOwned: true })
+    expect(parseCollectionQuery({ kind: ['effigy', 'plan'] })).toEqual({ kind: 'effigy', hideOwned: false })
+    expect(parseCollectionQuery({ kind: 'bogus', hide: '0' })).toEqual({ kind: 'all', hideOwned: false })
   })
 
   it('writes only non-default values and keeps other keys', () => {
-    expect(collectionQuery({ kind: 'all', hideOwned: false }, { soort: 'plan', x: 'y' })).toEqual({ x: 'y' })
-    expect(collectionQuery({ kind: 'recipe-book', hideOwned: true })).toEqual({ soort: 'recipe-book', verberg: '1' })
+    expect(collectionQuery({ kind: 'all', hideOwned: false }, { kind: 'plan', x: 'y' })).toEqual({ x: 'y' })
+    expect(collectionQuery({ kind: 'recipe-book', hideOwned: true })).toEqual({ kind: 'recipe-book', hide: '1' })
   })
 
   it('round-trips', () => {
@@ -280,36 +280,36 @@ describe('URL state', () => {
 
   it('keeps what a link from another screen does not name', () => {
     const kept = { kind: 'vestige' as const, hideOwned: true }
-    // '/verzamelingen#vault-x': nothing named.
+    // '/collections#vault-x': nothing named.
     expect(mergeCollectionQuery({}, kept)).toEqual(kept)
     expect(mergeCollectionQuery({ focus: 'x' }, kept)).toEqual(kept)
     // Only the kind, or only the switch.
-    expect(mergeCollectionQuery({ soort: 'quest' }, kept)).toEqual({ kind: 'quest', hideOwned: true })
-    expect(mergeCollectionQuery({ verberg: '0' }, kept)).toEqual({ kind: 'vestige', hideOwned: false })
-    expect(mergeCollectionQuery({ verberg: '1' }, { kind: 'all', hideOwned: false })).toEqual({ kind: 'all', hideOwned: true })
-    // Named, but not a kind: 'Alles'. An empty param counts as named too.
-    expect(mergeCollectionQuery({ soort: 'all' }, kept)).toEqual({ kind: 'all', hideOwned: true })
-    expect(mergeCollectionQuery({ soort: null, verberg: '' }, kept)).toEqual({ kind: 'all', hideOwned: false })
+    expect(mergeCollectionQuery({ kind: 'quest' }, kept)).toEqual({ kind: 'quest', hideOwned: true })
+    expect(mergeCollectionQuery({ hide: '0' }, kept)).toEqual({ kind: 'vestige', hideOwned: false })
+    expect(mergeCollectionQuery({ hide: '1' }, { kind: 'all', hideOwned: false })).toEqual({ kind: 'all', hideOwned: true })
+    // Named, but not a kind: 'All'. An empty param counts as named too.
+    expect(mergeCollectionQuery({ kind: 'all' }, kept)).toEqual({ kind: 'all', hideOwned: true })
+    expect(mergeCollectionQuery({ kind: null, hide: '' }, kept)).toEqual({ kind: 'all', hideOwned: false })
     // Both named: the link says it all.
-    expect(mergeCollectionQuery({ soort: 'effigy', verberg: 'ja' }, { kind: 'all', hideOwned: false })).toEqual({ kind: 'effigy', hideOwned: true })
+    expect(mergeCollectionQuery({ kind: 'effigy', hide: 'yes' }, { kind: 'all', hideOwned: false })).toEqual({ kind: 'effigy', hideOwned: true })
   })
 
   it('lets a link to the unlock list show what it points at: the hide switch goes off unless it is asked for', () => {
     const kept = { kind: 'vestige' as const, hideOwned: true }
-    expect(mergeCollectionQuery({ soort: 'quest' }, kept, true)).toEqual({ kind: 'quest', hideOwned: false })
-    expect(mergeCollectionQuery({ soort: 'all' }, kept, true)).toEqual({ kind: 'all', hideOwned: false })
-    expect(mergeCollectionQuery({ soort: 'quest', verberg: '1' }, kept, true)).toEqual({ kind: 'quest', hideOwned: true })
+    expect(mergeCollectionQuery({ kind: 'quest' }, kept, true)).toEqual({ kind: 'quest', hideOwned: false })
+    expect(mergeCollectionQuery({ kind: 'all' }, kept, true)).toEqual({ kind: 'all', hideOwned: false })
+    expect(mergeCollectionQuery({ kind: 'quest', hide: '1' }, kept, true)).toEqual({ kind: 'quest', hideOwned: true })
     // '#unlocks' alone names no kind: that one stays.
     expect(mergeCollectionQuery({}, kept, true)).toEqual({ kind: 'vestige', hideOwned: false })
   })
 
   it('knows which links point at the unlock list', () => {
-    expect(targetsUnlockList({ soort: 'quest' }, '#unlocks')).toBe(true)
-    expect(targetsUnlockList({ soort: 'all' }, '')).toBe(true)
+    expect(targetsUnlockList({ kind: 'quest' }, '#unlocks')).toBe(true)
+    expect(targetsUnlockList({ kind: 'all' }, '')).toBe(true)
     expect(targetsUnlockList({}, '#unlocks')).toBe(true)
     expect(targetsUnlockList({}, '#unlocks-vestige')).toBe(true)
     expect(targetsUnlockList({}, '#vault-takla-kara')).toBe(false)
-    expect(targetsUnlockList({ verberg: '0' }, '')).toBe(false)
+    expect(targetsUnlockList({ hide: '0' }, '')).toBe(false)
     expect(targetsUnlockList({}, undefined)).toBe(false)
     expect(targetsUnlockList({}, '#unlockski')).toBe(false)
   })

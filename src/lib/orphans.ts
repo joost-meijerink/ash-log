@@ -1,4 +1,4 @@
-// Progress that no longer points at anything in the wiki data ("verweesd").
+// Progress that no longer points at anything in the wiki data ("orphaned").
 // Used by the sync diff report and live in the app. Pure.
 
 import type { MapData, Orphans, Overrides, Progress, Quest, Reward, Vault } from './types'

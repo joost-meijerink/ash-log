@@ -14,7 +14,7 @@ import { emptyOverrides, emptyProgress, normalizeOverrides, normalizeProgress } 
 import type { DiffReport, MapData, Quest, Reward, SyncDomain, SyncMeta, SyncWarning, Vault } from '../../src/lib/types'
 import { syncAssets } from './assets'
 import { createContext, warnCollector } from './context'
-import { buildReport, findDanglingRefs, formatReport, type WikiSnapshot } from './diff'
+import { buildReport, findDanglingRefs, formatReport, plural, type WikiSnapshot } from './diff'
 import { fetchMapSources, parseMap } from './domains/map'
 import { fetchQuestSources, parseQuests } from './domains/quests'
 import { fetchRewardSources, parseRewards } from './domains/rewards'
@@ -26,7 +26,7 @@ import { OVERRIDES_FILE, PROGRESS_FILE, ROOT, WIKI_FILES } from './paths'
 import { WikiClient } from './wiki'
 
 const ALL_DOMAINS: SyncDomain[] = ['map', 'quests', 'vaults', 'rewards']
-const DOMAIN_NAME: Record<SyncDomain, string> = { map: 'kaart', quests: 'quests', vaults: 'vaults', rewards: 'beloningen' }
+const DOMAIN_NAME: Record<SyncDomain, string> = { map: 'map', quests: 'quests', vaults: 'vaults', rewards: 'rewards' }
 
 export interface SyncOptions {
   only?: SyncDomain[]
@@ -47,7 +47,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     try {
       return await readJson<T | null>(path, null)
     } catch (err) {
-      warnings.push({ source: 'sync', message: `${(err as Error).message}. Het bestand wordt opnieuw opgebouwd.` })
+      warnings.push({ source: 'sync', message: `${(err as Error).message}. The file will be rebuilt.` })
       if (domain) rebuild.add(domain)
       return null
     }
@@ -64,7 +64,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
   const domains = expandDomains(requested, prev, rebuild)
   const order = ALL_DOMAINS.filter((d) => domains.has(d))
   const extra = order.filter((d) => !requested.includes(d))
-  if (extra.length) log(`Ook bijgewerkt, omdat ze samenhangen: ${extra.map((d) => DOMAIN_NAME[d]).join(', ')}`)
+  if (extra.length) log(`Also updating, since they depend on it: ${extra.map((d) => DOMAIN_NAME[d]).join(', ')}`)
 
   try {
     const userAgent = process.env.WIKI_USER_AGENT ?? ''
@@ -74,38 +74,38 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     let map = prev.map
     let icons: string[] = []
     if (domains.has('map')) {
-      log('Kaart: Module:Map-pagina\'s ophalen')
+      log('Map: fetching Module:Map pages')
       const result = parseMap(await fetchMapSources(ctx), warnCollector(warnings, 'map'))
       map = result.map
       icons = result.icons
-      log(`Kaart: ${map.categories.length} categorieën, ${map.points.length} punten`)
+      log(`Map: ${map.categories.length} categories, ${map.points.length} points`)
     }
 
     let quests = prev.quests
     if (domains.has('quests')) {
-      log('Quests: pagina\'s ophalen')
+      log('Quests: fetching pages')
       quests = parseQuests(await fetchQuestSources(ctx), map!, warnCollector(warnings, 'quests'))
       log(`Quests: ${quests.length} quests`)
     }
 
     let vaults = prev.vaults
     if (domains.has('vaults')) {
-      log('Vaults: pagina ophalen')
+      log('Vaults: fetching page')
       vaults = parseVaults(await fetchVaultSources(ctx), map!, warnCollector(warnings, 'vaults'))
       log(`Vaults: ${vaults.length} vaults`)
     }
 
     let rewards = prev.rewards
     if (domains.has('rewards')) {
-      log('Beloningen: Consumable Recipes ophalen')
+      log('Rewards: fetching Consumable Recipes')
       rewards = parseRewards(await fetchRewardSources(ctx), { quests: quests ?? [], vaults: vaults ?? [], map }, warnCollector(warnings, 'rewards'))
-      log(`Beloningen: ${rewards.length} unieke unlocks`)
+      log(`Rewards: ${rewards.length} unique unlocks`)
     }
 
     if (domains.has('map')) {
-      log('Afbeeldingen: iconen en kaarttegels controleren')
+      log('Images: checking icons and map tiles')
       const assets = await syncAssets(ctx, { icons, tiles: options.tiles !== false }, warnCollector(warnings, 'assets'))
-      log(`Afbeeldingen: ${assets.iconsDownloaded} iconen en ${assets.tilesDownloaded} tegels nieuw binnengehaald`)
+      log(`Images: downloaded ${plural(assets.iconsDownloaded, 'new icon', 'new icons')} and ${plural(assets.tilesDownloaded, 'new tile', 'new tiles')}`)
     }
 
     const next: WikiSnapshot = { map, quests, vaults, rewards }
@@ -121,7 +121,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     } catch (err) {
       progress = emptyProgress()
       overrides = emptyOverrides()
-      warnings.push({ source: 'sync', message: `Verweesde voortgang niet gecontroleerd: ${(err as Error).message}` })
+      warnings.push({ source: 'sync', message: `Orphaned progress not checked: ${(err as Error).message}` })
     }
     const report = buildReport({ syncedAt, domains: order, prev, next, progress, overrides, warnings })
 
@@ -153,7 +153,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     if (domains.has('rewards') && rewards) files.push([WIKI_FILES.rewards, rewards])
     files.push([WIKI_FILES.meta, meta], [WIKI_FILES.report, report])
     await writeJsonFilesAtomic(files)
-    log(`Klaar in ${Math.round(meta.durationMs / 1000)} s, ${wiki.requestCount} requests naar de wiki`)
+    log(`Done in ${Math.round(meta.durationMs / 1000)} s, ${wiki.requestCount} requests to the wiki`)
     return report
   } catch (err) {
     const report: DiffReport = {
@@ -165,7 +165,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
       warnings,
     }
     // Keep the original error if even the failure report cannot be written.
-    await writeJsonAtomic(WIKI_FILES.report, report).catch((e) => log(`report.json niet weggeschreven: ${(e as Error).message}`))
+    await writeJsonAtomic(WIKI_FILES.report, report).catch((e) => log(`report.json not written: ${(e as Error).message}`))
     throw err
   }
 }
@@ -200,11 +200,11 @@ function parseArgs(argv: string[]): SyncOptions {
     if (arg.startsWith('--only=')) {
       const names = arg.slice('--only='.length).split(/[|,]/).filter(Boolean)
       const bad = names.filter((n) => !ALL_DOMAINS.includes(n as SyncDomain))
-      if (bad.length) throw new Error(`Onbekend onderdeel: ${bad.join(', ')} (kies uit ${ALL_DOMAINS.join(', ')})`)
+      if (bad.length) throw new Error(`Unknown --only value: ${bad.join(', ')} (choose from ${ALL_DOMAINS.join(', ')})`)
       opts.only = names as SyncDomain[]
     } else if (arg === '--full') opts.full = true
     else if (arg === '--no-tiles') opts.tiles = false
-    else throw new Error(`Onbekende optie: ${arg}`)
+    else throw new Error(`Unknown option: ${arg}`)
   }
   return opts
 }
@@ -215,8 +215,8 @@ if (isEntryPoint(import.meta.url, process.argv[1])) {
     const report = await runSync(parseArgs(process.argv.slice(2)))
     console.log('\n' + formatReport(report))
   } catch (err) {
-    const written = err instanceof PartialWriteError ? '' : ', er is niets weggeschreven'
-    console.error(`\nSync mislukt${written}: ${(err as Error).message}`)
+    const written = err instanceof PartialWriteError ? '' : ', nothing was written'
+    console.error(`\nSync failed${written}: ${(err as Error).message}`)
     process.exitCode = 1
   }
 }

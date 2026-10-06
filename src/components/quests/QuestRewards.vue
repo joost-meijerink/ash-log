@@ -39,12 +39,12 @@ const hasNote = (u: Unlock) => !!(u.reward.requirement || !isEmptyNote(u.note) |
 
 <template>
   <section aria-labelledby="quest-rewards-heading">
-    <SectionHeading id="quest-rewards-heading" title="Beloning" />
+    <SectionHeading id="quest-rewards-heading" title="Rewards" />
     <QuestRewardTree v-if="tree.length" :nodes="tree" class="mt-2.5" />
-    <p v-else class="mt-2 text-text-parchment/70">De wiki noemt geen beloning.</p>
+    <p v-else class="mt-2 text-text-parchment/70">The wiki doesn't list a reward.</p>
 
     <div v-if="unlocks.length" class="mt-6">
-      <SectionHeading as="h3" title="Unieke unlocks" :count="`${unlocked} / ${unlocks.length}`" />
+      <SectionHeading as="h3" title="Unique unlocks" :count="`${unlocked} / ${unlocks.length}`" />
       <ul class="mt-1.5 flex flex-col gap-0.5" role="list">
         <li v-for="u in unlocks" :key="u.reward.id">
           <CheckRow
@@ -59,9 +59,9 @@ const hasNote = (u: Unlock) => !!(u.reward.requirement || !isEmptyNote(u.note) |
               <span class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span v-if="u.reward.requirement" lang="en" class="font-serif italic">{{ u.reward.requirement }}</span>
                 <RewardNoteText v-else-if="!isEmptyNote(u.note)" :note="u.note" />
-                <RouterLink v-if="u.mapPoint" :to="{ path: '/kaart', query: { focus: u.mapPoint } }" :class="inlineLink" data-map-link>
+                <RouterLink v-if="u.mapPoint" :to="{ path: '/map', query: { focus: u.mapPoint } }" :class="inlineLink" data-map-link>
                   <MapPin aria-hidden="true" />
-                  <span>Toon op kaart<span class="sr-only">: <span lang="en">{{ u.reward.name }}</span></span></span>
+                  <span>Show on map<span class="sr-only">: <span lang="en">{{ u.reward.name }}</span></span></span>
                 </RouterLink>
               </span>
             </template>
@@ -69,10 +69,10 @@ const hasNote = (u: Unlock) => !!(u.reward.requirement || !isEmptyNote(u.note) |
         </li>
       </ul>
       <RouterLink
-        to="/verzamelingen"
+        to="/collections"
         class="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-sm px-2.5 text-[0.95rem] text-gold-ink underline decoration-gold-ink/35 underline-offset-[3px] outline-none hover:decoration-gold-ink focus-visible:ring-2 focus-visible:ring-gold-ink/50"
       >
-        Alle verzamelingen
+        All collections
         <ArrowRight class="size-4" aria-hidden="true" />
       </RouterLink>
     </div>

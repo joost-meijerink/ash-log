@@ -44,9 +44,9 @@ const hiddenCount = computed(() => (hideChecked.value ? done.value : 0))
 
 <template>
   <section aria-labelledby="quest-steps-heading">
-    <SectionHeading id="quest-steps-heading" title="Stappen" :count="total ? `${done} / ${total}` : null">
+    <SectionHeading id="quest-steps-heading" title="Steps" :count="total ? `${done} / ${total}` : null">
       <template v-if="done > 0 && (done < total || hideChecked)" #right>
-        <ToggleChip v-model:pressed="hideChecked">Verberg afgevinkt</ToggleChip>
+        <ToggleChip v-model:pressed="hideChecked">Hide ticked</ToggleChip>
       </template>
     </SectionHeading>
 
@@ -97,7 +97,7 @@ const hiddenCount = computed(() => (hideChecked.value ? done.value : 0))
                     )
                   "
                 >
-                  <span v-if="step.id === nextStepId" class="sr-only">Volgende stap: </span><span lang="en">{{ step.text }}</span>
+                  <span v-if="step.id === nextStepId" class="sr-only">Next step: </span><span lang="en">{{ step.text }}</span>
                 </span>
               </CheckRow>
             </li>
@@ -106,7 +106,7 @@ const hiddenCount = computed(() => (hideChecked.value ? done.value : 0))
       </div>
 
       <p v-if="hiddenCount" class="mt-4 px-2.5 text-sm text-text-parchment/65">
-        {{ hiddenCount === 1 ? '1 afgevinkte stap verborgen.' : `${hiddenCount} afgevinkte stappen verborgen.` }}
+        {{ hiddenCount === 1 ? '1 ticked step hidden.' : `${hiddenCount} ticked steps hidden.` }}
       </p>
     </template>
 
@@ -115,10 +115,10 @@ const hiddenCount = computed(() => (hideChecked.value ? done.value : 0))
       <EmptyState
         compact
         :icon="ListChecks"
-        title="Geen stappen"
-        text="De wiki heeft voor deze quest nog geen walkthrough. Markeer hem als voltooid als je klaar bent."
+        title="No steps"
+        text="The wiki has no walkthrough for this quest yet. Mark it as done once you've finished."
       >
-        <WikiLink :href="quest.wikiUrl">Bekijk de questpagina</WikiLink>
+        <WikiLink :href="quest.wikiUrl">View the quest page</WikiLink>
       </EmptyState>
     </template>
   </section>

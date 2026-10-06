@@ -112,10 +112,10 @@ describe('names', () => {
   })
 
   it('never issues for a name or address outside the constraints', () => {
-    expect(() => checkLeafNames({ dns: ['x.local\nDNS:evil.com'], ips: [] })).toThrow(/Ongeldige naam/)
-    expect(() => checkLeafNames({ dns: ['example.com'], ips: [] })).toThrow(/Ongeldige naam/)
-    expect(() => checkLeafNames({ dns: [MAC], ips: ['8.8.8.8'] })).toThrow(/Ongeldig adres/)
-    expect(() => checkLeafNames({ dns: [], ips: ['127.0.0.1'] })).toThrow(/Ongeldige naam/)
+    expect(() => checkLeafNames({ dns: ['x.local\nDNS:evil.com'], ips: [] })).toThrow(/Invalid name/)
+    expect(() => checkLeafNames({ dns: ['example.com'], ips: [] })).toThrow(/Invalid name/)
+    expect(() => checkLeafNames({ dns: [MAC], ips: ['8.8.8.8'] })).toThrow(/Invalid address/)
+    expect(() => checkLeafNames({ dns: [], ips: ['127.0.0.1'] })).toThrow(/Invalid name/)
     expect(() => checkLeafNames(NAMES)).not.toThrow()
   })
 
@@ -254,7 +254,7 @@ describe('certificates', () => {
     expect(second.cert).not.toBe(first.cert)
     expect(second.key).not.toBe(first.key)
     expect(second.names).toEqual(moved)
-    expect(logs.at(-1)).toBe(`Servercertificaat gemaakt voor ${MAC}, localhost, 127.0.0.1, 10.0.0.7`)
+    expect(logs.at(-1)).toBe(`Made a server certificate for ${MAC}, localhost, 127.0.0.1, 10.0.0.7`)
     expect(await handshake(second, first.caPem, identityFor('10.0.0.7'))).toBe('OK')
 
     const renamed = await make().ensure({ dns: ['Studio.local', 'localhost'], ips: ['127.0.0.1', '10.0.0.7'] })
@@ -284,7 +284,7 @@ describe('certificates', () => {
     const second = await make().ensure(NAMES)
     expect(second.caFingerprint).not.toBe(first.caFingerprint)
     expect(second.cert).not.toBe(first.cert)
-    expect(logs[0]).toMatch(/^Het Ash Log-certificaat is onbruikbaar \(.+\)\. Er komt een nieuw; installeer dat opnieuw op je telefoon\.$/)
+    expect(logs[0]).toMatch(/^The Ash Log certificate can't be used \(.+\)\. Making a new one; install that on your phone again\.$/)
     expect(await handshake(second, second.caPem, { servername: MAC })).toBe('OK')
     expect(await handshake(second, first.caPem, { servername: MAC })).not.toBe('OK')
 
@@ -292,14 +292,14 @@ describe('certificates', () => {
     logs = []
     const third = await make().ensure(NAMES)
     expect(third.caFingerprint).not.toBe(second.caFingerprint)
-    expect(logs[0]).toContain('sleutel ontbreekt')
+    expect(logs[0]).toContain('key missing')
   })
 
   it('runs one ensure at a time: one CA for calls that overlap', async () => {
     const tls = make()
     const all = await Promise.all([tls.ensure(NAMES), tls.ensure(NAMES), tls.ensure({ ...NAMES, ips: ['127.0.0.1'] })])
     expect(new Set(all.map((m) => m.caFingerprint)).size).toBe(1)
-    expect(logs.filter((l) => l.startsWith('Nieuw Ash Log-certificaat'))).toHaveLength(1)
+    expect(logs.filter((l) => l.startsWith('Made a new Ash Log certificate'))).toHaveLength(1)
     expect(tls.current?.names.ips).toEqual(['127.0.0.1'])
   })
 
@@ -314,7 +314,7 @@ describe('certificates', () => {
 
   it('rejects names outside the constraints before writing anything', async () => {
     const tls = make()
-    await expect(tls.ensure({ dns: ['example.com'], ips: ['127.0.0.1'] })).rejects.toThrow(/Ongeldige naam/)
+    await expect(tls.ensure({ dns: ['example.com'], ips: ['127.0.0.1'] })).rejects.toThrow(/Invalid name/)
     expect(tls.current).toBeNull()
     expect((await readdir(dir)).sort()).toEqual(['ca.crt', 'ca.key'])
   })
@@ -414,7 +414,7 @@ describe.skipIf(process.platform !== 'darwin' || !existsSync(OLD_OPENSSL))('on m
 
     const material = await new LocalTls({ dir, log: (l) => logs.push(l) }).ensure(NAMES)
     expect(material.caFingerprint).toBe(oldCa.fingerprint256)
-    expect(logs).toEqual([`Servercertificaat gemaakt voor ${MAC}, localhost, 127.0.0.1, ${LAN_IP}`])
+    expect(logs).toEqual([`Made a server certificate for ${MAC}, localhost, 127.0.0.1, ${LAN_IP}`])
     expect(await readFile(file('caCert'), 'utf8')).toBe(oldCa.toString())
 
     expect(await handshake(material, oldCa.toString(), { servername: MAC })).toBe('OK')

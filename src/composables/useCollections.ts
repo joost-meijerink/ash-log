@@ -1,4 +1,4 @@
-// Live collections data for the Verzamelingen view: the pure helpers in src/lib/collections-*
+// Live collections data for the Collections view: the pure helpers in src/lib/collections-*
 // wired to the data and progress stores.
 
 import { computed } from 'vue'

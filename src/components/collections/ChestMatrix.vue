@@ -70,10 +70,10 @@ const link = (region: string | null, power?: number) =>
   })
 
 function linkLabel(count: number, region: string | null, power?: number): string {
-  const what = count === 1 ? '1 kist' : `${count} kisten`
-  const where = region ? `in ${region}` : "in alle regio's"
+  const what = count === 1 ? '1 chest' : `${count} chests`
+  const where = region ? `in ${region}` : 'in all regions'
   const level = power === undefined ? '' : `, power level ${power}`
-  return `${what} ${where}${level}: toon op de kaart`
+  return `${what} ${where}${level}: show on the map`
 }
 
 const cellLink = cn(
@@ -86,11 +86,11 @@ const cellLink = cn(
 <template>
   <ParchmentPanel as="div">
     <p class="max-w-prose text-[0.975rem] leading-relaxed text-text-parchment/80">
-      Kisten vullen zich weer, dus hier vink je niets af. Kies een aantal en je ziet die kisten op de kaart.
+      Chests refill, so there's nothing to tick off here. Pick a count and you'll see those chests on the map.
     </p>
 
     <div v-if="categories.length" class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2.5">
-      <span :class="cn(capsLabel, 'mr-1')" id="chest-kinds">Soorten</span>
+      <span :class="cn(capsLabel, 'mr-1')" id="chest-kinds">Kinds</span>
       <div role="group" aria-labelledby="chest-kinds" class="flex flex-wrap gap-x-2 gap-y-2.5">
         <ToggleChip
           v-for="c in categories"
@@ -108,16 +108,16 @@ const cellLink = cn(
       v-if="!categories.length || !matrix.rows.length"
       compact
       :icon="PackageOpen"
-      title="Geen kisten gevonden"
-      text="Er staan nog geen kisten in de kaartdata. Draai een sync om ze op te halen."
+      title="No chests found"
+      text="The map data has no chests yet. Run a sync to fetch them."
       class="mt-2"
     />
     <EmptyState
       v-else-if="!selectedIds.length"
       compact
       :icon="PackageOpen"
-      title="Geen soort gekozen"
-      text="Zet hierboven minstens één soort kist aan."
+      title="No kind picked"
+      text="Turn on at least one kind of chest above."
       class="mt-2"
     />
 
@@ -130,10 +130,10 @@ const cellLink = cn(
       tabindex="0"
     >
       <table class="w-full min-w-max border-separate border-spacing-0.5 text-[0.95rem]">
-        <caption id="chest-caption" class="sr-only">Kisten per regio en power level</caption>
+        <caption id="chest-caption" class="sr-only">Chests per region and power level</caption>
         <thead>
           <tr>
-            <th scope="col" :class="cn(capsLabel, 'sticky left-0 z-[1] bg-parchment pr-3 pb-1 text-left')">Regio</th>
+            <th scope="col" :class="cn(capsLabel, 'sticky left-0 z-[1] bg-parchment pr-3 pb-1 text-left')">Region</th>
             <th v-for="pw in matrix.powers" :key="pw" scope="col" :class="cn(capsLabel, 'min-w-11 px-1 pb-1 text-center')">
               <span aria-hidden="true">PL {{ pw }}</span>
               <span class="sr-only">Power level {{ pw }}</span>
@@ -142,11 +142,11 @@ const cellLink = cn(
               v-if="matrix.hasUnknown"
               scope="col"
               :class="cn(capsLabel, 'px-1 pb-1 text-center')"
-              title="Zonder power level op de wiki. Op de kaart zie je ze via een totaal, niet via een power level."
+              title="No power level on the wiki. On the map you'll find them through a total, not a power level."
             >
-              Onbekend
+              Unknown
             </th>
-            <th scope="col" :class="cn(capsLabel, 'border-l border-gold-ink/20 pb-1 pl-2 text-center')">Totaal</th>
+            <th scope="col" :class="cn(capsLabel, 'border-l border-gold-ink/20 pb-1 pl-2 text-center')">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -156,7 +156,7 @@ const cellLink = cn(
               :lang="row.region ? 'en' : undefined"
               class="sticky left-0 z-[1] bg-parchment pr-3 text-left font-serif text-[0.98rem] font-normal whitespace-nowrap italic"
             >
-              {{ row.region ?? 'Zonder regio' }}
+              {{ row.region ?? 'No region' }}
             </th>
             <td v-for="(count, i) in row.cells" :key="i" class="p-0 text-center">
               <RouterLink
@@ -201,7 +201,7 @@ const cellLink = cn(
         <tfoot>
           <tr>
             <th scope="row" :class="cn(capsLabel, 'sticky left-0 z-[1] border-t border-gold-ink/20 bg-parchment pt-1 pr-3 text-left')">
-              Alle regio's
+              All regions
             </th>
             <td v-for="(count, i) in matrix.totals.cells" :key="i" class="border-t border-gold-ink/20 p-0 pt-1 text-center">
               <RouterLink
@@ -237,8 +237,7 @@ const cellLink = cn(
       </table>
     </div>
     <p v-if="selectedIds.length && matrix.hasUnknown && matrix.totals.unknown" class="mt-3 text-sm text-text-parchment/65">
-      Onbekend: de wiki noemt geen power level. Die kisten zie je op de kaart via een totaal (per regio of alle regio's), niet
-      via een power level.
+      Unknown: the wiki lists no power level. To see those chests on the map, pick a total (per region or all regions).
     </p>
   </ParchmentPanel>
 </template>

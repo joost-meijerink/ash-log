@@ -10,7 +10,7 @@
 // phones use https with a certificate from Ash Log's own local CA (tls.ts), which they install
 // once from the plain-http certificate page (certificate-page.ts). Plain http from the network
 // serves only that page, the profile and a page that points to https. https is what gives the
-// phone a service worker (/sw.js), so it can show its own 'niet bereikbaar' screen while the
+// phone a service worker (/sw.js), so it can show its own 'can't be reached' screen while the
 // computer is away.
 //
 // The address in the QR codes (phoneHost): a Mac with an iPhone uses <name>.local, which
@@ -26,11 +26,12 @@
 //   POST /api/server/pairing             { phone? } -> PairingCode with the https url (409 when not live)
 //   POST /api/server/devices/revoke      { id } -> ServerStatus
 //   POST /api/server/stop                {} -> 202, then the server shuts down
-//   GET  /koppel?code=                   pair via the QR code; sets the device cookie, redirects to /
+//   GET  /pair?code=                     pair via the QR code; sets the device cookie, redirects to /
 //   POST /api/pair                       { code } -> { ok: true } with the device cookie
 //   GET  /manifest.webmanifest           start_url '/?device=<token>' for a paired device
 //   GET  /sw.js                          the service worker (no-cache), also before pairing
-//   GET  /certificaat[/...]              certificate page and profile, over plain http too
+//   GET  /certificate[/...]              certificate page and profile, over plain http too
+//   GET  /koppel, /certificaat[/...]     302 to the English path with the same query (older QR codes, links)
 
 import { readFileSync, unlinkSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -44,7 +45,15 @@ import { isEntryPoint } from '../scripts/sync/node-command.ts'
 import { computerNoun, parsePhoneKind, serverPlatform } from '../src/lib/platform.ts'
 import type { PairingCode, PhoneKind, ServerStatus } from '../src/lib/types.ts'
 import { StayAwake } from './awake.ts'
-import { handleCertificate, isCertificatePath, sendSecureConnectionPage } from './certificate-page.ts'
+import {
+  CA_CERT_FILE_NAME,
+  CA_CERT_PATH,
+  CERTIFICATE_PATH,
+  PROFILE_PATH,
+  handleCertificate,
+  isCertificatePath,
+  sendSecureConnectionPage,
+} from './certificate-page.ts'
 import { APP_ICONS_DIR, DIST_DIR, LOCAL_DIR, PID_FILE, PUBLIC_DIR, SERVER_STATE_FILE, TLS_DIR, loadEnv, parsePort } from './config.ts'
 import { checkWriteRequest, HttpError, isRecord, readBody, resolveInside, send, sendEmpty, sendError, serveFile } from './http.ts'
 import { Listeners, PortInUseError } from './live.ts'
@@ -63,7 +72,7 @@ import {
   type PhoneAddressMode,
 } from './net.ts'
 import { DEVICE_COOKIE, Pairing, deviceCookie, readCookie } from './pairing.ts'
-import { sendPairingPage } from './pairing-page.ts'
+import { PAIR_PATH, sendPairingPage } from './pairing-page.ts'
 import { LocalTls, certNames } from './tls.ts'
 
 const IMMUTABLE = 'public, max-age=31536000, immutable'
@@ -75,6 +84,17 @@ const TLS_RETRY_MS = 5 * 60 * 1000
  */
 export const APP_HEADER = 'X-Ash-Log-App'
 export const SERVICE_WORKER_PATH = '/sw.js'
+/**
+ * The Dutch paths of older QR codes, bookmarks and links, and where they live now. A GET is
+ * redirected with its query (a pairing code too). The app's own Dutch paths (/kaart and
+ * /verzamelingen) are rewritten by the app router, see src/lib/legacy-url.ts.
+ */
+export const LEGACY_SERVER_PATHS: Readonly<Record<string, string>> = {
+  '/koppel': PAIR_PATH,
+  '/certificaat': CERTIFICATE_PATH,
+  '/certificaat/ash-log.mobileconfig': PROFILE_PATH,
+  [`/certificaat/${CA_CERT_FILE_NAME}`]: CA_CERT_PATH,
+}
 /**
  * index.html: never in a frame (the live switch must not be clickjacked), no referrer out,
  * marked as the app for the service worker.
@@ -165,7 +185,7 @@ export function createAppServer(opts: AppOptions): AppServer {
   const iconsDir = opts.iconsDir ?? APP_ICONS_DIR
   const nodePlatform = opts.platform ?? process.platform
   const platform = serverPlatform(nodePlatform)
-  /** 'Mac', 'pc' or 'computer': how texts name this computer. */
+  /** 'Mac', 'PC' or 'computer': how texts name this computer. */
   const computer = computerNoun(platform)
   // On a Mac the Bonjour name (MacBook-Pro-van-Joost.local), which phones resolve; see createLanHostname.
   const hostname = opts.hostname ?? createLanHostname({ platform: nodePlatform })
@@ -203,7 +223,7 @@ export function createAppServer(opts: AppOptions): AppServer {
    * cannot be resolved. The server certificate holds both.
    */
   const phoneHost = (phone?: PhoneKind) => phoneHosts(listeners.port, hostname(), lan(), addressMode(phone))[0]!
-  const certificateUrlFor = (phone?: PhoneKind) => `http://${phoneHost(phone)}/certificaat`
+  const certificateUrlFor = (phone?: PhoneKind) => `http://${phoneHost(phone)}${CERTIFICATE_PATH}`
   /** The https addresses for the live dialog, the one an iPhone gets first. */
   const phoneUrls = () => liveUrls(listeners.port, hostname(), lan(), addressMode())
 
@@ -222,7 +242,7 @@ export function createAppServer(opts: AppOptions): AppServer {
       }
     } catch (err) {
       tlsFailedAt = now()
-      log(`Certificaat maken mislukt: ${(err as Error).message}. Je telefoon kan er nu niet bij; op deze ${computer} werkt alles gewoon.`)
+      log(`Couldn't make the certificate: ${(err as Error).message}. Your phone can't reach Ash Log now; on this ${computer} everything works as usual.`)
     }
   }
 
@@ -275,8 +295,8 @@ export function createAppServer(opts: AppOptions): AppServer {
     // DNS rebinding: a foreign domain pointed at this computer still names itself in Host.
     // os.hostname() too: on some networks it is a DHCP name (mbp-van-joost.home) that resolves as well.
     if (!hostAllowed(req.headers.host, allowedHosts(listeners.port, hostname(), lan(), [osHostname()]))) {
-      if (api) send(res, 403, { error: 'Onbekende host' })
-      else sendText(res, 403, 'Onbekende host')
+      if (api) send(res, 403, { error: 'Unknown host' })
+      else sendText(res, 403, 'Unknown host')
       return
     }
     const local = isLoopback(req.socket.remoteAddress)
@@ -286,6 +306,10 @@ export function createAppServer(opts: AppOptions): AppServer {
       res.destroy()
       return
     }
+
+    // An old Dutch address: to the same page under its English path, over every transport.
+    const moved = Object.hasOwn(LEGACY_SERVER_PATHS, pathname) ? LEGACY_SERVER_PATHS[pathname] : undefined
+    if (moved && isRead(req)) return redirect(res, moved + url.search)
 
     // The certificate page and profile: over every transport, without pairing.
     if (isCertificatePath(pathname)) {
@@ -318,11 +342,11 @@ export function createAppServer(opts: AppOptions): AppServer {
     if (pathname.startsWith('/icons/')) return serveFrom(req, res, iconsDir, pathname, '/icons/', 'no-cache')
     // Static code without data. Also before pairing, so an installed worker can always update itself.
     if (pathname === SERVICE_WORKER_PATH) return serveServiceWorker(req, res)
-    if (pathname === '/koppel') return koppel(req, res, url, authorized, secure)
+    if (pathname === PAIR_PATH) return pair(req, res, url, authorized, secure)
     if (pathname === '/api/pair') return apiPair(req, res, secure)
 
     if (!authorized) {
-      if (api) send(res, 401, { error: 'Koppel dit apparaat eerst' })
+      if (api) send(res, 401, { error: 'Pair this device first' })
       else if (isRead(req) && !extname(pathname)) sendPairingPage(req, res, 401, undefined, {}, nodePlatform)
       else sendEmpty(res, 401)
       return
@@ -330,7 +354,7 @@ export function createAppServer(opts: AppOptions): AppServer {
 
     if (pathname === '/api/health') {
       if (isRead(req)) send(res, 200, { ok: true, mode: 'app' })
-      else send(res, 405, { error: 'Alleen GET' }, { Allow: 'GET, HEAD' })
+      else send(res, 405, { error: 'Only GET' }, { Allow: 'GET, HEAD' })
       return
     }
     if (pathname === '/api/server' || pathname.startsWith('/api/server/')) return serverApi(req, res, pathname, local)
@@ -348,7 +372,7 @@ export function createAppServer(opts: AppOptions): AppServer {
   function plainFromNetwork(req: IncomingMessage, res: ServerResponse, url: URL, api: boolean) {
     const base = httpsBaseFor(req.headers.host)
     if (api) {
-      send(res, 403, { error: `Ash Log gebruikt nu een beveiligde verbinding: ${base}` })
+      send(res, 403, { error: `Ash Log uses a secure connection now: ${base}` })
       return
     }
     if (!isRead(req) || extname(url.pathname)) {
@@ -365,7 +389,7 @@ export function createAppServer(opts: AppOptions): AppServer {
   /* Pairing                                                           */
   /* ---------------------------------------------------------------- */
 
-  async function koppel(req: IncomingMessage, res: ServerResponse, url: URL, paired: boolean, secure: boolean) {
+  async function pair(req: IncomingMessage, res: ServerResponse, url: URL, paired: boolean, secure: boolean) {
     if (!isRead(req)) return sendEmpty(res, 405, { Allow: 'GET, HEAD' })
     // Already paired (or this computer): nothing to do, and the code stays usable.
     if (paired) return redirect(res, '/')
@@ -379,7 +403,7 @@ export function createAppServer(opts: AppOptions): AppServer {
 
   async function apiPair(req: IncomingMessage, res: ServerResponse, secure: boolean) {
     try {
-      if (req.method !== 'POST') throw new HttpError(405, 'Alleen POST', undefined, { Allow: 'POST' })
+      if (req.method !== 'POST') throw new HttpError(405, 'Only POST', undefined, { Allow: 'POST' })
       checkWriteRequest(req)
       const body = await readBody(req)
       const result = await pairing.redeem(isRecord(body) ? body.code : undefined, normalizeAddress(req.socket.remoteAddress), req.headers['user-agent'])
@@ -397,22 +421,22 @@ export function createAppServer(opts: AppOptions): AppServer {
   async function serverApi(req: IncomingMessage, res: ServerResponse, pathname: string, local: boolean) {
     try {
       if (pathname === '/api/server') {
-        if (!isRead(req)) throw new HttpError(405, 'Alleen GET', undefined, { Allow: 'GET, HEAD' })
+        if (!isRead(req)) throw new HttpError(405, 'Only GET', undefined, { Allow: 'GET, HEAD' })
         // The live dialog polls this: when the computer's name or Wi-Fi address changed, issue a
         // new certificate in the background (it is in use for new connections right after).
         if (local && listeners.live && tls.isStale(tlsNames()) && now() - tlsFailedAt >= TLS_RETRY_MS) void refreshTls()
         send(res, 200, status(local))
         return
       }
-      if (!local) throw new HttpError(403, `Dit kan alleen op de ${computer} zelf`)
+      if (!local) throw new HttpError(403, `This only works on the ${computer} itself`)
       if (pathname === '/api/server/certificate-qr') {
-        if (!isRead(req)) throw new HttpError(405, 'Alleen GET', undefined, { Allow: 'GET, HEAD' })
-        if (!listeners.live) throw new HttpError(409, 'Zet eerst Live op wifi aan')
+        if (!isRead(req)) throw new HttpError(405, 'Only GET', undefined, { Allow: 'GET, HEAD' })
+        if (!listeners.live) throw new HttpError(409, 'Turn on Live on Wi-Fi first')
         const url = certificateUrlFor(phoneParam(new URL(req.url ?? '/', 'http://localhost').searchParams.get('phone')))
         send(res, 200, { url, qrSvg: await qrSvg(url) })
         return
       }
-      if (req.method !== 'POST') throw new HttpError(405, 'Alleen POST', undefined, { Allow: 'POST' })
+      if (req.method !== 'POST') throw new HttpError(405, 'Only POST', undefined, { Allow: 'POST' })
       checkWriteRequest(req)
       const raw = await readBody(req)
       const body = isRecord(raw) ? raw : {}
@@ -422,19 +446,19 @@ export function createAppServer(opts: AppOptions): AppServer {
         case '/api/server/pairing':
           return await createPairing(res, phoneParam(body.phone))
         case '/api/server/devices/revoke': {
-          if (typeof body.id !== 'string' || !body.id) throw new HttpError(400, 'Verwacht { id }')
-          if (!(await pairing.revoke(body.id))) throw new HttpError(404, 'Apparaat niet gevonden')
+          if (typeof body.id !== 'string' || !body.id) throw new HttpError(400, 'Expected { id }')
+          if (!(await pairing.revoke(body.id))) throw new HttpError(404, 'Device not found')
           send(res, 200, status(true))
           return
         }
         case '/api/server/stop':
           send(res, 202, { ok: true })
           await finished(res).catch(() => {})
-          log('Stoppen gevraagd vanuit de app')
+          log('Stop requested from the app')
           opts.onStop?.()
           return
       }
-      throw new HttpError(404, `Onbekend endpoint: ${req.method} ${pathname}`)
+      throw new HttpError(404, `Unknown endpoint: ${req.method} ${pathname}`)
     } catch (err) {
       sendError(res, err)
     }
@@ -442,7 +466,7 @@ export function createAppServer(opts: AppOptions): AppServer {
 
   /** Answers first, then switches the sockets (the answer travels over one of them). */
   async function toggleLive(res: ServerResponse, on: unknown) {
-    if (typeof on !== 'boolean') throw new HttpError(400, 'Verwacht { on: true } of { on: false }')
+    if (typeof on !== 'boolean') throw new HttpError(400, 'Expected { on: true } or { on: false }')
     if (on === listeners.live) {
       send(res, 200, status(true))
       return
@@ -463,13 +487,13 @@ export function createAppServer(opts: AppOptions): AppServer {
       }
       if (!result.ok) return
       if (on) {
-        log(`Live op wifi: ${phoneUrls().join(' en ')}. Deze ${computer} blijft wakker.`)
-        log(`Certificaat voor je telefoon: ${certificateUrlFor()}`)
+        log(`Live on Wi-Fi: ${phoneUrls().join(' and ')}. This ${computer} stays awake.`)
+        log(`Certificate for your phone: ${certificateUrlFor()}`)
       }
-      else log(`Live uit: alleen deze ${computer} kan erbij`)
+      else log(`Live off: only this ${computer} can reach Ash Log`)
     } catch (err) {
       awake.stop()
-      log(`Luisteren mislukt: ${(err as Error).message}`)
+      log(`Couldn't listen: ${(err as Error).message}`)
       opts.onFatal?.(err as Error)
     }
   }
@@ -478,14 +502,14 @@ export function createAppServer(opts: AppOptions): AppServer {
   function phoneParam(value: unknown): PhoneKind | undefined {
     if (value === undefined || value === null) return undefined
     const phone = parsePhoneKind(value)
-    if (!phone) throw new HttpError(400, 'Verwacht phone: iphone of android')
+    if (!phone) throw new HttpError(400, 'Expected phone: iphone or android')
     return phone
   }
 
   async function createPairing(res: ServerResponse, phone?: PhoneKind) {
-    if (!listeners.live) throw new HttpError(409, 'Zet eerst Live op wifi aan')
+    if (!listeners.live) throw new HttpError(409, 'Turn on Live on Wi-Fi first')
     const { code, expiresAt } = pairing.createCode()
-    const url = `https://${phoneHost(phone)}/koppel?code=${code}`
+    const url = `https://${phoneHost(phone)}${PAIR_PATH}?code=${code}`
     const body: PairingCode = { code, url, qrSvg: await qrSvg(url), expiresAt: new Date(expiresAt).toISOString() }
     send(res, 200, body)
   }
@@ -504,7 +528,7 @@ export function createAppServer(opts: AppOptions): AppServer {
   async function serveIndex(req: IncomingMessage, res: ServerResponse) {
     const resolved = resolveInside(distDir, '/index.html')
     if (resolved.ok && (await serveFile(req, res, resolved.file, { cacheControl: 'no-cache', headers: INDEX_HEADERS }))) return
-    sendText(res, 503, 'Het Logboek is nog niet gebouwd. Start het met npm run app.')
+    sendText(res, 503, "Ash Log hasn't been built yet. Start it with npm run app.")
   }
 
   /** /sw.js from dist/ or public/, always checked for a new version. */
@@ -547,13 +571,13 @@ export function createAppServer(opts: AppOptions): AppServer {
       awake.stop()
       // The launcher gives a stop request about ten seconds before it sends SIGTERM.
       await listeners.close(4000)
-      if (syncRunning()) log('Er loopt een sync, even wachten...')
+      if (syncRunning()) log('A sync is running, waiting for it...')
       if (!(await whenIdle(4000)) && syncRunning()) {
-        log('Sync afgebroken; start hem later opnieuw')
+        log('Sync stopped; start it again later')
         stopSync()
         await whenIdle(1500)
       }
-      await pairing.flush().catch((err: Error) => log(`Apparaten opslaan mislukt: ${err.message}`))
+      await pairing.flush().catch((err: Error) => log(`Couldn't save devices: ${err.message}`))
     },
   }
 }
@@ -624,7 +648,7 @@ export async function main(): Promise<void> {
 
   if (await isRunning(port)) {
     const pid = await readPid()
-    log(`Het Logboek draait al op http://localhost:${port}${pid ? ` (pid ${pid})` : ''}`)
+    log(`Ash Log is already running on http://localhost:${port}${pid ? ` (pid ${pid})` : ''}`)
     return
   }
 
@@ -632,10 +656,10 @@ export async function main(): Promise<void> {
   const shutdown = (code: number): Promise<void> => {
     if (stopping) return stopping
     stopping = (async () => {
-      log('Het Logboek stopt...')
-      await app.close().catch((err: Error) => log(`Fout bij stoppen: ${err.message}`))
+      log('Ash Log is stopping...')
+      await app.close().catch((err: Error) => log(`Error while stopping: ${err.message}`))
       removePidSync()
-      log('Gestopt')
+      log('Stopped')
       process.exit(code)
     })()
     return stopping
@@ -651,7 +675,7 @@ export async function main(): Promise<void> {
     await app.start()
   } catch (err) {
     if (err instanceof PortInUseError) {
-      fatal(`Poort ${port} is bezet door een ander programma. Sluit dat af of kies een andere poort met APP_PORT in .env.`)
+      fatal(`Port ${port} is in use by another program. Close it or pick another port with APP_PORT in .env.`)
     }
     throw err
   }
@@ -673,16 +697,16 @@ export async function main(): Promise<void> {
   // hangup is ignored; in a terminal that closes, the server stops cleanly.
   process.on('SIGHUP', () => {
     if (process.stdin.isTTY) void shutdown(0)
-    else log('SIGHUP genegeerd: de server draait los van een terminal')
+    else log('SIGHUP ignored: the server runs without a terminal')
   })
-  log(`Het Logboek draait op http://localhost:${port}`)
-  log(`Live op wifi staat uit: alleen deze ${computerNoun(serverPlatform(process.platform))} kan erbij`)
+  log(`Ash Log is running on http://localhost:${port}`)
+  log(`Live on Wi-Fi is off: only this ${computerNoun(serverPlatform(process.platform))} can reach Ash Log`)
 }
 
 // Real paths on both sides, case-insensitive on Windows (8.3 short names, a lower-case drive letter).
 if (isEntryPoint(import.meta.url, process.argv[1])) {
   main().catch((err: Error) => {
     console.error(err.stack ?? err.message)
-    fatal(`Het Logboek kon niet starten: ${err.message}`)
+    fatal(`Ash Log couldn't start: ${err.message}`)
   })
 }

@@ -364,7 +364,7 @@ describe('parseMap on the full fixtures', () => {
       'Threadbare Grain Sack',
     ])
     const warning = full.warnings.find((w) => w.message.includes("'other'"))
-    expect(warning?.message).toContain('8 categorieën')
+    expect(warning?.message).toContain('8 categories')
   })
 
   it.each([
@@ -471,7 +471,7 @@ describe('parseMap on the full fixtures', () => {
   it('skips sandbox and test pages with one warning each', () => {
     expect(categories.some((c) => c.sources.some((s) => s.includes('User:')))).toBe(false)
     for (const id of ['test', 'healingpotiontest', 'abyssalwhipstatue', 'user-jsfour-sandbox']) expect(categories.some((c) => c.id === id)).toBe(false)
-    const skipped = full.warnings.filter((w) => w.message.startsWith('Overgeslagen'))
+    const skipped = full.warnings.filter((w) => w.message.startsWith('Skipped'))
     expect(skipped.map((w) => w.page).sort()).toEqual([
       'Module:Map/HealingPotionTest.json',
       'Module:Map/User:Jsfour/sandbox.json',
@@ -481,9 +481,9 @@ describe('parseMap on the full fixtures', () => {
   })
 
   it('warns once per page with broken points and once per category with duplicates', () => {
-    const broken = full.warnings.filter((w) => w.message.includes('zonder geldige x/y'))
-    expect(broken).toEqual([{ message: '1 van 1 punten zonder geldige x/y overgeslagen', page: 'Module:Map/Rotridden Cow.json' }])
-    const dups = full.warnings.filter((w) => w.message.includes('dubbele punten'))
+    const broken = full.warnings.filter((w) => w.message.includes('without a valid x/y'))
+    expect(broken).toEqual([{ message: '1 of 1 points without a valid x/y skipped', page: 'Module:Map/Rotridden Cow.json' }])
+    const dups = full.warnings.filter((w) => w.message.includes('duplicate point'))
     expect(new Set(dups.map((w) => w.page)).size).toBe(dups.length)
     expect(dups.find((w) => w.page === 'Module:Map/Ash Tree.json')?.message).toMatch(/^91 /)
     expect(category('ash-tree').count).toBe(1938 - 91)
@@ -692,9 +692,9 @@ describe('parseMap edge cases', () => {
       page('Half', [{ x: 1, y: 2 }, { x: 'a', y: 3 }, { y: 4 }, null, {}]),
     ])
     expect(res.warnings.filter((w) => w.page).map((w) => [w.page, w.message.split(':')[0]])).toEqual([
-      ['Module:Map/Broken.json', 'Ongeldige JSON, pagina overgeslagen'],
-      ['Module:Map/Empty.json', 'Geen kaartpunten herkend (leeg object), pagina overgeslagen'],
-      ['Module:Map/Half.json', '4 van 5 punten zonder geldige x/y overgeslagen'],
+      ['Module:Map/Broken.json', 'Invalid JSON, page skipped'],
+      ['Module:Map/Empty.json', 'No map points recognised (empty object), page skipped'],
+      ['Module:Map/Half.json', '4 of 5 points without a valid x/y skipped'],
     ])
     expect(res.map.points.map((p) => p.id)).toEqual(['half:1:2'])
   })
@@ -727,8 +727,8 @@ describe('parseMap edge cases', () => {
       { id: 'treasure-chest:5000:5000', categoryId: 'treasure-chest', x: 5000, y: 5000, region: 'Fellhollow' },
       { id: 'treasure-chest:5200:5000', categoryId: 'treasure-chest', x: 5200, y: 5000, power: 6, region: 'Fellhollow', regionGuessed: true },
     ])
-    expect(res.warnings.filter((w) => w.message.includes('dubbele'))).toEqual([
-      { message: '1 dubbele punten (zelfde coördinaten) samengevoegd', page: 'Module:Map/Treasure Chest (Fellhollow).json' },
+    expect(res.warnings.filter((w) => w.message.includes('duplicate'))).toEqual([
+      { message: '1 duplicate point (same coordinates) merged', page: 'Module:Map/Treasure Chest (Fellhollow).json' },
     ])
   })
 

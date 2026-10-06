@@ -8,7 +8,7 @@ import { useQuestEntries } from '@/composables/useQuestEntries'
 import { useQuestLink } from '@/composables/useQuestRoute'
 import QuestChip from './QuestChip.vue'
 
-/** Quests to finish first ('Eerst doen') and quests that need this one ('Nodig voor'). */
+/** Quests to finish first ('Do first') and quests that need this one ('Needed for'). */
 const props = defineProps<{ quest: AppQuest }>()
 
 const { entries, entryById } = useQuestEntries()
@@ -31,7 +31,7 @@ const orderOf = (q: AppQuest | undefined) => (q?.kind === 'primary' ? q.order : 
 <template>
   <div class="flex flex-col gap-7">
     <section aria-labelledby="quest-requires-heading">
-      <SectionHeading id="quest-requires-heading" title="Eerst doen" />
+      <SectionHeading id="quest-requires-heading" title="Do first" />
       <ul v-if="requires.length" class="mt-2.5 flex flex-wrap gap-2" role="list">
         <li v-for="r in requires" :key="r.id" class="max-w-full">
           <QuestChip
@@ -42,20 +42,20 @@ const orderOf = (q: AppQuest | undefined) => (q?.kind === 'primary' ? q.order : 
           />
         </li>
       </ul>
-      <p v-else class="mt-2 text-text-parchment/70">Niets, je kunt zo beginnen.</p>
+      <p v-else class="mt-2 text-text-parchment/70">Nothing, you can start right away.</p>
 
       <p v-if="unfinished.length" class="mt-3 flex gap-2 text-sm leading-snug text-text-parchment/75">
         <Info class="mt-px size-4 shrink-0 text-gold-ink" aria-hidden="true" />
         <span>
-          Nog niet voltooid:
+          Not done yet:
           <template v-for="(r, i) in unfinished" :key="r.id">{{ i ? ', ' : '' }}<span lang="en">{{ r.name }}</span></template>.
-          Misschien kun je deze quest nog niet starten.
+          You might not be able to start this quest yet.
         </span>
       </p>
     </section>
 
     <section v-if="dependents.length" aria-labelledby="quest-unlocks-heading">
-      <SectionHeading id="quest-unlocks-heading" title="Nodig voor" :count="dependents.length" />
+      <SectionHeading id="quest-unlocks-heading" title="Needed for" :count="dependents.length" />
       <ul class="mt-2.5 flex flex-wrap gap-2" role="list">
         <li v-for="d in dependents" :key="d.quest.id" class="max-w-full">
           <QuestChip :name="d.quest.name" :state="d.entry.state" :order="orderOf(d.quest)" :to="linkFor(d.quest.id)" />

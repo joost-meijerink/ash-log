@@ -26,18 +26,18 @@ const emit = defineEmits<{ cancel: []; remove: [] }>()
       <Crosshair v-else aria-hidden="true" class="size-4" />
     </span>
     <p class="min-w-0 flex-1 basis-56 leading-snug">
-      <template v-if="saving">Pin opslaan...</template>
+      <template v-if="saving">Saving pin...</template>
       <template v-else>
-        Klik op de kaart om de start van <span lang="en" class="font-semibold text-gold">{{ quest.name }}</span> te zetten
+        Click the map to set where <span lang="en" class="font-semibold text-gold">{{ quest.name }}</span> starts
       </template>
       <span v-if="error" class="mt-0.5 block text-sm text-[#e08a6c]">{{ error }}</span>
     </p>
     <div class="flex shrink-0 items-center gap-1.5">
       <Button v-if="hasManualPin" variant="ghost" size="sm" :disabled="saving" @click="emit('remove')">
         <MapPinOff aria-hidden="true" />
-        Pin verwijderen
+        Remove pin
       </Button>
-      <Button variant="outline" size="sm" :disabled="saving" @click="emit('cancel')">Annuleren</Button>
+      <Button variant="outline" size="sm" :disabled="saving" @click="emit('cancel')">Cancel</Button>
     </div>
   </div>
 </template>

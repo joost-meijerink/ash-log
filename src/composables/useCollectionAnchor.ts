@@ -1,4 +1,4 @@
-// In-page anchors for the Verzamelingen view (#vaults, #vault-<slug>, ...).
+// In-page anchors for the Collections view (#vaults, #vault-<slug>, ...).
 // <main> is the scroll container and the router has no scrollBehavior, so the view scrolls
 // itself: it brings the target into view, focuses it and, for vault cards, highlights it for a
 // moment.
@@ -140,7 +140,7 @@ export function useCollectionAnchor(options: AnchorOptions = {}): AnchorNavigato
   return nav
 }
 
-/** The view's anchor navigator, or null outside the Verzamelingen view. */
+/** The view's anchor navigator, or null outside the Collections view. */
 export function useAnchorNavigator(): AnchorNavigator | null {
   return inject(KEY, null)
 }

@@ -8,7 +8,7 @@ import { useTone, type Tone } from '@/composables/useTone'
 /**
  * External link to the Dragonwilds wiki, opens in a new tab with a small external icon.
  * Give either `page` (a wiki page title) or `href` (a full URL, e.g. Quest.wikiUrl).
- * The link text is the default slot, falling back to the page title or 'Op de wiki'.
+ * The link text is the default slot, falling back to the page title or 'On the wiki'.
  */
 const props = withDefaults(
   defineProps<{
@@ -50,10 +50,10 @@ const url = computed(() => props.href ?? (props.page ? wikiUrl(props.page) : 'ht
       )
     "
   >
-    <!-- A page title is English wiki text; the fallback and a slot are the caller's (usually Dutch). -->
+    <!-- A page title is wiki text (marked English); the fallback and a slot are the caller's. -->
     <span v-if="!$slots.default && page" lang="en">{{ page }}</span>
-    <slot v-else>Op de wiki</slot>
+    <slot v-else>On the wiki</slot>
     <ExternalLink v-if="icon" aria-hidden="true" class="size-3.5 shrink-0 translate-y-[1px] self-center" />
-    <span class="sr-only">(opent in een nieuw tabblad)</span>
+    <span class="sr-only">(opens in a new tab)</span>
   </a>
 </template>

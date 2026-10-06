@@ -15,7 +15,7 @@ import IconButton from './IconButton.vue'
 const MapStub = defineComponent({
   setup() {
     provideViewRoute('map')
-    return () => h('div', { 'data-view': 'map' }, [h(IconButton, { label: 'Inzoomen' }, { default: () => '+' })])
+    return () => h('div', { 'data-view': 'map' }, [h(IconButton, { label: 'Zoom in' }, { default: () => '+' })])
   },
 })
 
@@ -33,7 +33,7 @@ async function open(path: string, delay: number) {
   router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/kaart', name: 'map', component: MapStub },
+      { path: '/map', name: 'map', component: MapStub },
       { path: '/quests/:questId?', name: 'quests', component: QuestsStub },
     ],
   })
@@ -77,11 +77,11 @@ afterEach(() => {
 
 describe('IconButton tooltip in a view that stays alive', () => {
   it('closes when its view leaves the page with the pointer still on the button', async () => {
-    const w = await open('/kaart', 0)
-    hover(w.get('button[aria-label="Inzoomen"]').element)
+    const w = await open('/map', 0)
+    hover(w.get('button[aria-label="Zoom in"]').element)
     await wait(20)
     await flushPromises()
-    expect(tooltips()).toEqual(['Inzoomen'])
+    expect(tooltips()).toEqual(['Zoom in'])
 
     // Back or forward: the pointer did not move.
     await router.push('/quests')
@@ -92,26 +92,26 @@ describe('IconButton tooltip in a view that stays alive', () => {
     expect(document.body.querySelector('[data-slot="tooltip-content"]')).toBeNull()
 
     // Back on the map it is closed, and works as before once the pointer comes by again.
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     expect(tooltips()).toEqual([])
-    w.get('button[aria-label="Inzoomen"]').element.dispatchEvent(new Event('pointerleave'))
-    hover(w.get('button[aria-label="Inzoomen"]').element)
+    w.get('button[aria-label="Zoom in"]').element.dispatchEvent(new Event('pointerleave'))
+    hover(w.get('button[aria-label="Zoom in"]').element)
     await wait(20)
     await flushPromises()
-    expect(tooltips()).toEqual(['Inzoomen'])
+    expect(tooltips()).toEqual(['Zoom in'])
   })
 
   it('does not open over another view when its delay runs out after the view was left', async () => {
-    const w = await open('/kaart', 60)
-    hover(w.get('button[aria-label="Inzoomen"]').element)
+    const w = await open('/map', 60)
+    hover(w.get('button[aria-label="Zoom in"]').element)
     await router.push('/quests')
     await flushPromises()
     await wait(120)
     await flushPromises()
     expect(tooltips()).toEqual([])
     // Not waiting to pop up on the way back either.
-    await router.push('/kaart')
+    await router.push('/map')
     await flushPromises()
     await wait(20)
     expect(tooltips()).toEqual([])
@@ -119,13 +119,13 @@ describe('IconButton tooltip in a view that stays alive', () => {
 
   it('works on a button outside the views (the header)', async () => {
     const lone = mount(
-      defineComponent({ render: () => h(TooltipProvider, { delayDuration: 0 }, { default: () => h(IconButton, { label: 'Laatste syncrapport' }, { default: () => 'r' }) }) }),
+      defineComponent({ render: () => h(TooltipProvider, { delayDuration: 0 }, { default: () => h(IconButton, { label: 'Last sync report' }, { default: () => 'r' }) }) }),
       { attachTo: document.body },
     )
     hover(lone.get('button').element)
     await wait(20)
     await flushPromises()
-    expect(tooltips()).toEqual(['Laatste syncrapport'])
+    expect(tooltips()).toEqual(['Last sync report'])
     lone.unmount()
   })
 })

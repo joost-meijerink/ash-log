@@ -31,6 +31,6 @@ defineProps<{
     <QuestStatusMark v-if="state" :state="state" :order="order" size="sm" tone="parchment" />
     <span lang="en" class="truncate">{{ name }}</span>
     <span v-if="state" class="sr-only">, {{ QUEST_STATE_LABEL[state] }}</span>
-    <span v-else class="sr-only">, niet in het logboek</span>
+    <span v-else class="sr-only">, not in the log</span>
   </component>
 </template>

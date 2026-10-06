@@ -17,8 +17,8 @@ const connection = useConnectionStore()
   >
     <CloudOff class="size-4 shrink-0 text-gold" aria-hidden="true" />
     <p class="min-w-0 flex-1 py-1.5">
-      <strong class="font-semibold">Offline:</strong> alleen lezen<template v-if="connection.knownAt">, laatst bijgewerkt <RelativeTime :value="connection.knownAt" /></template>.
-      <span class="text-muted-light">Wijzigingen kunnen weer zodra je computer bereikbaar is.</span>
+      <strong class="font-semibold">Offline:</strong> you're looking at the last known data<template v-if="connection.knownAt">, updated <RelativeTime :value="connection.knownAt" /></template>.
+      <span class="text-muted-light">Changes can wait until your computer is back.</span>
     </p>
     <!-- Icon only on a phone, so the text keeps the width -->
     <Button variant="ghost" size="sm" :disabled="connection.checking" class="-mr-1 min-w-11 shrink-0" @click="connection.retry()">

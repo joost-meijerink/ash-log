@@ -75,7 +75,7 @@ export function buildReport(input: ReportInput): DiffReport {
  */
 export function findDanglingRefs(next: WikiSnapshot): SyncWarning[] {
   const out: SyncWarning[] = []
-  const hint = 'Draai een volledige sync.'
+  const hint = 'Run a full sync.'
   const pointIds = next.map ? new Set(next.map.points.map((p) => p.id)) : null
   const questIds = next.quests ? new Set(next.quests.map((q) => q.id)) : null
   const vaultIds = next.vaults ? new Set(next.vaults.map((v) => v.id)) : null
@@ -83,26 +83,26 @@ export function findDanglingRefs(next: WikiSnapshot): SyncWarning[] {
   if (pointIds) {
     for (const q of next.quests ?? []) {
       if (q.startPointId && !pointIds.has(q.startPointId)) {
-        out.push({ source: 'sync', page: q.id, message: `startpunt ${q.startPointId} staat niet (meer) op de kaart. ${hint}` })
+        out.push({ source: 'sync', page: q.id, message: `start point ${q.startPointId} is no longer on the map. ${hint}` })
       }
     }
     for (const v of next.vaults ?? []) {
       if (v.pointId && !pointIds.has(v.pointId)) {
-        out.push({ source: 'sync', page: v.id, message: `kaartpunt ${v.pointId} staat niet (meer) op de kaart. ${hint}` })
+        out.push({ source: 'sync', page: v.id, message: `map point ${v.pointId} is no longer on the map. ${hint}` })
       }
     }
   }
   for (const r of next.rewards ?? []) {
     if (questIds && r.questId && !questIds.has(r.questId)) {
-      out.push({ source: 'sync', message: `Beloning ${r.id} verwijst naar quest ${r.questId}, die bestaat niet (meer). ${hint}` })
+      out.push({ source: 'sync', message: `Reward ${r.id} points to quest ${r.questId}, which no longer exists. ${hint}` })
     }
     if (vaultIds && r.vaultId && !vaultIds.has(r.vaultId)) {
-      out.push({ source: 'sync', message: `Beloning ${r.id} verwijst naar vault ${r.vaultId}, die bestaat niet (meer). ${hint}` })
+      out.push({ source: 'sync', message: `Reward ${r.id} points to vault ${r.vaultId}, which no longer exists. ${hint}` })
     }
     if (pointIds) {
       for (const pointId of r.pointIds ?? []) {
         if (!pointIds.has(pointId)) {
-          out.push({ source: 'sync', message: `Beloning ${r.id} verwijst naar kaartpunt ${pointId}, dat staat niet (meer) op de kaart. ${hint}` })
+          out.push({ source: 'sync', message: `Reward ${r.id} points to map point ${pointId}, which is no longer on the map. ${hint}` })
         }
       }
     }
@@ -232,15 +232,15 @@ function sortIds(ids: string[]): string[] {
 /* ------------------------------------------------------------------ */
 
 const DOMAIN_LABEL: Record<SyncDomain, string> = {
-  map: 'Kaart',
+  map: 'Map',
   quests: 'Quests',
   vaults: 'Vaults',
-  rewards: 'Beloningen',
+  rewards: 'Rewards',
 }
 
 const SOURCE_LABEL: Record<SyncWarning['source'], string> = {
   ...DOMAIN_LABEL,
-  assets: 'Afbeeldingen',
+  assets: 'Images',
   sync: 'Sync',
 }
 
@@ -248,11 +248,11 @@ const SOURCE_ORDER: SyncWarning['source'][] = ['sync', 'map', 'quests', 'vaults'
 
 const ORPHAN_LABEL: Record<keyof Orphans, [one: string, many: string]> = {
   quests: ['quest', 'quests'],
-  steps: ['stap', 'stappen'],
+  steps: ['step', 'steps'],
   items: ['item', 'items'],
-  points: ['kaartpunt', 'kaartpunten'],
+  points: ['map point', 'map points'],
   vaults: ['vault', 'vaults'],
-  rewards: ['beloning', 'beloningen'],
+  rewards: ['reward', 'rewards'],
 }
 
 const MAX_WARNINGS = 40
@@ -260,51 +260,51 @@ const MAX_CATEGORY_LINES = 15
 const MAX_STEP_QUESTS = 10
 const MAX_STEP_LINES = 3
 
-/** Human-readable Dutch summary for the terminal. */
+/** Human-readable summary for the terminal. */
 export function formatReport(report: DiffReport): string {
   const lines: string[] = []
   const when = formatTime(report.syncedAt)
 
   if (!report.ok) {
-    lines.push(`Sync mislukt (${when}): ${report.error ?? 'onbekende fout'}`)
+    lines.push(`Sync failed (${when}): ${report.error ?? 'unknown error'}`)
     // The sync writes all files in two phases, so a failure normally leaves everything as it was.
     if (report.error?.startsWith(PARTIAL_WRITE_PREFIX)) {
-      lines.push('Je voortgang is onveranderd, maar de wiki-data is half bijgewerkt. Draai de sync opnieuw.')
+      lines.push('Your progress is unchanged, but the wiki data is only partly updated. Run the sync again.')
     } else {
-      lines.push('Er is niets weggeschreven, je data en voortgang zijn onveranderd.')
+      lines.push('Nothing was written, your data and progress are unchanged.')
     }
   } else {
     const names = report.domains.map((d) => DOMAIN_LABEL[d].toLowerCase()).join(', ')
-    lines.push(`Sync gelukt (${when})${names ? `, bijgewerkt: ${names}` : ''}`)
+    lines.push(`Sync done (${when})${names ? `, updated: ${names}` : ''}`)
     lines.push('')
 
     if (report.map) {
       const pointDiffs = Object.entries(report.map.points)
-      lines.push('Kaart')
-      lines.push(`  Categorieën: ${countLine(report.map.categories)}`)
-      lines.push(`  Punten: ${countLine(sumDiffs(pointDiffs.map(([, d]) => d)))}`)
+      lines.push('Map')
+      lines.push(`  Categories: ${countLine(report.map.categories)}`)
+      lines.push(`  Points: ${countLine(sumDiffs(pointDiffs.map(([, d]) => d)))}`)
       const ranked = pointDiffs.sort(([a, da], [b, db]) => total(db) - total(da) || compareIds(a, b))
       for (const [categoryId, d] of ranked.slice(0, MAX_CATEGORY_LINES)) {
         lines.push(`    ${categoryId}: ${countLine(d, true)}`)
       }
-      if (ranked.length > MAX_CATEGORY_LINES) lines.push(`    en ${ranked.length - MAX_CATEGORY_LINES} categorieën meer`)
+      if (ranked.length > MAX_CATEGORY_LINES) lines.push(`    and ${plural(ranked.length - MAX_CATEGORY_LINES, 'more category', 'more categories')}`)
     }
 
     if (report.quests) {
       lines.push(`Quests: ${countLine(report.quests.quests)}`)
       const steps = report.quests.steps
       if (steps.length) {
-        lines.push(`  Stappen gewijzigd in ${plural(steps.length, 'quest', 'quests')} (vinkjes op weggevallen stappen raken verweesd):`)
+        lines.push(`  Steps changed in ${plural(steps.length, 'quest', 'quests')} (progress on removed steps becomes orphaned):`)
         for (const s of steps.slice(0, MAX_STEP_QUESTS)) {
-          lines.push(`    ${s.questId}: ${s.added.length} nieuw, ${s.removed.length} weg`)
+          lines.push(`    ${s.questId}: ${s.added.length} new, ${s.removed.length} removed`)
           lines.push(...stepLines('-', s.removed), ...stepLines('+', s.added))
         }
-        if (steps.length > MAX_STEP_QUESTS) lines.push(`    en ${steps.length - MAX_STEP_QUESTS} quests meer`)
+        if (steps.length > MAX_STEP_QUESTS) lines.push(`    and ${plural(steps.length - MAX_STEP_QUESTS, 'more quest', 'more quests')}`)
       }
     }
 
     if (report.vaults) lines.push(`Vaults: ${countLine(report.vaults.vaults)}`)
-    if (report.rewards) lines.push(`Beloningen: ${countLine(report.rewards.rewards)}`)
+    if (report.rewards) lines.push(`Rewards: ${countLine(report.rewards.rewards)}`)
 
     lines.push('')
     lines.push(...orphanLines(report.orphans))
@@ -315,11 +315,11 @@ export function formatReport(report: DiffReport): string {
 }
 
 function countLine(d: ListDiff, skipZero = false): string {
-  if (!hasChanges(d)) return 'geen wijzigingen'
+  if (!hasChanges(d)) return 'no changes'
   const parts: [number, string][] = [
-    [d.added.length, 'nieuw'],
-    [d.removed.length, 'weg'],
-    [d.changed.length, 'gewijzigd'],
+    [d.added.length, 'new'],
+    [d.removed.length, 'removed'],
+    [d.changed.length, 'changed'],
   ]
   return parts
     .filter(([n]) => !skipZero || n > 0)
@@ -341,7 +341,7 @@ function total(d: ListDiff): number {
 
 function stepLines(sign: '+' | '-', steps: { text: string }[]): string[] {
   const out = steps.slice(0, MAX_STEP_LINES).map((s) => `      ${sign} ${truncate(s.text, 100)}`)
-  if (steps.length > MAX_STEP_LINES) out.push(`      ${sign} en ${steps.length - MAX_STEP_LINES} meer`)
+  if (steps.length > MAX_STEP_LINES) out.push(`      ${sign} and ${steps.length - MAX_STEP_LINES} more`)
   return out
 }
 
@@ -349,17 +349,17 @@ function orphanLines(o: Orphans): string[] {
   const parts = (Object.keys(ORPHAN_LABEL) as (keyof Orphans)[])
     .filter((key) => o[key].length > 0)
     .map((key) => plural(o[key].length, ...ORPHAN_LABEL[key]))
-  if (!parts.length) return ['Geen verweesde voortgang.']
+  if (!parts.length) return ['No orphaned progress.']
   const count = (Object.keys(ORPHAN_LABEL) as (keyof Orphans)[]).reduce((n, key) => n + o[key].length, 0)
   return [
-    `Verweesde voortgang: ${count} (${parts.join(', ')})`,
-    '  Sync verwijdert niets. Ruim het op in de app, daar staat een knop voor.',
+    `Orphaned progress: ${count} (${parts.join(', ')})`,
+    "  Sync never deletes anything. Clean it up in the app, there's a button for it.",
   ]
 }
 
 function warningLines(warnings: SyncWarning[]): string[] {
   if (!warnings.length) return []
-  const out = ['', `Waarschuwingen: ${warnings.length}`]
+  const out = ['', `Warnings: ${warnings.length}`]
   const sources = [...SOURCE_ORDER, ...new Set(warnings.map((w) => w.source).filter((s) => !SOURCE_ORDER.includes(s)))]
   let budget = MAX_WARNINGS
   for (const source of sources) {
@@ -372,11 +372,12 @@ function warningLines(warnings: SyncWarning[]): string[] {
     budget -= Math.min(group.length, budget)
   }
   const hidden = warnings.length - (MAX_WARNINGS - budget)
-  if (hidden > 0) out.push(`  en ${hidden} meer (zie data/wiki/report.json)`)
+  if (hidden > 0) out.push(`  and ${hidden} more (see data/wiki/report.json)`)
   return out
 }
 
-function plural(n: number, one: string, many: string): string {
+/** '1 quest', '3 quests'. */
+export function plural(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`
 }
 
@@ -385,9 +386,12 @@ function truncate(text: string, max: number): string {
   return flat.length > max ? `${flat.slice(0, max - 3)}...` : flat
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** Local time like en-GB: '6 Oct 2026, 14:05' (day month year, 24-hour clock). */
 function formatTime(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
   const p = (n: number) => String(n).padStart(2, '0')
-  return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, ${p(d.getHours())}:${p(d.getMinutes())}`
 }

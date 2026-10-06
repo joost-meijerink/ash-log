@@ -33,7 +33,7 @@ describe('parseInstallArgs', () => {
     expect(parseInstallArgs(['--desktop'])).toEqual({ uninstall: false, desktop: true, help: false })
     expect(parseInstallArgs(['--uninstall'])).toEqual({ uninstall: true, desktop: false, help: false })
     expect(parseInstallArgs(['--uninstall', '--desktop'])).toHaveProperty('error')
-    expect(parseInstallArgs(['--Desktop'])).toEqual({ error: 'Onbekende optie: --Desktop' })
+    expect(parseInstallArgs(['--Desktop'])).toEqual({ error: 'Unknown option: --Desktop' })
   })
 })
 
@@ -57,7 +57,7 @@ describe('runInstall', () => {
     const { deps, calls, lines } = fake('darwin')
     expect(await runInstall(['--desktop'], deps)).toBe(0)
     expect(calls).toEqual(['mac'])
-    expect(lines[0]).toMatch(/--desktop is voor Windows/)
+    expect(lines[0]).toMatch(/--desktop is for Windows/)
   })
 
   it('makes or removes the shortcuts on Windows', async () => {
@@ -80,10 +80,10 @@ describe('runInstall', () => {
     const bad = fake('win32')
     expect(await runInstall(['--force'], bad.deps)).toBe(2)
     expect(bad.calls).toEqual([])
-    expect(bad.lines[0]).toBe('ERR Onbekende optie: --force')
+    expect(bad.lines[0]).toBe('ERR Unknown option: --force')
     const help = fake('win32')
     expect(await runInstall(['--help'], help.deps)).toBe(0)
-    expect(help.lines[0]).toMatch(/^Gebruik: npm run app:install/)
+    expect(help.lines[0]).toMatch(/^Usage: npm run app:install/)
   })
 })
 

@@ -3,7 +3,7 @@
  * it to ~/Applications; see install-app.sh).
  *
  * The app is a small native macOS app: Swift with AppKit and WebKit (native/AshLog.swift),
- * compiled with swiftc. One Dock icon and one window that shows the Logboek in a WKWebView.
+ * compiled with swiftc. One Dock icon and one window that shows Ash Log in a WKWebView.
  * Starting and stopping the server stays in the shell scripts next to this file; the app
  * runs them:
  *
@@ -72,7 +72,7 @@ export function infoPlistValues({ projectDir, nodePath, port }: AppConfig, versi
   checkPath('nodePath', nodePath)
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Not a port: ${port}`)
   return {
-    CFBundleDevelopmentRegion: 'nl',
+    CFBundleDevelopmentRegion: 'en',
     CFBundleName: APP_NAME,
     CFBundleDisplayName: APP_NAME,
     CFBundleIdentifier: BUNDLE_ID,
@@ -92,9 +92,9 @@ export function infoPlistValues({ projectDir, nodePath, port }: AppConfig, versi
     // The window shows http://localhost:<port>.
     NSAppTransportSecurity: { NSAllowsLocalNetworking: true },
     // The project lives in ~/Documents: the scripts the app runs read it.
-    NSDocumentsFolderUsageDescription: 'De app start de lokale server vanuit de projectmap van het Logboek.',
+    NSDocumentsFolderUsageDescription: 'Ash Log starts its local server from the project folder.',
     // For macOS the server the app starts belongs to the app, so its live mode asks in the app's name.
-    NSLocalNetworkUsageDescription: 'Zodat je telefoon het Logboek via wifi kan openen als Live op wifi aan staat.',
+    NSLocalNetworkUsageDescription: 'So your phone can open Ash Log over Wi-Fi while Live on Wi-Fi is on.',
     [CONFIG_KEYS.projectDir]: projectDir,
     [CONFIG_KEYS.nodePath]: nodePath,
     [CONFIG_KEYS.port]: port,
@@ -205,7 +205,7 @@ export function buildApp(options: BuildOptions): string {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const port = resolvePort(PROJECT_DIR)
   const app = buildApp({ projectDir: PROJECT_DIR, nodePath: process.execPath, port })
-  console.log(`gebouwd: ${app}`)
+  console.log(`built: ${app}`)
   console.log(`node: ${process.execPath}`)
-  console.log(`poort: ${port}`)
+  console.log(`port: ${port}`)
 }

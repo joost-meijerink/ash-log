@@ -6,6 +6,7 @@ import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { api } from '@/lib/api'
+import { REWARD_VIA_LABEL } from '@/lib/collections-rewards'
 import { emptyOverrides } from '@/lib/normalize'
 import type { AppData, AppQuest, Overrides, Reward } from '@/lib/types'
 import { useDataStore } from '@/stores/data'
@@ -121,7 +122,7 @@ describe('QuestItemsEditor', () => {
 
   it('keeps every checkmark when saving fails', async () => {
     useDataStore().data = appData()
-    vi.mocked(api.saveOverrides).mockRejectedValue(new Error('Schijf vol'))
+    vi.mocked(api.saveOverrides).mockRejectedValue(new Error('Disk full'))
     const progress = checkItems(['Ratcatcher:i:ash-log'])
     const onClose = vi.fn()
     const w = mount(withTooltips(QuestItemsEditor, { quest, onClose }), { attachTo: document.body })
@@ -131,7 +132,7 @@ describe('QuestItemsEditor', () => {
     await flushPromises()
 
     expect(onClose).not.toHaveBeenCalled()
-    expect(w.text()).toContain('Opslaan lukt niet: Schijf vol')
+    expect(w.text()).toContain("Couldn't save: Disk full")
     expect(progress.state.quests.Ratcatcher?.items).toEqual(['Ratcatcher:i:ash-log'])
     w.unmount()
   })
@@ -161,10 +162,10 @@ describe('QuestItemsEditor', () => {
     const onClose = vi.fn()
     const w = mount(withTooltips(QuestItemsEditor, { quest: own, onClose }), { attachTo: document.body })
 
-    await w.findAll('button').find((b) => b.text().includes('Terug naar de wiki-lijst'))!.trigger('click')
+    await w.findAll('button').find((b) => b.text().includes('Back to the wiki list'))!.trigger('click')
     await flushPromises()
-    const confirm = [...document.body.querySelectorAll('button')].find((b) => b.textContent?.includes('Wiki-lijst gebruiken'))
-    expect(document.body.textContent).toContain('de rest gaat weg')
+    const confirm = [...document.body.querySelectorAll('button')].find((b) => b.textContent?.includes('Use wiki list'))
+    expect(document.body.textContent).toContain('the rest go')
     confirm!.click()
     await flushPromises()
 
@@ -182,9 +183,9 @@ describe('QuestItemsEditor', () => {
     const progress = checkItems(['Ratcatcher:i:rope'])
     const w = mount(withTooltips(QuestItemsEditor, { quest: own }), { attachTo: document.body })
 
-    await w.findAll('button').find((b) => b.text().includes('Terug naar de wiki-lijst'))!.trigger('click')
+    await w.findAll('button').find((b) => b.text().includes('Back to the wiki list'))!.trigger('click')
     await flushPromises()
-    ;[...document.body.querySelectorAll('button')].find((b) => b.textContent?.includes('Wiki-lijst gebruiken'))!.click()
+    ;[...document.body.querySelectorAll('button')].find((b) => b.textContent?.includes('Use wiki list'))!.click()
     await flushPromises()
 
     expect(api.saveOverrides).toHaveBeenCalled()
@@ -202,8 +203,8 @@ describe('QuestItemsEditor', () => {
     await flushPromises()
 
     expect(api.saveOverrides).not.toHaveBeenCalled()
-    expect(w.text()).toContain('Een heel getal vanaf 1')
-    expect(w.text()).toContain('Dit item staat er al')
+    expect(w.text()).toContain('A whole number from 1')
+    expect(w.text()).toContain("This item's already on the list")
     expect(w.findAll('[aria-invalid="true"]')).toHaveLength(2)
     w.unmount()
   })
@@ -217,7 +218,7 @@ describe('QuestSteps', () => {
 
     expect(w.findAll('h3').map((x) => x.text())).toEqual(['Part I: Rats'])
     expect(w.findAll('h4').map((x) => x.text())).toEqual(['The kitchen'])
-    expect(w.text()).toContain('Uit de Quick guide')
+    expect(w.text()).toContain('From the Quick guide')
 
     await w.findAll('input[type="checkbox"]')[0]!.setValue(true)
     expect(progress.state.quests.Ratcatcher?.steps).toEqual(['Ratcatcher:s:1'])
@@ -251,15 +252,15 @@ describe('QuestSteps', () => {
 
     // Above the steps: the need without a section, and the one whose section has no steps (with its name).
     const before = blocks[0]!
-    expect(before.text()).toContain('Aanbevolen: Food and a weapon.')
+    expect(before.text()).toContain('Recommended: Food and a weapon.')
     expect(before.text()).toContain('Gone section')
-    expect(before.text()).toContain('Nodig: A torch.')
+    expect(before.text()).toContain('Needed: A torch.')
     expect(before.element.compareDocumentPosition(w.get('ul').element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
 
     // Under 'The kitchen', between its heading and its steps.
     const kitchen = blocks[1]!
-    expect(kitchen.text()).toContain('Nodig: A cooking range.')
-    expect(kitchen.text()).toContain('Aanbevolen: 2 ash logs')
+    expect(kitchen.text()).toContain('Needed: A cooking range.')
+    expect(kitchen.text()).toContain('Recommended: 2 ash logs')
     expect(kitchen.element.previousElementSibling?.textContent?.trim()).toBe('The kitchen')
     expect(kitchen.findAll('[data-slot="location-text"]').map((x) => x.attributes('lang'))).toEqual(['en', 'en'])
     // Step ids are untouched.
@@ -268,8 +269,8 @@ describe('QuestSteps', () => {
 
   it('shows needs above the empty state when there are no steps', () => {
     const w = mount(QuestSteps, { props: { quest: { ...quest, steps: [], needs: [{ needed: 'A torch.' }] } } })
-    expect(w.get('[data-slot="quest-needs"]').text()).toContain('Nodig: A torch.')
-    expect(w.text()).toContain('Geen stappen')
+    expect(w.get('[data-slot="quest-needs"]').text()).toContain('Needed: A torch.')
+    expect(w.text()).toContain('No steps')
   })
 })
 
@@ -288,14 +289,14 @@ describe('QuestRewards', () => {
     return w
   }
 
-  it('lists the quest unlocks with Dutch via labels, wiki text and a map link', async () => {
+  it('lists the quest unlocks with via labels, wiki text and a map link', async () => {
     const w = await mountRewards()
     const rows = w.findAll('[data-slot="check-row"]')
     expect(rows).toHaveLength(2)
     const pie = rows.find((r) => r.text().includes('Meat Pie'))!
-    expect(pie.get('[data-slot="reward-via"]').text()).toBe('Te koop in winkels')
+    expect(pie.get('[data-slot="reward-via"]').text()).toBe(REWARD_VIA_LABEL.shops)
     expect(pie.get('[data-slot="location-text"]').attributes('lang')).toBe('en')
-    expect(decodeURIComponent(pie.get('a[data-map-link]').attributes('href')!)).toBe('/kaart?focus=recipe-book-spot:5:6')
+    expect(decodeURIComponent(pie.get('a[data-map-link]').attributes('href')!)).toBe('/map?focus=recipe-book-spot:5:6')
     const hat = rows.find((r) => r.text().includes('Rat Hat'))!
     expect(hat.get('span[lang="en"].italic').text()).toBe('Finish the quest')
     expect(hat.find('a[data-map-link]').exists()).toBe(false)

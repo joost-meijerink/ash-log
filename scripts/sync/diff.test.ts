@@ -292,8 +292,8 @@ describe('buildReport', () => {
 
   it('passes warnings through untouched', () => {
     const warnings: SyncWarning[] = [
-      { source: 'map', page: 'Module:Map/test.json', message: 'onbekend formaat' },
-      { source: 'assets', message: 'geen afbeelding' },
+      { source: 'map', page: 'Module:Map/test.json', message: 'unknown format' },
+      { source: 'assets', message: 'no image' },
     ]
     const report = buildReport(input({ warnings }))
     expect(report.warnings).toEqual(warnings)
@@ -324,11 +324,11 @@ describe('findDanglingRefs', () => {
     const warnings = findDanglingRefs(next)
     expect(warnings.every((w) => w.source === 'sync')).toBe(true)
     expect(warnings.map((w) => (w.page ? `${w.page}: ${w.message}` : w.message))).toEqual([
-      'Ratcatcher: startpunt ratcatcher:100:200 staat niet (meer) op de kaart. Draai een volledige sync.',
-      'Crasorak Kara: kaartpunt vaults:1:2 staat niet (meer) op de kaart. Draai een volledige sync.',
-      'Beloning quest:rat-hat verwijst naar quest Gone Quest, die bestaat niet (meer). Draai een volledige sync.',
-      'Beloning quest:rat-hat verwijst naar vault Gone Kara, die bestaat niet (meer). Draai een volledige sync.',
-      'Beloning quest:rat-hat verwijst naar kaartpunt recipe-book:5:5, dat staat niet (meer) op de kaart. Draai een volledige sync.',
+      'Ratcatcher: start point ratcatcher:100:200 is no longer on the map. Run a full sync.',
+      'Crasorak Kara: map point vaults:1:2 is no longer on the map. Run a full sync.',
+      'Reward quest:rat-hat points to quest Gone Quest, which no longer exists. Run a full sync.',
+      'Reward quest:rat-hat points to vault Gone Kara, which no longer exists. Run a full sync.',
+      'Reward quest:rat-hat points to map point recipe-book:5:5, which is no longer on the map. Run a full sync.',
     ])
   })
 
@@ -359,56 +359,56 @@ describe('formatReport', () => {
         },
         progress,
         warnings: [
-          { source: 'map', page: 'Module:Map/test.json', message: 'onbekend formaat, overgeslagen' },
-          { source: 'quests', page: 'Statues of Saradomin', message: 'geen qtype, geen quest' },
+          { source: 'map', page: 'Module:Map/test.json', message: 'unknown format, skipped' },
+          { source: 'quests', page: 'Statues of Saradomin', message: 'no qtype, not a quest' },
         ],
       }),
     )
   }
 
-  it('summarises changes per domain in Dutch', () => {
+  it('summarises changes per domain', () => {
     const text = formatReport(changedReport())
-    expect(text).toMatch(/^Sync gelukt \(\d{2}-\d{2}-2026 \d{2}:\d{2}\), bijgewerkt: kaart, quests, vaults, beloningen/)
+    expect(text).toMatch(/^Sync done \(\d{1,2} [A-Z][a-z]{2} 2026, \d{2}:\d{2}\), updated: map, quests, vaults, rewards/)
     // The gold category changed because its point count went up.
-    expect(text).toContain('Categorieën: 0 nieuw, 0 weg, 1 gewijzigd')
-    expect(text).toContain('Punten: 2 nieuw, 0 weg, 0 gewijzigd')
-    expect(text).toContain('gold-ore-node: 2 nieuw')
-    expect(text).toContain('Quests: 0 nieuw, 0 weg, 1 gewijzigd')
-    expect(text).toContain('Ratcatcher: 1 nieuw, 1 weg')
+    expect(text).toContain('Categories: 0 new, 0 removed, 1 changed')
+    expect(text).toContain('Points: 2 new, 0 removed, 0 changed')
+    expect(text).toContain('gold-ore-node: 2 new')
+    expect(text).toContain('Quests: 0 new, 0 removed, 1 changed')
+    expect(text).toContain('Ratcatcher: 1 new, 1 removed')
     expect(text).toContain('- Kill 4 rats.')
     expect(text).toContain('+ Kill 5 rats.')
-    expect(text).toContain('Vaults: geen wijzigingen')
-    expect(text).toContain('Beloningen: 1 nieuw, 0 weg, 0 gewijzigd')
+    expect(text).toContain('Vaults: no changes')
+    expect(text).toContain('Rewards: 1 new, 0 removed, 0 changed')
     expect(text).not.toContain(EM_DASH)
   })
 
   it('mentions orphans with a hint that sync never deletes them', () => {
     const text = formatReport(changedReport())
-    expect(text).toContain('Verweesde voortgang: 2 (1 stap, 1 kaartpunt)')
-    expect(text).toContain('Sync verwijdert niets')
-    expect(formatReport(buildReport(input({ next: baseSnapshot })))).toContain('Geen verweesde voortgang.')
+    expect(text).toContain('Orphaned progress: 2 (1 step, 1 map point)')
+    expect(text).toContain('Sync never deletes anything')
+    expect(formatReport(buildReport(input({ next: baseSnapshot })))).toContain('No orphaned progress.')
   })
 
   it('groups warnings by source and caps the list', () => {
     const warnings: SyncWarning[] = [
-      ...Array.from({ length: 30 }, (_, i): SyncWarning => ({ source: 'map', page: `Module:Map/p${i}.json`, message: 'kapot' })),
-      ...Array.from({ length: 25 }, (_, i): SyncWarning => ({ source: 'assets', message: `icoon ${i} ontbreekt` })),
-      { source: 'sync', message: 'let op' },
+      ...Array.from({ length: 30 }, (_, i): SyncWarning => ({ source: 'map', page: `Module:Map/p${i}.json`, message: 'broken' })),
+      ...Array.from({ length: 25 }, (_, i): SyncWarning => ({ source: 'assets', message: `icon ${i} missing` })),
+      { source: 'sync', message: 'heads up' },
     ]
     const text = formatReport(buildReport(input({ domains: [], warnings })))
-    expect(text).toContain('Waarschuwingen: 56')
+    expect(text).toContain('Warnings: 56')
     const lines = text.split('\n')
     const syncHeader = lines.indexOf('  Sync (1)')
-    const mapHeader = lines.indexOf('  Kaart (30)')
-    const assetsHeader = lines.indexOf('  Afbeeldingen (25)')
+    const mapHeader = lines.indexOf('  Map (30)')
+    const assetsHeader = lines.indexOf('  Images (25)')
     expect(syncHeader).toBeGreaterThan(-1)
     expect(mapHeader).toBeGreaterThan(syncHeader)
     expect(assetsHeader).toBeGreaterThan(mapHeader)
-    expect(text).toContain('    Module:Map/p0.json: kapot')
+    expect(text).toContain('    Module:Map/p0.json: broken')
     // 40 shown: 1 sync, 30 map, 9 assets.
-    expect(text).toContain('icoon 8 ontbreekt')
-    expect(text).not.toContain('icoon 9 ontbreekt')
-    expect(text).toContain('en 16 meer')
+    expect(text).toContain('icon 8 missing')
+    expect(text).not.toContain('icon 9 missing')
+    expect(text).toContain('and 16 more')
   })
 
   it('shows the error of a failed sync', () => {
@@ -421,8 +421,8 @@ describe('formatReport', () => {
       warnings: [],
     }
     const text = formatReport(report)
-    expect(text).toMatch(/^Sync mislukt \(.+\): HTTP 500/)
-    expect(text).toContain('niets weggeschreven')
+    expect(text).toMatch(/^Sync failed \(.+\): HTTP 500/)
+    expect(text).toContain('Nothing was written')
     expect(text).not.toContain(EM_DASH)
   })
 
@@ -430,21 +430,21 @@ describe('formatReport', () => {
     const report: DiffReport = {
       syncedAt: SYNCED_AT,
       ok: false,
-      error: `${PARTIAL_WRITE_PREFIX} (map.json), daarna mislukt: EIO`,
+      error: `${PARTIAL_WRITE_PREFIX} (map.json), then failed: EIO`,
       domains: ['map'],
       orphans: { quests: [], steps: [], items: [], points: [], vaults: [], rewards: [] },
       warnings: [],
     }
     const text = formatReport(report)
-    expect(text).not.toContain('niets weggeschreven')
-    expect(text).toContain('half bijgewerkt')
+    expect(text).not.toContain('Nothing was written')
+    expect(text).toContain('only partly updated')
   })
 
   it('caps the per-category list', () => {
     const cats = Array.from({ length: 20 }, (_, i) => category(`Cat ${String(i).padStart(2, '0')}`))
     const next = mapData(cats, cats.map((c, i) => point(c.id, i, i)))
     const text = formatReport(buildReport(input({ domains: ['map'], next: { ...EMPTY, map: next } })))
-    expect(text).toContain('Categorieën: 20 nieuw, 0 weg, 0 gewijzigd')
-    expect(text).toContain('en 5 categorieën meer')
+    expect(text).toContain('Categories: 20 new, 0 removed, 0 changed')
+    expect(text).toContain('and 5 more categories')
   })
 })

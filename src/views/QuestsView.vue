@@ -19,7 +19,7 @@ import { useProgressStore } from '@/stores/progress'
 //
 // The view stays alive while the map or the collections are on screen, so the selected quest, the
 // filters, what is open in the quest and the scroll positions are still there when you come back.
-// Everything below reads the view's own route (first line of the setup): it never sees /kaart.
+// Everything below reads the view's own route (first line of the setup): it never sees /map.
 
 const view = provideViewRoute('quests')
 
@@ -54,7 +54,7 @@ const detail = ref<InstanceType<typeof QuestDetail> | null>(null)
 const detailScroll = useKeptScroll(detailScroller)
 
 /* Phones: the list and the quest take turns in the same page scroll. Where the list was is
-   noted when it makes way for a quest, so 'Terug naar lijst' brings it back at that spot. */
+   noted when it makes way for a quest, so 'Back to list' brings it back at that spot. */
 let listPlace: { top: number; questId: string | undefined } | null = null
 const mainTop = () => root.value?.closest('main')?.scrollTop ?? 0
 // Leaving with the list on screen: a link from another view may open a quest over it.
@@ -133,14 +133,14 @@ watch(
     <div v-if="!entries.length" class="grid flex-1 place-items-center px-4 py-10">
       <EmptyState
         :icon="ScrollText"
-        title="Nog geen quests"
-        text="De quests komen van de wiki. Start een sync met de knop rechtsboven om ze op te halen."
+        title="No quests yet"
+        text="Quests come from the wiki. Start a sync with the button at the top right to fetch them."
       />
     </div>
 
     <template v-else>
       <aside
-        aria-label="Questlijst"
+        aria-label="Quest list"
         :class="
           cn(
             'flex-col border-line-dark bg-leather lg:flex lg:w-[21rem] lg:shrink-0 lg:border-r xl:w-[23rem]',
@@ -174,16 +174,16 @@ watch(
         <div class="mx-auto w-full max-w-[76rem] px-3 pt-3 pb-12 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
           <Button v-if="selected" variant="ghost" size="sm" class="mb-3 -ml-1 lg:hidden" @click="backToList">
             <ArrowLeft aria-hidden="true" />
-            Terug naar lijst
+            Back to list
           </Button>
 
           <QuestDetail v-if="selected" ref="detail" :key="selected.id" :quest="selected" />
 
           <ParchmentPanel v-else-if="unknownId" shade="deep">
-            <EmptyState compact :icon="ScrollText" title="Deze quest ken ik niet">
-              Er is geen quest met de naam
+            <EmptyState compact :icon="ScrollText" title="I don't know this quest">
+              There's no quest called
               <span class="font-serif text-text-parchment italic">{{ unknownId }}</span>.
-              Misschien heet hij op de wiki anders. Kies er een uit de lijst.
+              Maybe the wiki names it differently. Pick one from the list.
             </EmptyState>
           </ParchmentPanel>
         </div>

@@ -1,10 +1,10 @@
 #!/bin/sh
 # Starts the app server in the background unless it already answers, then waits until it
 # is healthy. The Ash Log app runs this on launch (when no app server answers) and when you
-# choose Opnieuw starten after the server stopped; running it from a terminal works too.
+# choose Restart after the server stopped; running it from a terminal works too.
 #
 #   exit 0  the server answers on http://127.0.0.1:$PORT
-#   exit 1  it does not; a Dutch reason for the dialog is on stderr, details in .local/server.log
+#   exit 1  it does not; a reason for the dialog is on stderr, details in .local/server.log
 #
 # Builds the app first (vite build) when dist/ is missing or older than the sources.
 # Extra overrides: ASHENFALL_VITE (vite CLI script), ASHENFALL_START_TIMEOUT (seconds, default 30).
@@ -34,7 +34,7 @@ port_owner() {
   owner=$(/usr/sbin/lsof -nP -t -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | /usr/bin/head -n 1)
   [ -n "$owner" ] || return 1
   name=$(/bin/ps -p "$owner" -o comm= 2>/dev/null)
-  printf '%s (pid %s)\n' "$(/usr/bin/basename -- "${name:-onbekend}")" "$owner"
+  printf '%s (pid %s)\n' "$(/usr/bin/basename -- "${name:-unknown}")" "$owner"
 }
 
 # Succeeds when dist/index.html is missing or older than any source file.
@@ -53,24 +53,24 @@ last_server_message() {
     /usr/bin/tail -n 1 | /usr/bin/cut -c 1-240
 }
 
-/bin/mkdir -p "$LOCAL_DIR" || fail "Kan de map .local niet maken in $PROJECT_DIR."
+/bin/mkdir -p "$LOCAL_DIR" || fail "Can't create the .local folder in $PROJECT_DIR."
 rotate_log
 
 if owner=$(port_owner); then
   pid=$(server_pid) ||
-    fail "Poort $PORT is al bezet door $owner. Sluit dat programma, of kies een andere APP_PORT in .env."
+    fail "Port $PORT is already in use by $owner. Quit that program, or pick another APP_PORT in .env."
   # Our own server that does not answer yet (still starting, or stuck): give it the usual time.
-  log "Server (pid $pid) draait al maar antwoordt nog niet, even wachten"
+  log "Server (pid $pid) is already running but does not answer yet, waiting"
   offset=$(log_size)
 else
   resolve_node
-  [ -f "$PROJECT_DIR/$SERVER_ENTRY" ] || fail "Server niet gevonden: $PROJECT_DIR/$SERVER_ENTRY"
+  [ -f "$PROJECT_DIR/$SERVER_ENTRY" ] || fail "Server not found: $PROJECT_DIR/$SERVER_ENTRY"
 
   if needs_build; then
-    [ -f "$VITE" ] || fail "Vite niet gevonden. Draai eerst npm install in $PROJECT_DIR."
-    log "dist/ is ouder dan de bronbestanden, app bouwen"
+    [ -f "$VITE" ] || fail "Vite not found. Run npm install in $PROJECT_DIR first."
+    log "dist/ is older than the sources, building the app"
     if ! (cd "$PROJECT_DIR" && "$NODE" "$VITE" build) >>"$LOG_FILE" 2>&1 </dev/null; then
-      fail "Bouwen van de app is mislukt. Kijk in .local/server.log wat er misging."
+      fail "Building the app failed. See .local/server.log for what went wrong."
     fi
   fi
 
@@ -78,9 +78,9 @@ else
     *.ts | *.mts | *.cts) set -- --import tsx "$SERVER_ENTRY" ;;
     *) set -- "$SERVER_ENTRY" ;;
   esac
-  log "Server starten op poort $PORT met $NODE"
+  log "Starting the server on port $PORT with $NODE"
   offset=$(log_size)
-  cd "$PROJECT_DIR" || fail "Projectmap niet gevonden: $PROJECT_DIR"
+  cd "$PROJECT_DIR" || fail "Project folder not found: $PROJECT_DIR"
   # Detached: own stdin/stdout, immune to hangups, so it outlives this script. The app reads
   # this script's output until the pipe closes, so the server must not hold on to it.
   APP_PORT=$PORT /usr/bin/nohup "$NODE" "$@" >>"$LOG_FILE" 2>&1 </dev/null &
@@ -93,16 +93,16 @@ until is_healthy 1; do
   if ! /bin/kill -0 "$pid" 2>/dev/null; then
     /bin/rm -f "$PID_FILE"
     reason=$(last_server_message "$offset")
-    fail "De server is meteen gestopt${reason:+: $reason}. Kijk in .local/server.log wat er misging."
+    fail "The server stopped right away${reason:+: $reason}. See .local/server.log for what went wrong."
   fi
   tries=$((tries - 1))
   if [ "$tries" -le 0 ]; then
     /bin/kill -TERM "$pid" 2>/dev/null
     /bin/rm -f "$PID_FILE"
-    fail "De server reageert niet binnen $START_TIMEOUT seconden. Kijk in .local/server.log wat er misging."
+    fail "The server did not respond within $START_TIMEOUT seconds. See .local/server.log for what went wrong."
   fi
   /bin/sleep 0.2
 done
 
-log "Server draait op poort $PORT (pid $pid)"
+log "Server running on port $PORT (pid $pid)"
 exit 0

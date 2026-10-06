@@ -204,7 +204,7 @@ describe('parseRewards on changed pages', () => {
     )}`
     const { rewards, warnings } = parse(content)
     expect(rewards.map((r) => r.name)).toEqual(['C'])
-    const mismatch = warnings.filter((w) => /2 recepten en 1 items/.test(w.message))
+    const mismatch = warnings.filter((w) => /2 recipes and 1 items/.test(w.message))
     expect(mismatch).toHaveLength(1)
     expect(mismatch[0]).toMatchObject({ source: 'rewards', page: REWARD_PAGE })
   })
@@ -223,18 +223,18 @@ describe('parseRewards on changed pages', () => {
     const content = `==Plans==\n{| class="wikitable"\n!Name\n!Where\n|-\n|a\n|b\n|}`
     const { rewards, warnings } = parse(content)
     expect(rewards).toEqual([])
-    expect(warnings.some((w) => /tabel zonder herkenbare kolommen/.test(w.message))).toBe(true)
-    expect(warnings.some((w) => /Plans' leverde geen beloningen op/.test(w.message))).toBe(true)
+    expect(warnings.some((w) => /table without recognisable columns/.test(w.message))).toBe(true)
+    expect(warnings.some((w) => /Plans' gave no rewards/.test(w.message))).toBe(true)
     // Six other kinds are missing: one warning each.
-    expect(warnings.filter((w) => /niet gevonden, deze beloningen ontbreken/.test(w.message))).toHaveLength(6)
+    expect(warnings.filter((w) => /not found, these rewards are missing/.test(w.message))).toHaveLength(6)
   })
 
   it('warns about a group that gives no rewards, but not about a section intro', () => {
     const content = `==Plans==\n===Lighting===\n${table('|{{plink|PLAN: Lamp}}\n|{{plink|Lamp}}\n|x')}\n===Garou===\n* {{plink|PLAN: Pelt}}\n* {{plink|Pelt}}\n==Dragonkin Effigies==\nEffigies also teach armour.\n===Fellhollow===\n{|\n!Item\n!Vault\n|-\n|{{plink|X}}\n|[[Takla Kara]]\n|}`
     const { rewards, warnings } = parse(content)
     expect(rewards.map((r) => r.id)).toEqual(['plan:lamp', 'effigy:x'])
-    expect(warnings.filter((w) => /geen beloningen herkend/.test(w.message)).map((w) => w.message)).toEqual([
-      'Plans > Garou: geen beloningen herkend, groep overgeslagen',
+    expect(warnings.filter((w) => /no rewards recognised/.test(w.message)).map((w) => w.message)).toEqual([
+      'Plans > Garou: no rewards recognised, group skipped',
     ])
   })
 
@@ -246,7 +246,7 @@ describe('parseRewards on changed pages', () => {
     expect(rewards).toEqual([
       { id: 'plan:a', kind: 'plan', name: 'A', recipe: 'PLAN: A', group: 'One', source: 'Found in chests' },
     ])
-    expect(warnings.filter((w) => /Dubbele beloningen \(plan\)/.test(w.message))).toHaveLength(1)
+    expect(warnings.filter((w) => /Duplicate rewards \(plan\)/.test(w.message))).toHaveLength(1)
   })
 
   it('keeps effigies of an unknown vault, with one warning for all of them', () => {
@@ -359,7 +359,7 @@ describe('parseRewards: map spots', () => {
     const { rewards, warnings } = parse(page.content, { quests, vaults, map })
     expect(linked(rewards)['pattern:bramblemead-cape']).toEqual(['bramblemead-cape:21416:147505'])
     expect(warnings.map((w) => w.message)).toEqual([
-      'Kaartpunt bramblemead-cape:3:3 past bij meerdere beloningen (pattern:bramblemead-cape, vestige:wooden-training-sword), niet gekoppeld',
+      'Map point bramblemead-cape:3:3 matches more than one reward (pattern:bramblemead-cape, vestige:wooden-training-sword), not linked',
     ])
   })
 

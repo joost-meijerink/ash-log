@@ -10,7 +10,6 @@ import SectionHeading from '@/components/common/SectionHeading.vue'
 import ToggleChip from '@/components/common/ToggleChip.vue'
 import { Button } from '@/components/ui/button'
 import {
-  NO_REGION_LABEL,
   STATUS_FILTERS,
   buildSections,
   countByStatus,
@@ -172,12 +171,12 @@ defineExpose({
       <ProgressBar
         size="md"
         tone="dark"
-        label="Voortgang"
+        label="Progress"
         :value="overall.total ? overall.done / overall.total : 0"
-        :detail="`${overall.done} / ${overall.total} voltooid`"
+        :detail="`${overall.done} / ${overall.total} done`"
       />
-      <SearchInput ref="search" v-model="q" tone="dark" placeholder="Zoek op naam, regio of plek" />
-      <div role="group" aria-label="Filter op status" class="flex flex-wrap gap-2">
+      <SearchInput ref="search" v-model="q" tone="dark" placeholder="Search by name, region or place" />
+      <div role="group" aria-label="Filter by status" class="flex flex-wrap gap-2">
         <ToggleChip
           v-for="f in STATUS_FILTERS"
           :key="f.value"
@@ -210,7 +209,7 @@ defineExpose({
             v-if="group.label"
             as="h3"
             tone="dark"
-            :lang="group.label === NO_REGION_LABEL ? 'nl' : 'en'"
+            lang="en"
             class="block px-2 pt-3 pb-1 text-[0.95rem] text-muted-light"
           >
             {{ group.label }}
@@ -236,11 +235,11 @@ defineExpose({
         compact
         tone="dark"
         :icon="SearchX"
-        title="Niets gevonden"
-        text="Geen quest past bij je zoekopdracht of filter."
+        title="Nothing found"
+        text="No quest matches your search or filter."
       >
         <template #action>
-          <Button variant="outline" size="sm" tone="dark" @click="emit('clearFilters')">Filters wissen</Button>
+          <Button variant="outline" size="sm" tone="dark" @click="emit('clearFilters')">Clear filters</Button>
         </template>
       </EmptyState>
     </nav>

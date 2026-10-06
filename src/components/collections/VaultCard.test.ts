@@ -61,12 +61,12 @@ describe('VaultCard', () => {
     const w = mountCard()
     expect(w.get('article').attributes('id')).toBe('vault-takla-kara')
     expect(w.text()).toContain('Paladin armour set')
-    expect(w.text()).toContain('Losse recepten')
+    expect(w.text()).toContain('Other recipes')
     expect(w.findAll('[data-slot="check-row"]')).toHaveLength(2)
     expect(w.text()).toContain('Mystery shortbow')
     expect(w.text()).toContain('Fractured Plains, Ghornfell')
     const map = w.findAllComponents(RouterLinkStub).find((l) => typeof l.props('to') === 'object')
-    expect(map?.props('to')).toEqual({ path: '/kaart', query: { focus: 'vaults:73020:118948' } })
+    expect(map?.props('to')).toEqual({ path: '/map', query: { focus: 'vaults:73020:118948' } })
   })
 
   it('marks wiki text as English and its own labels as page language', () => {
@@ -75,7 +75,7 @@ describe('VaultCard', () => {
     expect(w.get('[data-slot="location-text"]').attributes('lang')).toBe('en')
     const labels = w.findAll('p.italic').map((p) => [p.text(), p.attributes('lang')])
     expect(labels).toContainEqual(['Paladin armour set', 'en'])
-    expect(labels).toContainEqual(['Losse recepten', undefined])
+    expect(labels).toContainEqual(['Other recipes', undefined])
     expect(w.findAll('[data-slot="check-row"] span[lang="en"]').map((x) => x.text())).toEqual([
       "Paladin's helm",
       "Paladin's platebody",
@@ -101,18 +101,18 @@ describe('VaultCard', () => {
     progress.toggleReward('effigy:paladins-helm', true)
     await w.vm.$nextTick()
 
-    const done = w.findAll('button').find((b) => b.text().includes('Voltooid'))!
+    const done = w.findAll('button').find((b) => b.text().trim() === 'Done')!
     await done.trigger('click')
     expect(progress.isVaultDone('Takla Kara')).toBe(true)
     expect(done.attributes('aria-pressed')).toBe('true')
     expect(w.get('article').attributes('data-shade')).toBe('light')
 
-    const offer = w.findAll('button').find((b) => b.text().includes('Ook de recepten van deze vault afvinken'))
+    const offer = w.findAll('button').find((b) => b.text().includes("Tick off this vault's recipes too"))
     expect(offer).toBeTruthy()
-    expect(w.text()).toContain('Nog 1 recept open')
+    expect(w.text()).toContain('1 recipe still open')
     await offer!.trigger('click')
     expect(progress.hasReward('effigy:paladins-platebody')).toBe(true)
-    expect(w.text()).not.toContain('Ook de recepten van deze vault afvinken')
+    expect(w.text()).not.toContain("Tick off this vault's recipes too")
   })
 
   it('makes no offer when every recipe is already ticked', async () => {
@@ -120,15 +120,15 @@ describe('VaultCard', () => {
     const progress = useProgressStore()
     for (const r of rewards) progress.toggleReward(r.id, true)
     await w.vm.$nextTick()
-    await w.findAll('button').find((b) => b.text().includes('Voltooid'))!.trigger('click')
-    expect(w.text()).not.toContain('Ook de recepten van deze vault afvinken')
+    await w.findAll('button').find((b) => b.text().trim() === 'Done')!.trigger('click')
+    expect(w.text()).not.toContain("Tick off this vault's recipes too")
   })
 
   it('says so when a vault has no recipes and no wiki page', () => {
     const w = mountCard({ id: 'Uzzer Kara', name: 'Uzzer Kara', order: 11, power: 7, area: 'Umbral Sands', region: 'Umbral Sands', recipes: [] })
-    expect(w.text()).toContain('Nog geen recepten bekend')
-    expect(w.text()).toContain('Nog geen wikipagina')
-    expect(w.text()).not.toContain('Toon op kaart')
+    expect(w.text()).toContain('No recipes known')
+    expect(w.text()).toContain('No wiki page yet')
+    expect(w.text()).not.toContain('Show on map')
     expect(w.text()).toContain('Umbral Sands')
     expect(w.text()).not.toContain('Umbral Sands, Umbral Sands')
   })

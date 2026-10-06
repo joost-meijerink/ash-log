@@ -97,10 +97,10 @@ function testRouter(): Router {
       {
         path: '/quests/:questId?',
         name: 'quests',
-        component: dummyView('quests', { 'to-map': '/kaart?focus=p1', 'to-vault': '/verzamelingen#vault-a' }),
+        component: dummyView('quests', { 'to-map': '/map?focus=p1', 'to-vault': '/collections#vault-a' }),
       },
-      { path: '/kaart', name: 'map', component: dummyView('map', { 'to-quest': '/quests/B' }) },
-      { path: '/verzamelingen', name: 'collections', component: dummyView('collections') },
+      { path: '/map', name: 'map', component: dummyView('map', { 'to-quest': '/quests/B' }) },
+      { path: '/collections', name: 'collections', component: dummyView('collections') },
     ],
   })
 }
@@ -126,7 +126,7 @@ function tabs(wrapper: VueWrapper, label: string) {
   return wrapper.findAll('nav a').filter((a) => a.text() === label)
 }
 const hrefs = (wrapper: VueWrapper, label: string) => tabs(wrapper, label).map((a) => a.attributes('href'))
-const brand = (wrapper: VueWrapper) => wrapper.get('a[aria-label="Ash Log, naar Quests"]')
+const brand = (wrapper: VueWrapper) => wrapper.get('a[aria-label="Ash Log, go to Quests"]')
 
 async function clickTab(wrapper: VueWrapper, label: string, which = 0) {
   await tabs(wrapper, label)[which]!.trigger('click')
@@ -163,12 +163,12 @@ describe('the shell keeps the views alive', () => {
     const { wrapper } = await mountApp('/quests/A?q=rune')
     await wrapper.get('[data-view="quests"] input').setValue('half typed')
 
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(wrapper.find('[data-view="quests"]').exists()).toBe(false)
     expect(wrapper.get('[data-view="map"]').classes()).toEqual(expect.arrayContaining(['min-w-0', 'flex-1']))
-    await clickTab(wrapper, 'Verzamelingen')
+    await clickTab(wrapper, 'Collections')
     await clickTab(wrapper, 'Quests')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     await clickTab(wrapper, 'Quests')
 
     expect(setups).toEqual({ quests: 1, map: 1, collections: 1 })
@@ -181,15 +181,15 @@ describe('the shell keeps the views alive', () => {
   it('gives every view its own route: a view that is away never sees the route of another', async () => {
     const { wrapper, router } = await mountApp('/quests/A?q=rune')
     await clickLink(wrapper, 'to-map')
-    await router.replace('/kaart?focus=p1&c=vaults')
-    await clickTab(wrapper, 'Verzamelingen')
+    await router.replace('/map?focus=p1&c=vaults')
+    await clickTab(wrapper, 'Collections')
     await flushPromises()
 
     expect(views.quests!.route.fullPath).toBe('/quests/A?q=rune')
-    expect(views.map!.route.fullPath).toBe('/kaart?focus=p1&c=vaults')
-    expect(views.collections!.route.fullPath).toBe('/verzamelingen')
+    expect(views.map!.route.fullPath).toBe('/map?focus=p1&c=vaults')
+    expect(views.collections!.route.fullPath).toBe('/collections')
     expect([views.quests!.active.value, views.map!.active.value, views.collections!.active.value]).toEqual([false, false, true])
-    expect(log.filter((l) => l.includes(' route '))).toEqual(['map route /kaart?focus=p1&c=vaults'])
+    expect(log.filter((l) => l.includes(' route '))).toEqual(['map route /map?focus=p1&c=vaults'])
 
     await clickTab(wrapper, 'Quests')
     expect(wrapper.get('[data-view="quests"] [data-own]').text()).toBe('/quests/A?q=rune')
@@ -202,30 +202,30 @@ describe('header tabs', () => {
   it('link to the base paths at first, in both navigations and for the brand', async () => {
     const { wrapper } = await mountApp('/quests/A?q=rune')
     expect(hrefs(wrapper, 'Quests')).toEqual(['/quests', '/quests'])
-    expect(hrefs(wrapper, 'Kaart')).toEqual(['/kaart', '/kaart'])
-    expect(hrefs(wrapper, 'Verzamelingen')).toEqual(['/verzamelingen', '/verzamelingen'])
+    expect(hrefs(wrapper, 'Map')).toEqual(['/map', '/map'])
+    expect(hrefs(wrapper, 'Collections')).toEqual(['/collections', '/collections'])
     expect(brand(wrapper).attributes('href')).toBe('/quests')
     expect(tabs(wrapper, 'Quests').map((a) => a.attributes('aria-current'))).toEqual(['page', 'page'])
-    expect(tabs(wrapper, 'Kaart').map((a) => a.attributes('aria-current'))).toEqual([undefined, undefined])
+    expect(tabs(wrapper, 'Map').map((a) => a.attributes('aria-current'))).toEqual([undefined, undefined])
     wrapper.unmount()
   })
 
   it('link to where another view was left, and to the base path of the view you are on', async () => {
     const { wrapper, router } = await mountApp('/quests/A?q=rune')
     await clickLink(wrapper, 'to-vault')
-    expect(router.currentRoute.value.fullPath).toBe('/verzamelingen#vault-a')
+    expect(router.currentRoute.value.fullPath).toBe('/collections#vault-a')
     expect(hrefs(wrapper, 'Quests')).toEqual(['/quests/A?q=rune', '/quests/A?q=rune'])
     expect(brand(wrapper).attributes('href')).toBe('/quests/A?q=rune')
-    expect(hrefs(wrapper, 'Verzamelingen')).toEqual(['/verzamelingen', '/verzamelingen'])
-    expect(tabs(wrapper, 'Verzamelingen').map((a) => a.attributes('aria-current'))).toEqual(['page', 'page'])
+    expect(hrefs(wrapper, 'Collections')).toEqual(['/collections', '/collections'])
+    expect(tabs(wrapper, 'Collections').map((a) => a.attributes('aria-current'))).toEqual(['page', 'page'])
     expect(tabs(wrapper, 'Quests').map((a) => a.attributes('aria-current'))).toEqual([undefined, undefined])
 
     // Navigation inside a view (a replace from the view itself) moves its remembered location.
-    await router.replace('/verzamelingen?soort=spell#vault-a')
-    await clickTab(wrapper, 'Kaart')
+    await router.replace('/collections?kind=spell#vault-a')
+    await clickTab(wrapper, 'Map')
     await flushPromises()
-    expect(hrefs(wrapper, 'Verzamelingen')).toEqual(['/verzamelingen?soort=spell#vault-a', '/verzamelingen?soort=spell#vault-a'])
-    expect(hrefs(wrapper, 'Kaart')).toEqual(['/kaart', '/kaart'])
+    expect(hrefs(wrapper, 'Collections')).toEqual(['/collections?kind=spell#vault-a', '/collections?kind=spell#vault-a'])
+    expect(hrefs(wrapper, 'Map')).toEqual(['/map', '/map'])
     wrapper.unmount()
   })
 
@@ -239,8 +239,8 @@ describe('header tabs', () => {
     expect(memory.arrival).toMatchObject({ view: 'quests', kind: 'return', via: 'tab', first: false })
     expect(log.at(-1)).toBe('quests activated return tab first=false')
 
-    await clickTab(wrapper, 'Kaart', 1)
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?focus=p1')
+    await clickTab(wrapper, 'Map', 1)
+    expect(router.currentRoute.value.fullPath).toBe('/map?focus=p1')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'return', via: 'tab' })
 
     await brand(wrapper).trigger('click')
@@ -307,8 +307,8 @@ describe('header tabs', () => {
   it('a quick click on the tab of the view you are on still goes to the base path after a link or back brought you there', async () => {
     const { wrapper, router } = await mountApp('/quests/A?q=rune')
     await clickLink(wrapper, 'to-map')
-    await clickTab(wrapper, 'Kaart')
-    expect(router.currentRoute.value.fullPath).toBe('/kaart')
+    await clickTab(wrapper, 'Map')
+    expect(router.currentRoute.value.fullPath).toBe('/map')
     router.back()
     await flushPromises()
     router.back()
@@ -325,7 +325,7 @@ describe('header tabs', () => {
     await clickTab(wrapper, 'Quests')
     log = []
     await clickLink(wrapper, 'to-map')
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?focus=p1')
+    expect(router.currentRoute.value.fullPath).toBe('/map?focus=p1')
     expect(memory.arrival).toMatchObject({ view: 'map', kind: 'fresh', via: 'link', first: false })
     expect(log.at(-1)).toBe('map activated fresh link first=false')
     wrapper.unmount()
@@ -337,7 +337,7 @@ describe('header tabs', () => {
     await tabs(wrapper, 'Quests')[0]!.trigger('click', { ctrlKey: true })
     await tabs(wrapper, 'Quests')[0]!.trigger('click', { metaKey: true })
     await flushPromises()
-    expect(router.currentRoute.value.fullPath).toBe('/kaart?focus=p1')
+    expect(router.currentRoute.value.fullPath).toBe('/map?focus=p1')
     // A link to the same address afterwards is not mistaken for that tab.
     await router.push('/quests/A?q=rune')
     await flushPromises()
@@ -369,14 +369,14 @@ describe('the scroll position of main', () => {
 
     await clickTab(wrapper, 'Quests')
     expect(main.scrollTop).toBe(420)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(main.scrollTop).toBe(35)
 
     // A link with a target: the top, and the place in quests is kept for the next return.
     await clickLink(wrapper, 'to-quest')
     expect(main.scrollTop).toBe(0)
     main.scrollTop = 60
-    await clickTab(wrapper, 'Verzamelingen')
+    await clickTab(wrapper, 'Collections')
     expect(main.scrollTop).toBe(0)
     await clickTab(wrapper, 'Quests')
     expect(main.scrollTop).toBe(60)
@@ -390,7 +390,7 @@ describe('the scroll position of main', () => {
     await clickLink(wrapper, 'to-map')
     main.scrollTop = 35
     await clickTab(wrapper, 'Quests')
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     expect(mainAtActivation).toEqual([0, 420, 35])
     wrapper.unmount()
   })
@@ -430,12 +430,12 @@ describe('the scroll position of main', () => {
     expect(main.scrollTop).toBe(0)
 
     main.scrollTop = 420
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     // A fresh navigation that keeps the place, and one that reveals something further down.
     onArrive = { when, kind: 'fresh', position: 'saved' }
     await clickLink(wrapper, 'to-quest')
     expect(main.scrollTop).toBe(420)
-    await clickTab(wrapper, 'Kaart')
+    await clickTab(wrapper, 'Map')
     onArrive = { when, kind: 'fresh', position: 250 }
     await clickLink(wrapper, 'to-quest')
     expect(main.scrollTop).toBe(250)

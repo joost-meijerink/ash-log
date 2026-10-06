@@ -68,7 +68,7 @@ async function write(next: Parameters<typeof data.saveOverrides>[0]): Promise<bo
     await data.saveOverrides(next)
     return true
   } catch (err) {
-    saveError.value = `Opslaan lukt niet: ${(err as Error).message}`
+    saveError.value = `Couldn't save: ${(err as Error).message}`
     return false
   } finally {
     saving.value = false
@@ -107,18 +107,18 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
 </script>
 
 <template>
-  <form ref="form" novalidate aria-label="Benodigdheden aanpassen" @submit.prevent="save">
+  <form ref="form" novalidate aria-label="Edit items needed" @submit.prevent="save">
     <p class="text-sm leading-snug text-text-parchment/70">
-      De wiki-lijst is een beste gok. Maak hem hier kloppend: jouw lijst vervangt die van de wiki, ook na een resync.
+      The wiki list is a best guess. Fix it here: your list replaces the wiki's, even after a resync.
     </p>
 
     <div
       class="mt-3 hidden gap-2 px-0.5 font-display text-[0.68rem] font-semibold tracking-[0.12em] text-text-parchment/60 uppercase @lg:grid @lg:grid-cols-[minmax(0,1.15fr)_4.75rem_minmax(0,1fr)_2.75rem]"
       aria-hidden="true"
     >
-      <span>Naam</span>
-      <span>Aantal</span>
-      <span>Toelichting</span>
+      <span>Name</span>
+      <span>Qty</span>
+      <span>Note</span>
     </div>
 
     <ul class="mt-2 flex flex-col gap-3 @lg:gap-2" role="list">
@@ -132,8 +132,8 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
             v-model="draft.name"
             :data-draft="draft.key"
             data-field="name"
-            placeholder="Naam"
-            :aria-label="`Naam, item ${i + 1}`"
+            placeholder="Name"
+            :aria-label="`Name, item ${i + 1}`"
             :aria-invalid="errorsFor(draft.key)?.name ? 'true' : undefined"
             :aria-describedby="errorsFor(draft.key)?.name ? `${draft.key}-name-error` : undefined"
             autocomplete="off"
@@ -149,8 +149,8 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
             :data-draft="draft.key"
             data-field="qty"
             inputmode="numeric"
-            placeholder="Aantal"
-            :aria-label="`Aantal, item ${i + 1}`"
+            placeholder="Qty"
+            :aria-label="`Quantity, item ${i + 1}`"
             :aria-invalid="errorsFor(draft.key)?.qty ? 'true' : undefined"
             :aria-describedby="errorsFor(draft.key)?.qty ? `${draft.key}-qty-error` : undefined"
             class="tabular-nums"
@@ -164,14 +164,14 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
         <div class="col-span-2 col-start-2 row-start-2 @lg:col-span-1 @lg:col-start-3 @lg:row-start-1">
           <Input
             v-model="draft.note"
-            placeholder="Toelichting (optioneel)"
-            :aria-label="`Toelichting, item ${i + 1}`"
+            placeholder="Note (optional)"
+            :aria-label="`Note, item ${i + 1}`"
             autocomplete="off"
           />
         </div>
 
         <div class="col-start-3 row-start-1 @lg:col-start-4">
-          <IconButton :label="`Verwijder ${draft.name.trim() || `item ${i + 1}`}`" type="button" @click="removeRow(i)">
+          <IconButton :label="`Remove ${draft.name.trim() || `item ${i + 1}`}`" type="button" @click="removeRow(i)">
             <Trash2 aria-hidden="true" />
           </IconButton>
         </div>
@@ -180,22 +180,22 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
 
     <Button data-add-row type="button" variant="ghost" size="sm" class="mt-2 -ml-1" @click="addRow">
       <Plus aria-hidden="true" />
-      Item toevoegen
+      Add item
     </Button>
 
-    <p v-if="!drafts.length" class="mt-1 text-sm text-text-parchment/65">Leeg opslaan betekent: niets mee te nemen.</p>
+    <p v-if="!drafts.length" class="mt-1 text-sm text-text-parchment/65">Saving it empty means: nothing to bring.</p>
 
     <p v-if="errorCount" role="alert" class="mt-3 text-sm text-ember">
-      {{ errorCount === 1 ? 'Eén regel klopt nog niet.' : `${errorCount} regels kloppen nog niet.` }}
+      {{ errorCount === 1 ? "One row isn't right yet." : `${errorCount} rows aren't right yet.` }}
     </p>
     <p v-if="saveError" role="alert" class="mt-3 text-sm text-ember">{{ saveError }}</p>
 
     <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-gold-ink/15 pt-4">
       <Button type="submit" :disabled="saving">
         <LoaderCircle v-if="saving" class="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-        Opslaan
+        Save
       </Button>
-      <Button type="button" variant="ghost" :disabled="saving" @click="emit('close')">Annuleren</Button>
+      <Button type="button" variant="ghost" :disabled="saving" @click="emit('close')">Cancel</Button>
       <Button
         v-if="quest.itemsOverridden"
         type="button"
@@ -206,15 +206,15 @@ const errorCount = computed(() => (attempted.value ? Object.keys(validation.valu
         @click="confirmRevert = true"
       >
         <Undo2 aria-hidden="true" />
-        Terug naar de wiki-lijst
+        Back to the wiki list
       </Button>
     </div>
 
     <QuestConfirmDialog
       v-model:open="confirmRevert"
-      title="Terug naar de wiki-lijst?"
-      description="Je eigen lijst voor deze quest verdwijnt en de lijst van de wiki komt terug. Vinkjes bij items met dezelfde naam blijven staan, de rest gaat weg."
-      confirm-label="Wiki-lijst gebruiken"
+      title="Back to the wiki list?"
+      description="Your own list for this quest goes away and the wiki's list comes back. Ticks on items with the same name stay, the rest go."
+      confirm-label="Use wiki list"
       @confirm="revert"
     />
   </form>
