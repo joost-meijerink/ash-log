@@ -278,7 +278,10 @@ describe('one port, two protocols', () => {
       })
       await listeners.start()
       const { text, ms } = await trickle(listeners.port, secure)
-      expect(text).toMatch(/^HTTP\/1\.1 408/)
+      // The server answers 408 and closes. On Windows the client sometimes sees only the reset
+      // that follows (the 408 is discarded with the unread bytes), which still cuts it off.
+      if (process.platform === 'win32' && text === '') expect(ms).toBeGreaterThanOrEqual(250)
+      else expect(text).toMatch(/^HTTP\/1\.1 408/)
       expect(ms).toBeLessThan(3000)
       expect((await call(listeners.port, '/ok', { secure })).text).toBe(`${secure ? 'https' : 'http'} GET /ok 0`)
     })
