@@ -4,6 +4,7 @@ import { PackageOpen } from 'lucide-vue-next'
 import { EmptyState, ParchmentPanel, ToggleChip } from '@/components/common'
 import { useKeptScroll } from '@/composables/useKeptScroll'
 import { buildChestMatrix, chestCategories, mapFilterLocation } from '@/lib/collections-chests'
+import { pointPower, powerEstimates } from '@/lib/map-power'
 import { cn } from '@/lib/utils'
 import type { MapPoint } from '@/lib/types'
 import { useDataStore } from '@/stores/data'
@@ -40,7 +41,11 @@ function toggle(id: string, on: boolean) {
 
 const points = computed<MapPoint[]>(() => categories.value.flatMap((c) => data.pointsByCategory.get(c.id) ?? []))
 const pointCount = (id: string) => data.pointsByCategory.get(id)?.length ?? 0
-const matrix = computed(() => buildChestMatrix(points.value, selected.value))
+/** The map's levels: the wiki's, else the region estimate (map-power.ts), so a cell opens what it counts. */
+const estimates = computed(() => powerEstimates(data.points, (id) => data.categoryById.get(id)?.group, data.vaults))
+const powerOf = (p: MapPoint) => pointPower(p, data.categoryById.get(p.categoryId)?.group, p.power, estimates.value)
+const matrix = computed(() => buildChestMatrix(points.value, selected.value, powerOf))
+const hasEstimated = computed(() => matrix.value.totals.estimated.some((n) => n > 0))
 
 // On a narrow screen the table scrolls sideways. The view is taken out of the page while another
 // one is on screen, which would put it back at the first column.
@@ -69,11 +74,19 @@ const link = (region: string | null, power?: number) =>
     strictPower: power !== undefined,
   })
 
-function linkLabel(count: number, region: string | null, power?: number): string {
+function linkLabel(count: number, region: string | null, power?: number, estimated = 0): string {
   const what = count === 1 ? '1 chest' : `${count} chests`
   const where = region ? `in ${region}` : 'in all regions'
   const level = power === undefined ? '' : `, power level ${power}`
-  return `${what} ${where}${level}: show on the map`
+  return `${what} ${where}${level}${estimated ? ` (${estimateText(count, estimated)})` : ''}: show on the map`
+}
+
+/** 'estimated' when the whole cell is, else '24 estimated'. */
+const estimateText = (count: number, estimated: number) => (estimated === count ? 'estimated' : `${estimated} estimated`)
+function estimateTitle(count: number, estimated: number): string | undefined {
+  if (!estimated) return undefined
+  if (estimated === count) return 'Estimated level: the wiki lists none for these chests'
+  return `${estimated} of these ${count} ${estimated === 1 ? 'has' : 'have'} an estimated level: the wiki lists none`
 }
 
 const cellLink = cn(
@@ -142,7 +155,7 @@ const cellLink = cn(
               v-if="matrix.hasUnknown"
               scope="col"
               :class="cn(capsLabel, 'px-1 pb-1 text-center')"
-              title="No power level on the wiki. On the map you'll find them through a total, not a power level."
+              title="No power level on the wiki and nothing to estimate one from. On the map you'll find them through a total."
             >
               Unknown
             </th>
@@ -164,9 +177,11 @@ const cellLink = cn(
                 :to="link(row.region, matrix.powers[i])"
                 :class="cellLink"
                 :style="tint(count)"
-                :aria-label="linkLabel(count, row.region, matrix.powers[i])"
+                :title="estimateTitle(count, row.estimated[i] ?? 0)"
+                :aria-label="linkLabel(count, row.region, matrix.powers[i], row.estimated[i])"
               >
                 {{ count }}
+                <span v-if="row.estimated[i]" aria-hidden="true" class="absolute top-1 right-1 text-xs leading-none text-gold-ink">*</span>
               </RouterLink>
               <span v-else-if="count" class="grid min-h-11 place-content-center tabular-nums" :style="tint(count)">{{ count }}</span>
               <span v-else class="grid min-h-11 place-content-center text-text-parchment/30">
@@ -208,9 +223,11 @@ const cellLink = cn(
                 v-if="count"
                 :to="link(null, matrix.powers[i])"
                 :class="cn(cellLink, 'font-semibold')"
-                :aria-label="linkLabel(count, null, matrix.powers[i])"
+                :title="estimateTitle(count, matrix.totals.estimated[i] ?? 0)"
+                :aria-label="linkLabel(count, null, matrix.powers[i], matrix.totals.estimated[i])"
               >
                 {{ count }}
+                <span v-if="matrix.totals.estimated[i]" aria-hidden="true" class="absolute top-1 right-1 text-xs leading-none text-gold-ink">*</span>
               </RouterLink>
               <span v-else class="grid min-h-11 place-content-center text-text-parchment/30">
                 <span aria-hidden="true">&middot;</span><span class="sr-only">0</span>
@@ -236,8 +253,13 @@ const cellLink = cn(
         </tfoot>
       </table>
     </div>
+    <p v-if="selectedIds.length && hasEstimated" data-estimate-note class="mt-3 text-sm text-text-parchment/65">
+      <span aria-hidden="true" class="text-gold-ink">*</span> Includes estimated levels: the wiki lists none for those chests, so
+      the level comes from the vaults or other chests in that region.
+    </p>
     <p v-if="selectedIds.length && matrix.hasUnknown && matrix.totals.unknown" class="mt-3 text-sm text-text-parchment/65">
-      Unknown: the wiki lists no power level. To see those chests on the map, pick a total (per region or all regions).
+      Unknown: no power level on the wiki and nothing to estimate one from. To see those chests on the map, pick a total
+      (per region or all regions).
     </p>
   </ParchmentPanel>
 </template>

@@ -18,7 +18,7 @@ import { useProgressStore } from '@/stores/progress'
 provideViewRoute('collections')
 
 const progress = useProgressStore()
-const { owned, vaultCards, haystacks, summary } = useCollections()
+const { owned, vaultCards, haystacks, regions, summary } = useCollections()
 const { highlighted } = useCollectionAnchor({ highlight: (id) => id.startsWith('vault-') })
 
 /** Toggles wait until progress.json is loaded, so nothing gets lost, and while the Mac cannot be reached. */
@@ -78,7 +78,7 @@ const sections = computed(() => [
         <SectionHeading :count="tallyText(summary.rewards)" class="mb-4">
           <span id="unlocks-title">Unique unlocks</span>
         </SectionHeading>
-        <RewardBrowser :owned="owned" :haystacks="haystacks" :disabled="locked" />
+        <RewardBrowser :owned="owned" :haystacks="haystacks" :regions="regions" :disabled="locked" />
       </section>
 
       <!-- Treasure chests -->

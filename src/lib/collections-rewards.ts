@@ -6,10 +6,13 @@ import {
   compareRegions,
   emptyTally,
   isRegion,
+  knownRegion,
   matchesQuery,
+  regionInText,
   searchKey,
   type Tally,
 } from './collections-shared'
+import { NO_REGION_LABEL } from './quests-list'
 import type { Reward, RewardKind, RewardVia } from './types'
 
 /**
@@ -86,6 +89,48 @@ export function compareGroups(a: string | undefined, b: string | undefined): num
   if (ra) return 1
   if (rb) return -1
   return compareNames(a, b)
+}
+
+/* ------------------------------------------------------------------ */
+/* Region of a reward                                                   */
+/* ------------------------------------------------------------------ */
+
+/** Region lookups for rewardRegion: each returns the region field of a quest, vault or map point. */
+export interface RewardRegionLookup {
+  quest?(id: string): string | undefined
+  vault?(id: string): string | undefined
+  point?(id: string): string | undefined
+}
+
+/** The region most of the reward's map points lie in (a tie goes to the first one listed). */
+function pointsRegion(ids: readonly string[] | undefined, point: RewardRegionLookup['point']): string | undefined {
+  if (!ids?.length || !point) return undefined
+  const counts = new Map<string, number>()
+  let best: string | undefined
+  for (const id of ids) {
+    const region = knownRegion(point(id))
+    if (!region) continue
+    const n = (counts.get(region) ?? 0) + 1
+    counts.set(region, n)
+    if (!best || n > counts.get(best)!) best = region
+  }
+  return best
+}
+
+/**
+ * The top-level region a reward belongs to, for grouping the unlock list. In order: its wiki
+ * sub-heading when that is a region, the region of its vault, of its quest ('Brynmoor/Ghornfell'
+ * gives Brynmoor), the region most of its map points lie in, then the first region its wiki
+ * source names ('Rod fishing spots in Ghornfell.'). Undefined when none of these gives one.
+ */
+export function rewardRegion(r: Reward, lookup: RewardRegionLookup = {}): string | undefined {
+  return (
+    knownRegion(isRegion(r.group) ? r.group : undefined) ??
+    (r.vaultId ? knownRegion(lookup.vault?.(r.vaultId)) : undefined) ??
+    (r.questId ? knownRegion(lookup.quest?.(r.questId)) : undefined) ??
+    pointsRegion(r.pointIds, lookup.point) ??
+    regionInText(r.source)
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -227,8 +272,14 @@ export interface RewardFilter {
 
 export interface RewardGroupView {
   key: string
-  /** Sub-heading from the wiki ('Lighting', 'Brynmoor'). Undefined when the kind has no groups. */
+  /**
+   * Region ('Brynmoor', see rewardRegion) or other wiki sub-heading ('Lighting'). The group of
+   * rewards without one is called NO_REGION_LABEL next to other groups, and has no label when
+   * it is the only group of its kind.
+   */
   label?: string
+  /** True for the group of rewards without a region or sub-heading. */
+  fallback?: boolean
   /** Counts over the whole group, ignoring search and 'hide owned'. */
   tally: Tally
   /** What the whole group shares (see groupNote), shown once instead of on every row. */
@@ -259,12 +310,15 @@ export interface RewardListView {
  * Kind blocks with their groups for the unlock list. Blocks and groups with nothing to show
  * are left out; their counts always cover the full kind or group.
  * `haystacks` (reward id -> searchKey text) avoids rebuilding search text on every keystroke.
+ * `regions` (reward id -> region, see rewardRegion) groups every kind by region in play order;
+ * a reward without one keeps its wiki sub-heading, if any.
  */
 export function buildRewardList(
   rewards: readonly Reward[],
   owned: ReadonlySet<string>,
   filter: RewardFilter,
   haystacks?: ReadonlyMap<string, string>,
+  regions?: ReadonlyMap<string, string>,
 ): RewardListView {
   const kinds = filter.kind === 'all' ? REWARD_KINDS : [filter.kind]
   const query = filter.query.trim()
@@ -273,9 +327,10 @@ export function buildRewardList(
     if (!kinds.includes(r.kind)) continue
     let groups = byKind.get(r.kind)
     if (!groups) byKind.set(r.kind, (groups = new Map()))
-    const key = r.group ?? ''
+    const label = (regions?.get(r.id) ?? r.group) || undefined
+    const key = label ?? ''
     let g = groups.get(key)
-    if (!g) groups.set(key, (g = { label: r.group, all: [] }))
+    if (!g) groups.set(key, (g = { label, all: [] }))
     g.all.push(r)
   }
 
@@ -287,18 +342,29 @@ export function buildRewardList(
     if (!groups) continue
     const kindTally = emptyTally()
     const views: RewardGroupView[] = []
+    // The group without a label sorts last, and is only called 'Other' next to other groups.
     const ordered = [...groups.values()].sort((a, b) => compareGroups(a.label, b.label))
+    const mixed = ordered.length > 1
     for (const g of ordered) {
       const tally: Tally = { done: g.all.filter((r) => owned.has(r.id)).length, total: g.all.length }
       kindTally.done += tally.done
       kindTally.total += tally.total
       const shown = g.all
         .filter((r) => !(filter.hideOwned && owned.has(r.id)))
-        .filter((r) => !query || matchesQuery(haystacks?.get(r.id) ?? rewardHaystack(r), query))
+        .filter((r) => !query || matchesQuery(haystacks?.get(r.id) ?? rewardHaystack(r, [regions?.get(r.id)]), query))
         .sort((a, b) => compareNames(a.name, b.name))
       if (!shown.length) continue
       const note = groupNote(g.all)
-      views.push({ key: `${kind}:${g.label ?? ''}`, label: g.label, tally, ...(note ? { note } : {}), rewards: shown })
+      const fallback = g.label === undefined
+      const label = fallback && mixed ? NO_REGION_LABEL : g.label
+      views.push({
+        key: `${kind}:${g.label ?? ''}`,
+        ...(label !== undefined ? { label } : {}),
+        ...(fallback ? { fallback } : {}),
+        tally,
+        ...(note ? { note } : {}),
+        rewards: shown,
+      })
     }
     total += kindTally.total
     const count = views.reduce((n, g) => n + g.rewards.length, 0)

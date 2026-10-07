@@ -40,6 +40,8 @@ const points: MapPoint[] = [
   { id: 'treasure-chest:3:3', categoryId: 'treasure-chest', x: 3, y: 3, region: 'Dowdun Reach' },
   { id: 'buried-treasure:4:4', categoryId: 'buried-treasure', x: 4, y: 4, region: 'Brynmoor', power: 2 },
   { id: 'gold-ore-node:5:5', categoryId: 'gold-ore-node', x: 5, y: 5, region: 'Brynmoor' },
+  // No level and nothing in the region to estimate one from: stays Unknown.
+  { id: 'treasure-chest:6:6', categoryId: 'treasure-chest', x: 6, y: 6, region: 'Scorned Wilderness' },
 ]
 
 function seed() {
@@ -236,11 +238,17 @@ describe('ChestMatrix', () => {
     await router.push('/collections')
     const w = await mountWith(router, () => h(ChestMatrix))
     const rows = w.findAll('tbody tr').map((tr) => tr.findAll('th, td').map((c) => c.text().replace(/\s+/g, ' ').trim()))
-    // Columns: region, PL 2, PL 6, Unknown, Total
+    // Columns: region, PL 2, PL 6, Unknown, Total. The Dowdun Reach chest without a level gets
+    // the estimate from the other chest there (map-power.ts), marked with an asterisk.
     expect(rows).toEqual([
       ['Brynmoor', '2', '·0', '·0', '2'],
-      ['Dowdun Reach', '·0', '1', '1', '2'],
+      ['Dowdun Reach', '·0', '2 *', '·0', '2'],
+      ['Scorned Wilderness', '·0', '·0', '1', '1'],
     ])
+    const estimated = w.get('a[href*="Dowdun+Reach&p=6"]')
+    expect(estimated.attributes('title')).toBe('1 of these 2 has an estimated level: the wiki lists none')
+    expect(estimated.attributes('aria-label')).toBe('2 chests in Dowdun Reach, power level 6 (1 estimated): show on the map')
+    expect(w.find('[data-estimate-note]').exists()).toBe(true)
     const hrefs = w.findAll('tbody a').map((a) => decodeURIComponent(a.attributes('href')!))
     // A power level cell uses the strict power filter, so the map shows exactly that count.
     expect(hrefs).toContain('/map?c=buried-treasure,treasure-chest&r=Brynmoor&p=2&ps=1')

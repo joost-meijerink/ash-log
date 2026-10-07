@@ -11,6 +11,7 @@ import {
   parseCollectionQuery,
   rewardHaystack,
   rewardNote,
+  rewardRegion,
   rewardVia,
   REWARD_KINDS,
   rowNote,
@@ -20,6 +21,7 @@ import {
   viaText,
   type RewardFilter,
 } from './collections-rewards'
+import { NO_REGION_LABEL } from './quests-list'
 import type { Reward } from './types'
 
 // Modelled on data/wiki/rewards.json.
@@ -318,5 +320,105 @@ describe('URL state', () => {
     expect(sameCollectionState({ kind: 'all', hideOwned: false }, { kind: 'all', hideOwned: false })).toBe(true)
     expect(sameCollectionState({ kind: 'all', hideOwned: false }, { kind: 'quest', hideOwned: false })).toBe(false)
     expect(sameCollectionState({ kind: 'quest', hideOwned: true }, { kind: 'quest', hideOwned: false })).toBe(false)
+  })
+})
+
+describe('rewardRegion', () => {
+  const lookup = {
+    quest: (id: string) => ({ 'Dragon Slayer': 'Brynmoor/Ghornfell', Ratcatcher: 'Temple Woods' })[id],
+    vault: (id: string) => ({ 'Takla Kara': 'Ghornfell', 'Hidden Vault': 'Fellhollow' })[id],
+    point: (id: string) => ({ a: 'Fellhollow', b: 'Ghornfell', c: 'Ghornfell', d: 'Dowdun Reach' })[id],
+  }
+  const reward = (r: Partial<Reward>): Reward => ({ id: 'pattern:x', kind: 'pattern', name: 'X', ...r })
+
+  it('takes the wiki sub-heading first when it is a region', () => {
+    const r = reward({ group: 'dowdun reach', vaultId: 'Takla Kara', questId: 'Dragon Slayer', pointIds: ['a'], source: 'In Brynmoor' })
+    expect(rewardRegion(r, lookup)).toBe('Dowdun Reach')
+  })
+
+  it('then the vault, the quest, most of the map points and the source text', () => {
+    expect(rewardRegion(reward({ vaultId: 'Takla Kara', questId: 'Dragon Slayer' }), lookup)).toBe('Ghornfell')
+    expect(rewardRegion(reward({ group: 'Garou', questId: 'Dragon Slayer', pointIds: ['d'] }), lookup)).toBe('Brynmoor')
+    expect(rewardRegion(reward({ questId: 'Ratcatcher', pointIds: ['a', 'b', 'c'] }), lookup)).toBe('Ghornfell')
+    expect(rewardRegion(reward({ pointIds: ['d', 'a'] }), lookup)).toBe('Dowdun Reach')
+    expect(rewardRegion(reward({ pointIds: ['gone'], source: 'Rod fishing spots in Ghornfell.' }), lookup)).toBe('Ghornfell')
+  })
+
+  it('gives undefined without any region, and without lookups only uses the reward itself', () => {
+    expect(rewardRegion(reward({ questId: 'Ratcatcher', source: 'Located inside a chest' }), lookup)).toBeUndefined()
+    expect(rewardRegion(reward({ kind: 'plan', group: 'Garou' }), lookup)).toBeUndefined()
+    expect(rewardRegion(reward({ vaultId: 'Takla Kara', source: 'Net fishing spots in Fellhollow.' }))).toBe('Fellhollow')
+  })
+})
+
+describe('buildRewardList by region', () => {
+  const quest = (name: string, questId: string): Reward => ({ id: `quest:${name.toLowerCase()}`, kind: 'quest', name, questId })
+  const trophy = (name: string, source: string): Reward => ({ id: `fishing-trophy:${name.toLowerCase()}`, kind: 'fishing-trophy', name, source })
+  const list: Reward[] = [
+    quest('Zombie Axe', "Doric's Quest"),
+    quest('Anti-Dragon Shield', 'Dragon Slayer'),
+    quest('Mount', 'The Wild Hunt'),
+    quest('Granite Maul', 'Granite Mauled'),
+    quest('Mystery Hat', 'Unknown'),
+    trophy('Herring Trophy', 'Rod fishing spots in Ghornfell.'),
+    trophy('Salmon Trophy', 'Rod fishing spots in Ghornfell.'),
+    trophy('Lobster Trophy', 'Net fishing spots in Fellhollow.'),
+    { id: 'recipe-book:meat-sandwich', kind: 'recipe-book', name: 'Meat Sandwich' },
+  ]
+  const questRegion: Record<string, string> = { "Doric's Quest": 'Fellhollow', 'Dragon Slayer': 'Brynmoor/Ghornfell', 'The Wild Hunt': 'Fellhollow', 'Granite Mauled': 'Ghornfell' }
+  const regions = new Map<string, string>()
+  for (const r of list) {
+    const region = rewardRegion(r, { quest: (id) => questRegion[id] })
+    if (region) regions.set(r.id, region)
+  }
+  const mine = new Set(['quest:mount', 'quest:zombie axe'])
+  const build = (f: Partial<RewardFilter>) => buildRewardList(list, mine, filter(f), undefined, regions)
+  const groups = (f: Partial<RewardFilter>, kind = f.kind) =>
+    build(f).blocks.find((b) => b.kind === kind)?.groups.map((g) => [g.label, g.rewards.map((r) => r.name), `${g.tally.done}/${g.tally.total}`])
+
+  it('groups a kind by region in play order, the rest last as Other', () => {
+    expect(groups({ kind: 'quest' })).toEqual([
+      ['Brynmoor', ['Anti-Dragon Shield'], '0/1'],
+      ['Ghornfell', ['Granite Maul'], '0/1'],
+      ['Fellhollow', ['Mount', 'Zombie Axe'], '2/2'],
+      [NO_REGION_LABEL, ['Mystery Hat'], '0/1'],
+    ])
+    const [block] = build({ kind: 'quest' }).blocks
+    expect(block!.groups.map((g) => g.key)).toEqual(['quest:Brynmoor', 'quest:Ghornfell', 'quest:Fellhollow', 'quest:'])
+    expect(block!.groups.map((g) => !!g.fallback)).toEqual([false, false, false, true])
+    expect(block!.tally).toEqual({ done: 2, total: 5 })
+  })
+
+  it('gives a kind without any region one unlabeled group', () => {
+    const [block] = build({ kind: 'recipe-book' }).blocks
+    expect(block!.groups).toHaveLength(1)
+    expect(block!.groups[0]!.label).toBeUndefined()
+    expect(block!.groups[0]!.fallback).toBe(true)
+  })
+
+  it('shows the same groups under All as under the single kind', () => {
+    for (const kind of ['quest', 'fishing-trophy', 'recipe-book'] as const) expect(groups({}, kind)).toEqual(groups({ kind }))
+  })
+
+  it('drops region groups that hide owned empties, but keeps their counts', () => {
+    expect(groups({ kind: 'quest', hideOwned: true })).toEqual([
+      ['Brynmoor', ['Anti-Dragon Shield'], '0/1'],
+      ['Ghornfell', ['Granite Maul'], '0/1'],
+      [NO_REGION_LABEL, ['Mystery Hat'], '0/1'],
+    ])
+  })
+
+  it('finds rewards by region, also without precomputed haystacks', () => {
+    expect(groups({ kind: 'quest', query: 'fellhollow' })).toEqual([['Fellhollow', ['Mount', 'Zombie Axe'], '2/2']])
+    expect(groups({ kind: 'quest', query: 'brynmoor shield' })).toEqual([['Brynmoor', ['Anti-Dragon Shield'], '0/1']])
+    // Search never renames the group without a region.
+    expect(groups({ kind: 'quest', query: 'mystery' })).toEqual([[NO_REGION_LABEL, ['Mystery Hat'], '0/1']])
+  })
+
+  it('shares a source per region group', () => {
+    const [block] = build({ kind: 'fishing-trophy' }).blocks
+    expect(block!.groups.map((g) => g.label)).toEqual(['Ghornfell', 'Fellhollow'])
+    expect(block!.groups[0]!.note?.shared).toEqual({ via: [], source: 'Rod fishing spots in Ghornfell.', count: 2 })
+    expect(block!.groups[1]!.note).toBeUndefined()
   })
 })

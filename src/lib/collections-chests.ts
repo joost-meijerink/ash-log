@@ -24,6 +24,8 @@ export interface ChestRow {
   region: string | null
   /** Counts per power level, aligned with ChestMatrix.powers. */
   cells: number[]
+  /** Of each cell, how many points have an estimated level (no level on the wiki). */
+  estimated: number[]
   /** Points without a power level. */
   unknown: number
   total: number
@@ -40,17 +42,31 @@ export interface ChestMatrix {
   totals: Omit<ChestRow, 'region'>
 }
 
+/** A chest's level: the wiki's, or a region estimate (`estimate` set, see map-power.ts). */
+export type ChestPowerOf = (point: MapPoint) => { level: number; estimate?: unknown } | undefined
+
+const wikiPower: ChestPowerOf = (p) =>
+  typeof p.power === 'number' && Number.isFinite(p.power) ? { level: p.power } : undefined
+
 /**
  * Counts `points` (all chest points) per region and power level. Only points in `selected`
  * categories are counted, but rows and columns come from all points, so the table keeps
- * its shape when a category is switched off.
+ * its shape when a category is switched off. Pass the map's `powerOf` (useMapModel.pointPower)
+ * so estimated levels land in the same cells the map's power filter puts them in.
  */
-export function buildChestMatrix(points: readonly MapPoint[], selected: ReadonlySet<string>): ChestMatrix {
+export function buildChestMatrix(
+  points: readonly MapPoint[],
+  selected: ReadonlySet<string>,
+  powerOf: ChestPowerOf = wikiPower,
+): ChestMatrix {
   const powerSet = new Set<number>()
   const regionSet = new Set<string | null>()
+  const levels = new Map<MapPoint, ReturnType<ChestPowerOf>>()
   let hasUnknown = false
   for (const p of points) {
-    if (typeof p.power === 'number' && Number.isFinite(p.power)) powerSet.add(p.power)
+    const power = powerOf(p)
+    levels.set(p, power)
+    if (power) powerSet.add(power.level)
     else hasUnknown = true
     regionSet.add(p.region?.trim() || null)
   }
@@ -58,20 +74,25 @@ export function buildChestMatrix(points: readonly MapPoint[], selected: Readonly
   const column = new Map(powers.map((pw, i) => [pw, i]))
   const regions = [...regionSet].sort(compareRegions)
   const rowByRegion = new Map<string | null, ChestRow>(
-    regions.map((region) => [region, { region, cells: powers.map(() => 0), unknown: 0, total: 0 }]),
+    regions.map((region) => [region, { region, cells: powers.map(() => 0), estimated: powers.map(() => 0), unknown: 0, total: 0 }]),
   )
-  const totals = { cells: powers.map(() => 0), unknown: 0, total: 0 }
+  const totals = { cells: powers.map(() => 0), estimated: powers.map(() => 0), unknown: 0, total: 0 }
 
   for (const p of points) {
     if (!selected.has(p.categoryId)) continue
     const row = rowByRegion.get(p.region?.trim() || null)!
-    const col = typeof p.power === 'number' ? column.get(p.power) : undefined
+    const power = levels.get(p)
+    const col = power ? column.get(power.level) : undefined
     if (col === undefined) {
       row.unknown++
       totals.unknown++
     } else {
       row.cells[col]!++
       totals.cells[col]!++
+      if (power?.estimate) {
+        row.estimated[col]!++
+        totals.estimated[col]!++
+      }
     }
     row.total++
     totals.total++

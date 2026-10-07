@@ -122,3 +122,51 @@ export function clusterSize(count: number): number {
   if (count < 1000) return 46
   return 52
 }
+
+/* ---------------- stacks: a cluster of one kind ---------------- */
+
+/** What a cluster needs to know about one of its markers. */
+export interface StackChild {
+  /** Same key: same kind, drawn with the same sprite (category plus icon, without the found state). */
+  key: string
+  spec: MarkerIconSpec
+  /** Category label, for screen readers. */
+  label: string
+  found: boolean
+}
+
+/**
+ * The sprite for a cluster whose markers are all of one kind, or null when they are mixed (or one
+ * is unknown). Stops at the first marker of another kind. Found only when every marker is found.
+ */
+export function singleKind<T>(
+  items: readonly T[],
+  childOf: (item: T) => StackChild | undefined,
+): { spec: MarkerIconSpec; label: string } | null {
+  let first: StackChild | undefined
+  let allFound = true
+  for (const item of items) {
+    const child = childOf(item)
+    if (!child) return null
+    if (!first) first = child
+    else if (child.key !== first.key) return null
+    if (!child.found) allFound = false
+  }
+  if (!first) return null
+  return { spec: { ...first.spec, found: allFound }, label: first.label }
+}
+
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+
+export function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]!)
+}
+
+/** A stack: the kind's own sprite with a small count on top. */
+export function stackHtml(spec: MarkerIconSpec, count: number, label: string): string {
+  return (
+    `<span class="${markerClassName(spec)}">${markerHtml(spec)}</span>` +
+    `<span class="ash-stack__count" aria-hidden="true">${formatClusterCount(count)}</span>` +
+    `<span class="ash-sr">${count} × ${escapeHtml(label)}, zoom in</span>`
+  )
+}

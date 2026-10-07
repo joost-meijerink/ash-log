@@ -14,6 +14,7 @@ import { isInWorld } from '@/lib/map-filter'
 import { markIds, pointFoundState } from '@/lib/map-found'
 import { GROUP_LABEL, isTrackableGroup } from '@/lib/map-groups'
 import { questLinksForPoint, vaultForPoint } from '@/lib/map-links'
+import { estimateNote } from '@/lib/map-power'
 import type { MapPoint } from '@/lib/types'
 import { useMapContext } from '@/composables/useMapContext'
 import { useConnectionStore } from '@/stores/connection'
@@ -37,7 +38,9 @@ const category = computed(() => data.categoryById.get(props.point.categoryId))
 const title = computed(() => props.point.name ?? category.value?.label ?? props.point.categoryId)
 const showCategory = computed(() => !!category.value && category.value.label !== title.value)
 const groupLabel = computed(() => (category.value ? GROUP_LABEL[category.value.group] : ''))
-const power = computed(() => model.powerOf(props.point))
+/** Level from the wiki, or estimated from the region for a chest without one (map-power.ts). */
+const power = computed(() => model.pointPower(props.point))
+const powerNote = computed(() => (power.value?.estimate ? estimateNote(power.value.estimate) : ''))
 const trackable = computed(() => isTrackableGroup(category.value?.group))
 /** Same rule as the markers and counters (map-found.ts). */
 const foundState = computed(() => pointFoundState(props.point, model.links.value, model.marks.value, model.owned.value))
@@ -108,11 +111,16 @@ function questPath(id: string) {
         <LocationText v-if="point.region" pin lang="en">
           {{ point.region }}<span v-if="point.regionGuessed" class="not-italic text-text-parchment/60"> (estimated)</span>
         </LocationText>
-        <PowerBadge v-if="power !== undefined" :power="power" />
+        <span v-if="power" class="inline-flex items-center gap-1.5" data-point-power>
+          <PowerBadge :power="power.level" />
+          <span v-if="power.estimate" class="text-sm text-text-parchment/60">(estimated)</span>
+        </span>
         <span class="font-sans text-sm text-text-parchment/65 tabular-nums">
           <span class="sr-only">Coordinates: </span>x {{ Math.round(point.x) }} · y {{ Math.round(point.y) }}
         </span>
       </div>
+
+      <p v-if="powerNote" class="-mt-1.5 text-sm leading-snug text-text-parchment/70" data-power-note>{{ powerNote }}</p>
 
       <LocationText v-if="point.description" as="p" lang="en" class="leading-relaxed">{{ point.description }}</LocationText>
 

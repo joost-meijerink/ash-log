@@ -11,6 +11,11 @@ import { useMapContext } from '@/composables/useMapContext'
  * the group the sync picked. A native select over a folder icon, so it works with touch,
  * keyboard and screen readers without a popover. Gold when the group was set by hand.
  */
+/*
+ * Both the span and the select clip their content: WebKit (Safari, Ash Log.app, the iPhone app)
+ * draws the selected option's text past the invisible select, which made the whole filter list
+ * scroll sideways. The ring is a box-shadow, so it is not clipped.
+ */
 const props = defineProps<{ category: MapCategory }>()
 
 const { groupOverride } = useMapContext()
@@ -45,7 +50,7 @@ async function onChange(event: Event) {
     :title="hint"
     :class="
       cn(
-        'relative grid h-11 w-11 shrink-0 place-content-center rounded-md transition-colors',
+        'relative grid h-11 w-11 shrink-0 place-content-center overflow-hidden rounded-md transition-colors',
         'focus-within:ring-2 focus-within:ring-gold/70',
         manual ? 'text-gold' : 'text-muted-light/55',
         disabled ? 'opacity-50' : 'hover:bg-line-dark/45 hover:text-gold',
@@ -58,7 +63,7 @@ async function onChange(event: Event) {
       :value="value"
       :disabled="disabled"
       :aria-label="label"
-      class="absolute inset-0 size-full cursor-pointer appearance-none opacity-0 disabled:cursor-not-allowed"
+      class="absolute inset-0 size-full cursor-pointer appearance-none overflow-hidden opacity-0 disabled:cursor-not-allowed"
       @change="onChange"
     >
       <option value="">{{ autoOption }}</option>

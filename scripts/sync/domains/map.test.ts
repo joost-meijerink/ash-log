@@ -1,13 +1,14 @@
 // Map domain against the stored Module:Map responses. Never hits the network.
 
 import { describe, expect, it } from 'vitest'
+import { powerEstimates } from '../../../src/lib/map-power'
 import type { MapGroup } from '../../../src/lib/types'
 import { fixtureJson, fixturePage, fixturePages, MAP_CATEGORY_FILES, MAP_CONTENT_FILES } from '../__fixtures__/load'
 import type { SyncContext } from '../context'
 import { BATCH_SIZE, type RawPage } from '../wiki'
 import { normalizeTitle } from '../wikitext'
 import { classifyGroups } from './map-groups'
-import { isCoordinateText, parseDescription, parseTierCode, REGIONS, regionOf, regionsMentioned } from './map-text'
+import { extractPower, isCoordinateText, looksLikePower, parseDescription, parseTierCode, REGIONS, regionOf, regionsMentioned } from './map-text'
 import {
   applyPageTitles,
   collectPageCategories,
@@ -521,6 +522,31 @@ describe('parseMap on the full fixtures', () => {
     expect(pointsOf('bramblemead-cape')[0]!.description).toBeUndefined()
   })
 
+  it('reads every power level in the data and reports none of it', () => {
+    const levels: Record<number, number> = {}
+    for (const p of points) if (p.power !== undefined) levels[p.power] = (levels[p.power] ?? 0) + 1
+    expect(levels).toEqual({ 2: 38, 3: 26, 4: 11, 5: 90, 6: 109, 8: 2, 9: 1 })
+    expect(full.warnings.filter((w) => /power/i.test(w.message))).toEqual([])
+  })
+
+  it('gives the app enough to estimate chest levels per region (src/lib/map-power.ts)', () => {
+    const vaults = parseVaults({ page: fixturePage('vaults/dragonkin-vault.json'), navbox: fixturePage('vaults/navbox.json') }, full.map, () => {})
+    const group = new Map(categories.map((c) => [c.id, c.group]))
+    const { regions, categories: levelled } = powerEstimates(points, (id) => group.get(id), vaults)
+    expect([...levelled]).toEqual(['treasure-chest'])
+    const summary = Object.fromEntries([...regions.values()].map((r) => [r.region, r.level ? `${r.level} (${r.basis})` : `none ${JSON.stringify([r.vaults, r.chests])}`]))
+    expect(summary).toEqual({
+      Brynmoor: '2 (both)',
+      Ghornfell: 'none [[3,4],[3,4]]',
+      Fellhollow: '5 (vaults)',
+      'Dowdun Reach': '6 (chests)',
+      'Umbral Sands': '7 (vaults)',
+      'Scorned Wilderness': 'none [[],[]]',
+    })
+    // Never a player gear level (8 and 9 are Black Dragons, off the map).
+    expect([...regions.values()].every((r) => (r.level ?? 0) <= 7)).toBe(true)
+  })
+
   it('only uses top-level regions and guesses the rest from nearby points', () => {
     const allowed = new Set<string>(REGIONS)
     for (const p of points) if (p.region) expect(allowed.has(p.region), p.id).toBe(true)
@@ -729,6 +755,35 @@ describe('parseMap edge cases', () => {
     ])
     expect(res.warnings.filter((w) => w.message.includes('duplicate'))).toEqual([
       { message: '1 duplicate point (same coordinates) merged', page: 'Module:Map/Treasure Chest (Fellhollow).json' },
+    ])
+  })
+
+  it('reports power text it cannot read, odd levels and clashes, once per page and kind', () => {
+    const res = parse([
+      page('Ghoul', [
+        { x: 10, y: 10, description: 'Ghoul - PL 7' },
+        { x: 20, y: 10, description: 'Ghoul - Level 7' },
+        { x: 30, y: 10, name: 'Ghoul (Power Level 42)' },
+        { x: 40, y: 10, name: 'Ghoul (Power Level 5)', description: 'Ghoul - Power Level 6' },
+        { x: 50, y: 10, description: 'Ghoul - Power Level 6 (Dowdun)' },
+      ]),
+      // Same chest on two pages of one category, with different levels.
+      page('Treasure Chest (Fellhollow)', [{ x: 1000, y: 1000, description: 'Tier 5' }]),
+      page('chests', [{ x: 1010, y: 1000, description: 'Tier 6' }]),
+    ])
+    const byId = new Map(res.map.points.map((p) => [p.id, p]))
+    expect(byId.get('ghoul:10:10')).toMatchObject({ description: 'Ghoul - PL 7' })
+    expect(byId.get('ghoul:10:10')!.power).toBeUndefined()
+    expect(byId.get('ghoul:30:10')!.power).toBe(42)
+    expect(byId.get('ghoul:40:10')!.power).toBe(5)
+    expect(byId.get('ghoul:50:10')).toMatchObject({ power: 6, region: 'Dowdun Reach' })
+    // The regional page is read first and keeps its level; the warning names the page that disagrees.
+    expect(byId.get('treasure-chest:1000:1000')!.power).toBe(5)
+    expect(res.warnings.filter((w) => /power/i.test(w.message))).toEqual([
+      { page: 'Module:Map/Ghoul.json', message: `2 points have power text the parser doesn't understand, no level set (e.g. "Ghoul - PL 7")` },
+      { page: 'Module:Map/Ghoul.json', message: '1 point has a power level outside 1 to 20, kept as is (e.g. 42)' },
+      { page: 'Module:Map/Ghoul.json', message: '1 point has conflicting power levels, kept the first (e.g. 5 and 6)' },
+      { page: 'Module:Map/chests.json', message: '1 point has conflicting power levels, kept the first (e.g. 5 and 6)' },
     ])
   })
 
@@ -1348,6 +1403,44 @@ describe('text helpers', () => {
     ['Small Egg', ['Kalphite Queen Egg'], { text: 'Small Egg' }],
   ])('description %s', (input, labels, expected) => {
     expect(parseDescription(input, labels)).toEqual(expected)
+  })
+
+  it.each([
+    // Every format in today's Module:Map data.
+    ['Zombie (Fellhollow) - Power Level 5', { power: 5, rest: 'Zombie (Fellhollow)' }],
+    ['Black Dragon (Power Level 9)', { power: 9, rest: 'Black Dragon' }],
+    ['Bramblemead Cape Tier 2', { power: 2, rest: 'Bramblemead Cape' }],
+    ['Tier 6', { power: 6, rest: '' }],
+    // Formats the wiki could use next.
+    ['Skeletal Archer - Power Level 6 (Dowdun)', { power: 6, rest: 'Skeletal Archer (Dowdun)' }],
+    ['Black Dragon - Power Level 9', { power: 9, rest: 'Black Dragon' }],
+    ['Power level: 4, near the lake', { power: 4, rest: 'near the lake' }],
+    ['Cape chest Tier 2+', { power: 2, rest: 'Cape chest' }],
+    ['Zombie (Power Level 5) (Power Level 5)', { power: 5, rest: 'Zombie' }],
+    // No power and nothing that looks like it.
+    ['Giant Rat (9)', { rest: 'Giant Rat (9)' }],
+    ['Pedestal 1', { rest: 'Pedestal 1' }],
+    ['Tiered garden', { rest: 'Tiered garden' }],
+  ])('power in %s', (input, expected) => {
+    expect(extractPower(input)).toEqual(expected)
+  })
+
+  it.each([
+    'PL 7',
+    'Level 7 chest',
+    'Tier VII',
+    'Power Level 5-6',
+    'Power Level 5 to 6',
+    'Power Level 5+',
+    'Power Level 5.5',
+    'Power Level ?',
+    'Zombie - Power Level 5 (Tier 6)',
+    'Zombie - Power Level 5, PL 6',
+  ])('power text it does not read: %s', (input) => {
+    expect(looksLikePower(input)).toBe(true)
+    expect(extractPower(input)).toEqual({ rest: input, unrecognised: true })
+    expect(parseDescription(input)).toMatchObject({ powerIssue: input, text: input })
+    expect(parseDescription(input).power).toBeUndefined()
   })
 
   it('knows regions, sub-areas and misspellings', () => {

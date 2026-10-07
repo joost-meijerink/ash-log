@@ -489,7 +489,13 @@ export async function processImage(pid: number, sys: System, env: NodeJS.Process
     return code === 0 ? parseTasklist(stdout, pid) : null
   }
   const { code, stdout } = await sys.run('ps', ['-p', String(pid), '-o', 'comm='])
-  const name = stdout.trim()
+  let name = stdout.trim()
+  // Node 24 and later name their main thread "MainThread", and on Linux ps shows the main
+  // thread's name: ask /proc for the program itself instead.
+  if (code === 0 && name === 'MainThread' && sys.platform === 'linux') {
+    const exe = await sys.run('readlink', [`/proc/${pid}/exe`])
+    if (exe.code === 0 && exe.stdout.trim()) name = exe.stdout.trim()
+  }
   return code === 0 && name ? basename(name) : null
 }
 

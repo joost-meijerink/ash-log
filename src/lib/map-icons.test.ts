@@ -9,6 +9,10 @@ import {
   markerIconSpec,
   markerTone,
   questStartHtml,
+  singleKind,
+  stackHtml,
+  type MarkerIconSpec,
+  type StackChild,
 } from './map-icons'
 import type { MapCategory, MapGroup, MapPoint } from './types'
 
@@ -85,5 +89,43 @@ describe('clusters', () => {
     expect(clusterSize(3)).toBeLessThan(clusterSize(30))
     expect(clusterSize(30)).toBeLessThan(clusterSize(300))
     expect(clusterSize(300)).toBeLessThan(clusterSize(3000))
+  })
+})
+
+describe('stacks', () => {
+  const coal = markerIconSpec(point, cat('resource', 'Coal.png'), false)
+  const tree = markerIconSpec(point, cat('resource', 'Ash_Tree.png'), false)
+  const child = (key: string, spec: MarkerIconSpec, found = false): StackChild => ({ key, spec, label: key, found })
+
+  it('gives the sprite of a cluster of one kind', () => {
+    const items = [child('coal', coal), child('coal', coal), child('coal', coal)]
+    expect(singleKind(items, (c) => c)).toEqual({ spec: coal, label: 'coal' })
+  })
+
+  it('gives nothing for mixed, unknown or empty clusters', () => {
+    expect(singleKind([child('coal', coal), child('tree', tree)], (c) => c)).toBeNull()
+    expect(singleKind([child('coal', coal), undefined], (c) => c)).toBeNull()
+    expect(singleKind([], (c: StackChild) => c)).toBeNull()
+  })
+
+  it('stops at the first marker of another kind', () => {
+    const seen: string[] = []
+    const items = [child('coal', coal), child('tree', tree), child('coal', coal)]
+    singleKind(items, (c) => (seen.push(c.key), c))
+    expect(seen).toEqual(['coal', 'tree'])
+  })
+
+  it('is found only when every marker is found', () => {
+    expect(singleKind([child('coal', coal, true), child('coal', coal)], (c) => c)!.spec.found).toBe(false)
+    expect(singleKind([child('coal', coal, true), child('coal', coal, true)], (c) => c)!.spec.found).toBe(true)
+  })
+
+  it('draws the sprite with the disc fallback, a short count and an escaped label', () => {
+    const html = stackHtml(coal, 1234, `Kebbit's <burrow> & co`)
+    expect(html).toContain('<img class="ash-marker__img" src="/wiki-img/icons/Coal.png"')
+    expect(html).toContain('ash-marker__disc')
+    expect(html).toContain('<span class="ash-stack__count" aria-hidden="true">1.2k</span>')
+    expect(html).toContain('1234 × Kebbit&#39;s &lt;burrow&gt; &amp; co, zoom in')
+    expect(stackHtml({ ...coal, found: true }, 2, 'Coal')).toContain('class="ash-marker ash-marker--muted has-img is-found"')
   })
 })

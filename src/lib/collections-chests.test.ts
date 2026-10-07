@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildChestMatrix, chestCategories, mapFilterHref, mapFilterLocation, type MapFilter } from './collections-chests'
+import { buildChestMatrix, chestCategories, mapFilterHref, mapFilterLocation, type ChestPowerOf, type MapFilter } from './collections-chests'
 import { splitByWorld, visiblePoints } from './map-filter'
+import { pointPower, powerEstimates } from './map-power'
 import { emptyFilters, parseMapQuery, type MapUrlKnown } from './map-url'
 import { WORLD_BOUNDS } from './projection'
 import type { MapCategory, MapPoint } from './types'
@@ -60,7 +61,7 @@ describe('buildChestMatrix', () => {
       ['Scorned Wilderness', [1, 0, 0, 0], 0, 1],
       [null, [0, 0, 1, 0], 0, 1],
     ])
-    expect(m.totals).toEqual({ cells: [2, 1, 1, 2], unknown: 2, total: 8 })
+    expect(m.totals).toEqual({ cells: [2, 1, 1, 2], estimated: [0, 0, 0, 0], unknown: 2, total: 8 })
   })
 
   it('only counts selected categories but keeps the table shape', () => {
@@ -76,12 +77,28 @@ describe('buildChestMatrix', () => {
       powers: [],
       hasUnknown: false,
       rows: [],
-      totals: { cells: [], unknown: 0, total: 0 },
+      totals: { cells: [], estimated: [], unknown: 0, total: 0 },
     })
   })
 
   it('has no unknown column when every point has a power level', () => {
     expect(buildChestMatrix([pt('treasure-chest', 'Brynmoor', 2)], new Set(['treasure-chest'])).hasUnknown).toBe(false)
+  })
+
+  it('counts estimated levels with powerOf and marks them per cell', () => {
+    const own = pt('treasure-chest', 'Dowdun Reach', 6)
+    const guess = pt('treasure-chest', 'Dowdun Reach')
+    const far = pt('treasure-chest', 'Fellhollow')
+    const none = pt('buried-treasure', 'Fellhollow')
+    const powerOf = (p: MapPoint) =>
+      p.power !== undefined ? { level: p.power } : p === guess ? { level: 6, estimate: {} } : p === far ? { level: 5, estimate: {} } : undefined
+    const m = buildChestMatrix([own, guess, far, none], new Set(['treasure-chest', 'buried-treasure']), powerOf)
+    expect(m.powers).toEqual([5, 6])
+    expect(m.rows.map((r) => [r.region, r.cells, r.estimated, r.unknown])).toEqual([
+      ['Fellhollow', [1, 0], [1, 0], 1],
+      ['Dowdun Reach', [0, 2], [0, 1], 0],
+    ])
+    expect(m.totals).toMatchObject({ cells: [1, 2], estimated: [1, 1], unknown: 1, total: 4 })
   })
 })
 
@@ -119,42 +136,35 @@ describe('map links', () => {
 })
 
 describe('matrix links agree with the map', () => {
-  it('opens a map that shows exactly the chests counted in each cell', () => {
-    const [[minLat, minLng], [maxLat, maxLng]] = WORLD_BOUNDS
-    const cx = (minLng + maxLng) / 2
-    const cy = (minLat + maxLat) / 2
-    let k = 0
-    const chest = (categoryId: string, region: string, power?: number): MapPoint => {
-      k++
-      return { id: `${categoryId}:${k}:${k}`, categoryId, x: cx + k, y: cy + k, region, power }
-    }
-    const cats = [cat('treasure-chest', 'Treasure Chest', 'chest'), cat('buried-treasure', 'Buried Treasure', 'chest')]
-    const points = [
-      chest('treasure-chest', 'Ghornfell', 3),
-      chest('treasure-chest', 'Ghornfell', 3),
-      chest('treasure-chest', 'Ghornfell', 4),
-      chest('treasure-chest', 'Ghornfell'),
-      chest('buried-treasure', 'Ghornfell'),
-      chest('buried-treasure', 'Brynmoor', 2),
-      chest('treasure-chest', 'Brynmoor'),
-    ]
-    const ids = cats.map((c) => c.id).sort()
-    const matrix = buildChestMatrix(points, new Set(ids))
-    const categoryById = new Map(cats.map((c) => [c.id, c]))
+  const [[minLat, minLng], [maxLat, maxLng]] = WORLD_BOUNDS
+  const cx = (minLng + maxLng) / 2
+  const cy = (minLat + maxLat) / 2
+  let k = 0
+  const chest = (categoryId: string, region: string, power?: number): MapPoint => {
+    k++
+    return { id: `${categoryId}:${k}:${k}`, categoryId, x: cx + k, y: cy + k, region, power }
+  }
+  const cats = [cat('treasure-chest', 'Treasure Chest', 'chest'), cat('buried-treasure', 'Buried Treasure', 'chest')]
+  const ids = cats.map((c) => c.id).sort()
+  const categoryById = new Map(cats.map((c) => [c.id, c]))
+  const known: MapUrlKnown = {
+    category: (id) => categoryById.has(id),
+    power: () => true,
+    region: () => true,
+    point: () => false,
+    quest: () => false,
+  }
+
+  /** Every cell and total opens a map with exactly that many chests; returns the map counter. */
+  function expectAgreement(points: MapPoint[], powerOf?: ChestPowerOf) {
+    const matrix = buildChestMatrix(points, new Set(ids), powerOf)
     const { drawable } = splitByWorld(points)
-    const known: MapUrlKnown = {
-      category: (id) => categoryById.has(id),
-      power: () => true,
-      region: () => true,
-      point: () => false,
-      quest: () => false,
-    }
+    const level = powerOf ? (p: MapPoint) => powerOf(p)?.level : undefined
     const onMap = (filter: MapFilter) => {
       const f = parseMapQuery(mapFilterLocation(filter).query, known, emptyFilters())
       const visibility = { powers: new Set(f.powers), strictPower: f.strictPower, regions: new Set(f.regions), hideFound: false, found: new Set<string>() }
-      return visiblePoints(f.categories, categoryById, drawable, visibility).length
+      return visiblePoints(f.categories, categoryById, drawable, visibility, level).length
     }
-
     for (const row of matrix.rows) {
       row.cells.forEach((count, i) => {
         expect(onMap({ categories: ids, regions: [row.region!], powers: [matrix.powers[i]!], strictPower: true })).toBe(count)
@@ -165,7 +175,36 @@ describe('matrix links agree with the map', () => {
       expect(onMap({ categories: ids, powers: [matrix.powers[i]!], strictPower: true })).toBe(count)
     })
     expect(onMap({ categories: ids })).toBe(matrix.totals.total)
+    return { matrix, onMap }
+  }
+
+  it('opens a map that shows exactly the chests counted in each cell', () => {
+    const points = [
+      chest('treasure-chest', 'Ghornfell', 3),
+      chest('treasure-chest', 'Ghornfell', 3),
+      chest('treasure-chest', 'Ghornfell', 4),
+      chest('treasure-chest', 'Ghornfell'),
+      chest('buried-treasure', 'Ghornfell'),
+      chest('buried-treasure', 'Brynmoor', 2),
+      chest('treasure-chest', 'Brynmoor'),
+    ]
+    const { onMap } = expectAgreement(points)
     // Without ps=1 the chests without a level would leak into a power level link.
     expect(onMap({ categories: ids, regions: ['Ghornfell'], powers: [3] })).toBe(4)
+  })
+
+  it('still agrees when chests carry estimated levels (map-power.ts)', () => {
+    const points = [
+      chest('treasure-chest', 'Dowdun Reach', 6),
+      chest('treasure-chest', 'Dowdun Reach'),
+      chest('treasure-chest', 'Fellhollow'),
+      chest('buried-treasure', 'Fellhollow'),
+      chest('treasure-chest', 'Scorned Wilderness'),
+    ]
+    const estimates = powerEstimates(points, (id) => categoryById.get(id)?.group, [{ region: 'Fellhollow', power: 5 }])
+    const powerOf = (p: MapPoint) => pointPower(p, categoryById.get(p.categoryId)?.group, p.power, estimates)
+    const { matrix } = expectAgreement(points, powerOf)
+    expect(matrix.powers).toEqual([5, 6])
+    expect(matrix.totals).toMatchObject({ cells: [1, 2], estimated: [1, 1], unknown: 2 })
   })
 })

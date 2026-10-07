@@ -219,7 +219,10 @@ const countText = computed(() => {
             Only with a power level
             <template v-if="state.filters.strictPower" #icon><X aria-hidden="true" class="order-last" /></template>
           </ToggleChip>
-          <p class="mt-2 px-0.5 text-sm leading-snug text-muted-light">{{ powerHint }}</p>
+          <p class="mt-2 px-0.5 text-sm leading-snug text-muted-light">
+            {{ powerHint }}
+            <template v-if="model.estimatedPowers.value">Some chests have no level on the wiki: they get one estimated from their region.</template>
+          </p>
         </section>
 
         <!-- Region -->

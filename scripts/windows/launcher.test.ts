@@ -31,6 +31,7 @@ import {
   openWindow,
   parseLauncherArgs,
   parseTasklist,
+  processImage,
   popupAnswer,
   popupCommand,
   popupFlags,
@@ -919,5 +920,29 @@ describe('the launcher script', () => {
   it('hands Windows PowerShell a plain ASCII script', () => {
     // It travels on the command line, where Windows PowerShell may read it in the ANSI code page.
     expect(POPUP_SCRIPT).toMatch(/^[\x20-\x7e]+$/)
+  })
+})
+
+describe('processImage on Linux and macOS', () => {
+  function unix(platform: NodeJS.Platform, answers: Record<string, string>): System {
+    return {
+      ...fakeWindows(),
+      platform,
+      async run(command: string) {
+        return command in answers ? { code: 0, stdout: answers[command]! } : { code: 1, stdout: '' }
+      },
+    }
+  }
+
+  it('reads the program from ps', async () => {
+    expect(await processImage(42, unix('darwin', { ps: '/opt/node/bin/node\n' }), {})).toBe('node')
+  })
+
+  it('looks past the MainThread name Node 24 gives its main thread on Linux', async () => {
+    expect(await processImage(42, unix('linux', { ps: 'MainThread\n', readlink: '/usr/local/bin/node\n' }), {})).toBe('node')
+  })
+
+  it('keeps MainThread when /proc cannot say more', async () => {
+    expect(await processImage(42, unix('linux', { ps: 'MainThread\n' }), {})).toBe('MainThread')
   })
 })

@@ -15,6 +15,7 @@ import { provideViewRoute } from './useViewRoute'
 const categories: MapCategory[] = [
   { id: 'lore-scraps', label: 'Lore Scraps', group: 'lore', sources: [], count: 2 },
   { id: 'ash-tree', label: 'Ash Tree', group: 'resource', sources: [], count: 3 },
+  { id: 'doric', label: 'Doric', group: 'npc', sources: [], count: 4 },
 ]
 
 function pt(categoryId: string, x: number, y: number): MapPoint {
@@ -23,6 +24,26 @@ function pt(categoryId: string, x: number, y: number): MapPoint {
 
 const lore = [pt('lore-scraps', 1000, 2000), pt('lore-scraps', 3000, 4000)]
 const trees = [pt('ash-tree', 10000, 10000), pt('ash-tree', 20000, 20000), pt('ash-tree', 30000, 30000)]
+/** Doric's four spots: far apart, each one alone at every cluster zoom. */
+const doric = [pt('doric', 10908, 184632), pt('doric', 142219, 92602), pt('doric', 194041, -42347), pt('doric', 228062, 54540)]
+
+function clusterGroupOf(map: L.Map): L.MarkerClusterGroup {
+  let group: L.MarkerClusterGroup | undefined
+  map.eachLayer((layer) => {
+    if (layer instanceof L.MarkerClusterGroup) group = layer
+  })
+  return group!
+}
+
+/** Asks the group for the icon of a cluster holding these markers, as markercluster does. */
+function iconFor(map: L.Map, markers: L.Marker[]): L.DivIcon {
+  const create = (clusterGroupOf(map).options as L.MarkerClusterGroupOptions).iconCreateFunction!
+  return create({ getChildCount: () => markers.length, getAllChildMarkers: () => markers } as unknown as L.MarkerCluster) as L.DivIcon
+}
+
+function markersTitled(map: L.Map, title: string): L.Marker[] {
+  return (clusterGroupOf(map).getLayers() as L.Marker[]).filter((m) => m.options.title === title)
+}
 
 function setup() {
   const visible = shallowRef<MapPoint[]>([])
@@ -120,6 +141,52 @@ describe('useMapLeaflet', () => {
     expect(after).toBe(before)
     expect((after.options.icon as L.DivIcon).options.className).toContain('is-found')
     expect(s.api().stats().built).toBe(5)
+  })
+
+  it('draws a cluster of one kind as a stack and a mixed one as a seal', async () => {
+    const s = setup()
+    wrapper = s.wrapper
+    s.visible.value = [...lore, ...trees]
+    await nextTick()
+    const map = s.api().map.value!
+    const ash = markersTitled(map, 'Ash Tree')
+    expect(ash).toHaveLength(3)
+    const stack = iconFor(map, ash)
+    expect(stack.options.className).toBe('ash-stack')
+    expect(String(stack.options.html)).toContain('3 × Ash Tree, zoom in')
+    const mixed = iconFor(map, [...ash, ...markersTitled(map, 'Lore Scraps')])
+    expect(mixed.options.className).toMatch(/^ash-cluster /)
+  })
+
+  it('refreshes the clusters of markers whose found state changed, and only then', async () => {
+    const s = setup()
+    wrapper = s.wrapper
+    s.visible.value = [...lore, ...trees]
+    await nextTick()
+    const refresh = vi.spyOn(clusterGroupOf(s.api().map.value!), 'refreshClusters')
+    s.found.value = new Set([lore[0]!.id])
+    await nextTick()
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(refresh.mock.calls[0]![0]).toHaveLength(1)
+    // A found tree changes nothing on the map.
+    s.found.value = new Set([lore[0]!.id, trees[0]!.id])
+    await nextTick()
+    expect(refresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('dims a stack once every marker in it is found', async () => {
+    const s = setup()
+    wrapper = s.wrapper
+    s.visible.value = [...lore]
+    await nextTick()
+    const map = s.api().map.value!
+    const scraps = markersTitled(map, 'Lore Scraps')
+    s.found.value = new Set([lore[0]!.id])
+    await nextTick()
+    expect(String(iconFor(map, scraps).options.html)).not.toContain('is-found')
+    s.found.value = new Set(lore.map((p) => p.id))
+    await nextTick()
+    expect(String(iconFor(map, scraps).options.html)).toContain('is-found')
   })
 
   it('draws one pin per quest start spot', async () => {
@@ -380,6 +447,55 @@ describe('useMapLeaflet in a kept-alive view', () => {
     fireResize()
     expect(invalidate).not.toHaveBeenCalled()
     expect(s.map.getCenter()).toEqual(before.center)
+  })
+
+  it('draws lone points in a window where the minimum zoom is not a whole number', async () => {
+    size = { width: 1104, height: 941 }
+    const s = await keptSetup()
+    wrapper = s.wrapper
+    expect(s.api.minZoom.value).toBe(0.5)
+    // The whole world in view, so nothing is left out for being off screen.
+    s.map.setView(L.latLng(toLatLng(200000, 90000)), 0.5, { animate: false })
+    s.visible.value = [doric[1]!]
+    await nextTick()
+    expect(s.api.stats()).toMatchObject({ shown: 1, drawn: 1 })
+    s.visible.value = [...doric]
+    await nextTick()
+    expect(s.api.stats()).toMatchObject({ shown: 4, drawn: 4 })
+  })
+
+  it('still draws lone points after the window grew while away', async () => {
+    const s = await keptSetup()
+    wrapper = s.wrapper
+    expect(s.api.minZoom.value).toBe(0)
+    s.visible.value = [...doric]
+    await nextTick()
+    s.map.setView(L.latLng(toLatLng(200000, 90000)), 0, { animate: false })
+    expect(s.api.stats().drawn).toBe(4)
+
+    await tab(s.router, 'quests')
+    size = { width: 3200, height: 2400 }
+    await tab(s.router, 'map')
+
+    expect(s.api.minZoom.value).toBe(1.5)
+    expect(s.api.stats()).toMatchObject({ shown: 4, drawn: 4 })
+    // A filter change after that adds and removes in the new state.
+    s.visible.value = [doric[0]!, ...trees]
+    await nextTick()
+    expect(s.api.stats()).toMatchObject({ shown: 4, drawn: 4 })
+  })
+
+  it('lowers the minimum zoom again when the window gets smaller', async () => {
+    size = { width: 3200, height: 2400 }
+    const s = await keptSetup()
+    wrapper = s.wrapper
+    expect(s.api.minZoom.value).toBe(1.5)
+    size = { width: 1104, height: 941 }
+    fireResize()
+    expect(s.api.minZoom.value).toBe(0.5)
+    size = { width: 800, height: 600 }
+    fireResize()
+    expect(s.api.minZoom.value).toBe(0)
   })
 
   it('drops the cursor readout when the view is left', async () => {

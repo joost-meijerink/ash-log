@@ -28,14 +28,17 @@ import RewardRow from './RewardRow.vue'
 
 /**
  * The unique unlocks: kind chips with counts, search, 'Hide what I have' and the list
- * grouped by kind and wiki sub-heading. What a group's rewards share (via, a long source) is
- * shown once under its heading instead of on every row. Kind and the hide switch are in the
- * URL too (?kind=<kind>&hide=1), the search text is not.
+ * grouped by kind and region. A region heading spans the panel with its rows in two columns
+ * below it (one on phones), so a region never breaks across columns. What a group's rewards
+ * share (via, a long source) is shown once under its heading instead of on every row. Kind and
+ * the hide switch are in the URL too (?kind=<kind>&hide=1), the search text is not.
  */
 const props = defineProps<{
   owned: ReadonlySet<string>
   /** Reward id -> search text (see useCollections). */
   haystacks: ReadonlyMap<string, string>
+  /** Reward id -> region (see useCollections). Without it, rewards group by wiki sub-heading. */
+  regions?: ReadonlyMap<string, string>
   disabled?: boolean
 }>()
 
@@ -100,7 +103,13 @@ const tallies = computed(() => kindTallies(tracked.value, props.owned))
 /** All, plus every kind that has rewards (and the selected one, so it never vanishes). */
 const kindOptions = computed(() => KIND_FILTERS.filter((k) => k === 'all' || k === kind.value || (tallies.value[k]?.total ?? 0) > 0))
 const list = computed(() =>
-  buildRewardList(tracked.value, props.owned, { kind: kind.value, query: query.value, hideOwned: hideOwned.value }, props.haystacks),
+  buildRewardList(
+    tracked.value,
+    props.owned,
+    { kind: kind.value, query: query.value, hideOwned: hideOwned.value },
+    props.haystacks,
+    props.regions,
+  ),
 )
 const filtering = computed(() => !!query.value.trim() || hideOwned.value)
 
@@ -124,7 +133,7 @@ function resetFilters() {
     <!-- Controls, on leather -->
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
-        <SearchInput v-model="query" placeholder="Search by name, recipe, source or group" class="sm:max-w-md" />
+        <SearchInput v-model="query" placeholder="Search by name, recipe, source or region" class="sm:max-w-md" />
         <Label for="hide-owned" class="min-h-11 cursor-pointer gap-3 text-text-light">
           <Switch id="hide-owned" :model-value="hideOwned" @update:model-value="(v) => setUrlState({ hideOwned: !!v })" />
           Hide what I have
@@ -161,20 +170,15 @@ function resetFilters() {
         </span>
       </div>
 
-      <div class="gap-x-10 lg:columns-2">
-        <div v-for="group in block.groups" :key="group.key" class="mb-4 last:mb-0">
-          <SectionHeading
-            v-if="group.label"
-            as="h4"
-            :count="tallyText(group.tally)"
-            class="mb-0.5 break-after-avoid px-2.5"
-          >
-            <span lang="en">{{ group.label }}</span>
+      <div class="flex flex-col gap-4">
+        <div v-for="group in block.groups" :key="group.key" data-reward-group>
+          <SectionHeading v-if="group.label" as="h4" :count="tallyText(group.tally)" class="mb-0.5 px-2.5">
+            <span :lang="group.fallback ? undefined : 'en'">{{ group.label }}</span>
           </SectionHeading>
           <p
             v-if="group.note"
             data-group-note
-            class="mb-1 flex break-after-avoid flex-col gap-0.5 px-2.5 text-sm leading-snug text-text-parchment/70"
+            class="mb-1 flex flex-col gap-0.5 px-2.5 text-sm leading-snug text-text-parchment/70"
           >
             <span v-if="group.note.via.length">{{ viaText(group.note.via) }}</span>
             <RewardNoteText
@@ -183,7 +187,7 @@ function resetFilters() {
               :prefix="group.note.shared.count < group.note.total ? `For ${group.note.shared.count} of the ${group.note.total}:` : undefined"
             />
           </p>
-          <ul>
+          <ul class="gap-x-10 lg:columns-2">
             <li v-for="reward in group.rewards" :key="reward.id" class="break-inside-avoid">
               <RewardRow
                 :reward="reward"

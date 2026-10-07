@@ -91,6 +91,61 @@ export interface ParsedText {
   text?: string
   /** True when `text` is a readable version of an internal code ('Vestige: Training Sword'). */
   hint?: boolean
+  /** The text seems to state a power level the parser cannot read (see extractPower); report it. */
+  powerIssue?: string
+}
+
+/**
+ * Text that seems to talk about a power level: 'Power Level', 'Tier', 'PL 7', 'Level 7'.
+ * Only for Module:Map names and descriptions; quest text says 'level' in other senses.
+ */
+export function looksLikePower(text: string): boolean {
+  return /power\s*level|\btier\b|\btier\s*\d|\bPL\s*\d|\blevel\s*\d/i.test(text)
+}
+
+export interface PowerMatch {
+  power?: number
+  /** The text without the power part; the input itself when nothing was taken. */
+  rest: string
+  /** Looks like power text, but not in a known format, or with two different levels. No power then. */
+  unrecognised?: boolean
+}
+
+/**
+ * 'Power Level N' (anywhere, optionally in brackets) or 'Tier N' / 'Tier N+' as words. The level must
+ * stand alone: '5-6', '5 to 6', 'Power Level 5+' and '5.5' are not read. Tier codes ('Tier3_World') are
+ * parseTierCode's job.
+ */
+const POWER_RE = /(\(\s*)?\b(power\s*level\s*:?|tier)\s*(\d+)(\+?)(?![\w+]|[.,]\d)(\s*\))?/gi
+const RANGE_AFTER = /^\s*(?:[-\u2013/&]|to\b|or\b|and\b)\s*\d/i
+
+/**
+ * Takes the power level out of a name or description: 'Zombie (Fellhollow) - Power Level 5',
+ * 'Black Dragon (Power Level 9)', 'Skeletal Archer - Power Level 6 (Dowdun)', 'Bramblemead Cape Tier 2'.
+ * Text that looks like power (looksLikePower) but is not read here comes back as `unrecognised`.
+ */
+export function extractPower(input: string): PowerMatch {
+  const text = input.replace(/\s+/g, ' ').trim()
+  const hits: { power: number; start: number; end: number }[] = []
+  for (const m of text.matchAll(POWER_RE)) {
+    const [whole, open = '', kind, digits, plus, close = ''] = m
+    const end = m.index + whole.length
+    if ((plus && !/^tier$/i.test(kind!)) || RANGE_AFTER.test(text.slice(end))) return { rest: text, unrecognised: true }
+    // Brackets only go along when both are there.
+    const both = !!open && !!close
+    hits.push({ power: Number(digits), start: both ? m.index : m.index + open.length, end: both ? end : end - close.length })
+  }
+  if (!hits.length) return looksLikePower(text) ? { rest: text, unrecognised: true } : { rest: text }
+  if (new Set(hits.map((h) => h.power)).size > 1) return { rest: text, unrecognised: true }
+
+  let rest = text
+  for (const h of [...hits].reverse()) {
+    const before = rest.slice(0, h.start).replace(/[\s,;:\u2013\u2014-]+$/, '')
+    const after = rest.slice(h.end).replace(/^[\s.,;:\u2013\u2014-]+/, '')
+    rest = [before, after].filter(Boolean).join(before.endsWith('(') ? '' : ' ')
+  }
+  if (looksLikePower(rest)) return { rest: text, unrecognised: true }
+  return { power: hits[0]!.power, rest }
 }
 
 /** Only coordinates, like '12.3, 45.6' (sometimes with a z value or brackets). */
@@ -157,18 +212,12 @@ export function parseDescription(input: string, labels: string[] = []): ParsedTe
   if (tier) return tier
 
   const out: ParsedText = {}
-  // 'Zombie (Fellhollow) - Power Level 5', 'Black Dragon (Power Level 9)'
-  const level = text.match(/^(.*?)[\s,;:\u2013-]*\(?\s*Power Level\s*(\d+)\s*\)?[.\s]*$/i)
-  if (level) {
-    out.power = Number(level[2])
-    text = level[1]!.trim()
-  } else {
-    // 'Bramblemead Cape Tier 2'
-    const inline = text.match(/^(.*?)\s*\bTier\s*(\d+)\b\s*(.*)$/i)
-    if (inline && (inline[1] || inline[3])) {
-      out.power = Number(inline[2])
-      text = `${inline[1]} ${inline[3]}`.trim()
-    }
+  // 'Zombie (Fellhollow) - Power Level 5', 'Black Dragon (Power Level 9)', 'Bramblemead Cape Tier 2'
+  const level = extractPower(text)
+  if (level.unrecognised) out.powerIssue = text
+  else if (level.power !== undefined) {
+    out.power = level.power
+    text = level.rest
   }
 
   // Trailing '(Region)': 'Zombie (Dowdun)'.

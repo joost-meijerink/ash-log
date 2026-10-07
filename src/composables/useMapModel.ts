@@ -13,6 +13,7 @@ import {
 } from '@/lib/map-filter'
 import { buildPointLinks, foundPointIds } from '@/lib/map-found'
 import { buildVaultIndex, effectivePower, questRegionHints, questStartGroups } from '@/lib/map-links'
+import { pointPower as estimatePower, powerEstimates, type PointPower } from '@/lib/map-power'
 import { defaultFilters, type MapUrlKnown } from '@/lib/map-url'
 import type { MapPoint } from '@/lib/types'
 import { useDataStore } from '@/stores/data'
@@ -30,16 +31,36 @@ export function useMapModel() {
   const groups = computed(() => groupCategories(data.categories))
   const vaultIndex = computed(() => buildVaultIndex(data.vaults, data.pointById))
 
-  /** Power level for the filter: the point's own, or its vault's. */
-  function powerOf(point: MapPoint): number | undefined {
-    return effectivePower(point, data.categoryById.get(point.categoryId), vaultIndex.value)
+  /** Per region: the vault and chest levels the wiki gives, and the estimate for chests without one. */
+  const estimates = computed(() => powerEstimates(data.points, (id) => data.categoryById.get(id)?.group, data.vaults))
+
+  /** The point's own level, else its vault's, else the region estimate for a chest (map-power.ts). */
+  function pointPower(point: MapPoint): PointPower | undefined {
+    const category = data.categoryById.get(point.categoryId)
+    return estimatePower(point, category?.group, effectivePower(point, category, vaultIndex.value), estimates.value)
   }
 
-  const powers = computed(() => {
+  /** Power level for the filter, chips and counters: estimated levels count as levels. */
+  function powerOf(point: MapPoint): number | undefined {
+    return pointPower(point)?.level
+  }
+
+  /** Levels on the map (the chips), and how many drawable points carry an estimated one. */
+  const powerLevels = computed(() => {
     const levels: (number | undefined)[] = []
-    for (const list of drawable.value.values()) for (const p of list) levels.push(powerOf(p))
-    return collectPowers(levels)
+    let estimated = 0
+    for (const list of drawable.value.values()) {
+      for (const p of list) {
+        const power = pointPower(p)
+        levels.push(power?.level)
+        if (power?.estimate) estimated++
+      }
+    }
+    return { powers: collectPowers(levels), estimated }
   })
+  /** Only levels of drawable points: 8 and 9 (player gear, Black Dragons off the map) never show. */
+  const powers = computed(() => powerLevels.value.powers)
+  const estimatedPowers = computed(() => powerLevels.value.estimated)
 
   const regions = computed(() => {
     const names: (string | undefined)[] = []
@@ -103,8 +124,11 @@ export function useMapModel() {
     skipped,
     groups,
     vaultIndex,
+    estimates,
+    pointPower,
     powerOf,
     powers,
+    estimatedPowers,
     regions,
     defaults,
     links,

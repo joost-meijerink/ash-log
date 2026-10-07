@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { compareNames, compareRegions, matchesQuery, searchKey, tallyFraction, tallyText } from './collections-shared'
+import {
+  compareNames,
+  compareRegions,
+  knownRegion,
+  matchesQuery,
+  regionInText,
+  searchKey,
+  tallyFraction,
+  tallyText,
+} from './collections-shared'
 
 describe('tallies', () => {
   it('formats and divides safely', () => {
@@ -40,5 +49,40 @@ describe('search', () => {
     expect(matchesQuery(hay, 'paladin takla')).toBe(true)
     expect(matchesQuery(hay, 'paladin chaktan')).toBe(false)
     expect(matchesQuery(hay, '   ')).toBe(true)
+  })
+})
+
+describe('knownRegion', () => {
+  it('gives the first top-level region of a region field, in the usual spelling', () => {
+    expect(knownRegion('Brynmoor')).toBe('Brynmoor')
+    expect(knownRegion('dowdun reach')).toBe('Dowdun Reach')
+    expect(knownRegion('Brynmoor/Ghornfell')).toBe('Brynmoor')
+    expect(knownRegion('Temple Woods / Ghornfell')).toBe('Ghornfell')
+    expect(knownRegion('Fellhollow, Dowdun Reach')).toBe('Fellhollow')
+    expect(knownRegion('Umbral Sands & Brynmoor')).toBe('Umbral Sands')
+    expect(knownRegion('Scorned Wilderness and Fellhollow')).toBe('Scorned Wilderness')
+  })
+
+  it('gives undefined for areas that are not a top-level region, and for nothing', () => {
+    expect(knownRegion('Temple Woods')).toBeUndefined()
+    expect(knownRegion('Ghornfell Highlands')).toBeUndefined()
+    expect(knownRegion('')).toBeUndefined()
+    expect(knownRegion(undefined)).toBeUndefined()
+  })
+})
+
+describe('regionInText', () => {
+  it('finds the region a text mentions first, in any case', () => {
+    expect(regionInText('Rod fishing spots in Ghornfell.')).toBe('Ghornfell')
+    expect(regionInText('Near the Dunes of Uzzer in umbral  sands')).toBe('Umbral Sands')
+    expect(regionInText('From Fellhollow, or later in Brynmoor')).toBe('Fellhollow')
+    expect(regionInText('In Brynmoor, not in Fellhollow')).toBe('Brynmoor')
+  })
+
+  it('only matches whole words', () => {
+    expect(regionInText('A Brynmoorish lantern')).toBeUndefined()
+    expect(regionInText('Ghornfells and Fellhollows')).toBeUndefined()
+    expect(regionInText('Located inside a chest')).toBeUndefined()
+    expect(regionInText(undefined)).toBeUndefined()
   })
 })

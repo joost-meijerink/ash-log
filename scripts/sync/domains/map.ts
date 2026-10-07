@@ -4,7 +4,8 @@
 // Steps in parseMap:
 //  1. Skip sandbox and test pages (one warning each), parse the JSON (array, single point or Map object).
 //  2. Family per page: '<Base> (<Region>)' pages merge into one category with a region per point.
-//  3. Points: name, link, description, power and region from the free-text fields.
+//  3. Points: name, link, description, power and region from the free-text fields. Power text the
+//     parser cannot read, odd levels and clashing levels are reported per page (powerWarnings).
 //  4. Merge the pages of a category: identical ids dedupe, points of different pages that lie
 //     within MERGE_DISTANCE of each other are the same thing (chests.json vs Treasure Chest (<region>)).
 //  5. Group per category (map-groups.ts), region guess for the rest.
@@ -18,7 +19,7 @@ import type { SyncContext, Warn } from '../context'
 import { BATCH_SIZE, type RawPage } from '../wiki'
 import { findTemplates, links, normalizeTitle, stripMarkup } from '../wikitext'
 import { classifyGroups, type GroupInput } from './map-groups'
-import { parseDescription, regionOf, regionPrefix, sameText } from './map-text'
+import { extractPower, parseDescription, regionOf, regionPrefix, sameText } from './map-text'
 
 export interface MapSources {
   /** Module:Map/<name>.json pages (JSON content), keyed by full title. */
@@ -447,6 +448,53 @@ interface Draft {
   regionGuessed?: boolean
   /** Ids of twins in other categories that were folded into this point. */
   aliases?: string[]
+  /** Power text that went wrong; reported per page (powerWarnings), never written out. */
+  powerIssues?: PowerIssue[]
+}
+
+/** Lowest and highest power level that passes without a warning. Never used to filter. */
+export const POWER_SANE = [1, 20] as const
+
+interface PowerIssue {
+  /** unread: power text in an unknown format. range: outside POWER_SANE. clash: two different levels. */
+  kind: 'unread' | 'range' | 'clash'
+  /** What the warning quotes: the text, the level, or 'A and B'. */
+  text: string
+  /** Module:Map page the issue came from. */
+  source: string
+}
+
+function addPowerIssue(draft: Draft, issue: PowerIssue) {
+  ;(draft.powerIssues ??= []).push(issue)
+}
+
+/** Sets a power level; a different one already there stays and is reported as a clash. */
+function setPower(draft: Draft, power: number, source: string) {
+  if (power < POWER_SANE[0] || power > POWER_SANE[1]) addPowerIssue(draft, { kind: 'range', text: String(power), source })
+  if (draft.power === undefined) draft.power = power
+  else if (draft.power !== power) addPowerIssue(draft, { kind: 'clash', text: `${draft.power} and ${power}`, source })
+}
+
+const POWER_WARNING: Record<PowerIssue['kind'], (n: number, example: string) => string> = {
+  unread: (n, ex) => `${n} ${n === 1 ? 'point has' : 'points have'} power text the parser doesn't understand, no level set (e.g. "${ex}")`,
+  range: (n, ex) => `${n} ${n === 1 ? 'point has' : 'points have'} a power level outside ${POWER_SANE[0]} to ${POWER_SANE[1]}, kept as is (e.g. ${ex})`,
+  clash: (n, ex) => `${n} ${n === 1 ? 'point has' : 'points have'} conflicting power levels, kept the first (e.g. ${ex})`,
+}
+
+/** One warning per page and kind of issue, over the points that were kept. */
+function powerWarnings(drafts: Iterable<Draft>, warn: Warn) {
+  const byKey = new Map<string, { kind: PowerIssue['kind']; source: string; example: string; points: Set<Draft> }>()
+  for (const d of drafts) {
+    for (const issue of d.powerIssues ?? []) {
+      const key = `${issue.source}\u0000${issue.kind}`
+      const entry = byKey.get(key) ?? { kind: issue.kind, source: issue.source, example: issue.text, points: new Set<Draft>() }
+      entry.points.add(d)
+      byKey.set(key, entry)
+    }
+  }
+  const order: PowerIssue['kind'][] = ['unread', 'range', 'clash']
+  const entries = [...byKey.values()].sort((a, b) => byText(a.source, b.source) || order.indexOf(a.kind) - order.indexOf(b.kind))
+  for (const e of entries) warn(POWER_WARNING[e.kind](e.points.size, e.example), e.source)
 }
 
 interface RawPoint {
@@ -502,10 +550,12 @@ function parsePoint(raw: RawPoint, source: string, family: Family, pageBase: str
       if (target) draft.link = target
     }
     let name = stripMarkup(rawName)
-    const level = name.match(/^(.*?)[\s,;:\u2013-]*\(\s*Power Level\s*(\d+)\s*\)$/i)
-    if (level) {
-      draft.power = Number(level[2])
-      name = level[1]!.trim()
+    // 'Black Dragon (Power Level 9)': the same rules as descriptions.
+    const level = extractPower(name)
+    if (level.unrecognised) addPowerIssue(draft, { kind: 'unread', text: name, source })
+    else if (level.power !== undefined) {
+      setPower(draft, level.power, source)
+      name = level.rest
     }
     const r = regionOf(name)
     if (r) {
@@ -520,7 +570,8 @@ function parsePoint(raw: RawPoint, source: string, family: Family, pageBase: str
     const text = asText(value)
     if (!text) continue
     const parsed = parseDescription(stripMarkup(text), draft.name ? [...labels, draft.name] : labels)
-    if (parsed.power !== undefined) draft.power ??= parsed.power
+    if (parsed.powerIssue) addPowerIssue(draft, { kind: 'unread', text: parsed.powerIssue, source })
+    if (parsed.power !== undefined) setPower(draft, parsed.power, source)
     if (parsed.region) draft.region ??= parsed.region
     if (parsed.text) (parsed.hint ? draft.hints : draft.texts).push(parsed.text)
   }
@@ -540,6 +591,11 @@ function mergeInto(target: Draft, other: Draft) {
   target.name ??= other.name
   target.link ??= other.link
   target.icon ??= other.icon
+  // The issues of the dropped point are reported on the kept one; a different level is a clash.
+  for (const issue of other.powerIssues ?? []) addPowerIssue(target, issue)
+  if (other.power !== undefined && target.power !== undefined && other.power !== target.power) {
+    addPowerIssue(target, { kind: 'clash', text: `${target.power} and ${other.power}`, source: other.source })
+  }
   target.power ??= other.power
   target.region ??= other.region
   for (const t of other.texts) if (!target.texts.some((x) => sameText(x, t))) target.texts.push(t)
@@ -965,6 +1021,7 @@ export function parseMap(src: MapSources, warn: Warn): MapResult {
     }
   }
 
+  powerWarnings([...categories.values()].flatMap((c) => c.points), warn)
   if (others.length) {
     warn(`No group found for ${others.length} categories, they go under 'other': ${others.sort(byText).join(', ')}`)
   }

@@ -31,6 +31,36 @@ export function isRegion(name: string | undefined | null): boolean {
   return !!name && REGION_RANK.has(name.toLowerCase())
 }
 
+/**
+ * The top-level region a region field names, in REGION_ORDER spelling. A field that names
+ * several ('Brynmoor/Ghornfell', 'Fellhollow and Dowdun Reach') gives the first top-level
+ * one; an area that is not a top-level region ('Temple Woods') gives undefined.
+ */
+export function knownRegion(text: string | undefined | null): string | undefined {
+  if (!text) return undefined
+  for (const part of text.split(/\s*(?:[/,&]|\band\b)\s*/i)) {
+    const rank = REGION_RANK.get(part.trim().toLowerCase())
+    if (rank !== undefined) return REGION_ORDER[rank]
+  }
+  return undefined
+}
+
+const REGION_IN_TEXT = REGION_ORDER.map((name) => ({
+  name,
+  re: new RegExp(`(?<![\\p{L}\\p{N}])${name.replace(/\s+/g, '\\s+')}(?![\\p{L}\\p{N}])`, 'iu'),
+}))
+
+/** The top-level region a free text mentions first, as a whole word in any case ('Rod fishing spots in Ghornfell.'). */
+export function regionInText(text: string | undefined | null): string | undefined {
+  if (!text) return undefined
+  let best: { name: string; at: number } | undefined
+  for (const { name, re } of REGION_IN_TEXT) {
+    const at = text.search(re)
+    if (at >= 0 && (!best || at < best.at)) best = { name, at }
+  }
+  return best?.name
+}
+
 /** Known regions in play order, then other names alphabetically, then missing names last. */
 export function compareRegions(a: string | undefined | null, b: string | undefined | null): number {
   if (a === b) return 0

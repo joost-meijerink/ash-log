@@ -11,6 +11,7 @@ import { onActivated, onBeforeUnmount, onMounted, ref, shallowRef, watch, type R
 import {
   L,
   clusterIcon,
+  createClusterGroup,
   createGameCrs,
   createIconCache,
   questStartIcon,
@@ -18,7 +19,7 @@ import {
   worldBounds,
 } from '@/components/map/leaflet'
 import { isTrackableGroup } from '@/lib/map-groups'
-import { markerIconSpec } from '@/lib/map-icons'
+import { iconKey, markerIconSpec, type StackChild } from '@/lib/map-icons'
 import type { QuestStartGroup } from '@/lib/map-links'
 import {
   MAX_NATIVE_ZOOM,
@@ -65,7 +66,8 @@ export interface MapLeafletInput {
 interface MarkerEntry {
   marker: L.Marker
   point: MapPoint
-  found: boolean
+  /** What a cluster needs to draw this marker's kind as a stack; `found` is kept up to date. */
+  stack: StackChild
 }
 
 function prefersReducedMotion(): boolean {
@@ -120,15 +122,18 @@ export function useMapLeaflet(input: MapLeafletInput) {
     let entry = entries.get(point.id)
     if (!entry) {
       const category = categoryOf(point)
-      const found = input.found.value.has(point.id)
+      const spec = markerIconSpec(point, category, input.found.value.has(point.id))
       const marker = L.marker(toLatLng(point.x, point.y), {
-        icon: icons.get(markerIconSpec(point, category, found)),
+        icon: icons.get(spec),
         title: point.name ?? category?.label ?? '',
         keyboard: true,
         riseOnHover: true,
       })
       idByMarker.set(marker, point.id)
-      entry = { marker, point, found }
+      const sprite = { ...spec, found: false }
+      // One kind: same category and same sprite. Categories that share an icon stay apart.
+      const stack = { key: `${point.categoryId}|${iconKey(sprite)}`, spec: sprite, label: category?.label ?? '', found: spec.found }
+      entry = { marker, point, stack }
       entries.set(point.id, entry)
     }
     return entry
@@ -157,17 +162,29 @@ export function useMapLeaflet(input: MapLeafletInput) {
     shown = next
   }
 
-  /** Found lore and unique markers are dimmed; update only the ones that changed. */
+  /** What a marker in the cluster group is, for stacks. */
+  function childOf(marker: L.Marker): StackChild | undefined {
+    const id = idByMarker.get(marker)
+    return id === undefined ? undefined : entries.get(id)?.stack
+  }
+
+  /**
+   * Found lore and unique markers are dimmed; update only the ones that changed. A stack is dimmed
+   * once all its markers are found, so the clusters holding changed markers get a new icon too.
+   */
   function syncFound() {
     const found = input.found.value
+    const changed: L.Marker[] = []
     for (const entry of entries.values()) {
       const category = categoryOf(entry.point)
       if (!isTrackableGroup(category?.group)) continue
       const isFound = found.has(entry.point.id)
-      if (isFound === entry.found) continue
-      entry.found = isFound
+      if (isFound === entry.stack.found) continue
+      entry.stack.found = isFound
       entry.marker.setIcon(icons.get(markerIconSpec(entry.point, category, isFound)))
+      if (shown.has(entry.point.id)) changed.push(entry.marker)
     }
+    if (changed.length) cluster?.refreshClusters(changed)
   }
 
   function resetMarkers() {
@@ -226,11 +243,26 @@ export function useMapLeaflet(input: MapLeafletInput) {
 
   /* ---------------- view ---------------- */
 
+  /**
+   * Zoom where the whole world fits: Leaflet's getBoundsZoom without its clamp to the current
+   * minimum, which kept the minimum up after the window got smaller.
+   */
+  function fitZoom(m: L.Map): number {
+    const nw = m.project(world.getNorthWest(), 0)
+    const se = m.project(world.getSouthEast(), 0)
+    const size = m.getSize()
+    const scale = Math.min(size.x / Math.abs(se.x - nw.x), size.y / Math.abs(se.y - nw.y))
+    const snap = L.Browser.any3d ? (m.options.zoomSnap ?? 1) : 1
+    // As Leaflet: within 1% of a snap level counts as that level.
+    const zoom = Math.round(m.getScaleZoom(scale, 0) / (snap / 100)) * (snap / 100)
+    return Math.min(m.getMaxZoom(), Math.floor(zoom / snap) * snap)
+  }
+
   function updateMinZoom(animate = true) {
     const m = map.value
     if (!m) return
     // A half step below the zoom where the whole world fits, never below 0.
-    const fit = m.getBoundsZoom(world, false)
+    const fit = fitZoom(m)
     const next = Math.max(MIN_NATIVE_ZOOM, Math.min(1.5, Math.floor(fit * 2) / 2 - 0.5))
     minZoom.value = next
     // Below the new minimum: go there at once, setMinZoom would animate the zoom.
@@ -359,7 +391,8 @@ export function useMapLeaflet(input: MapLeafletInput) {
       .on('tileload', (e: L.TileEvent) => featherTile(e.tile, e.coords))
       .addTo(m)
 
-    cluster = L.markerClusterGroup({
+    // Copes with the minimum zoom that follows the window (see createClusterGroup).
+    cluster = createClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
       spiderfyOnMaxZoom: false,
@@ -367,7 +400,7 @@ export function useMapLeaflet(input: MapLeafletInput) {
       animate: !reduced,
       disableClusteringAtZoom: NO_CLUSTER_ZOOM,
       maxClusterRadius: (z: number) => (z < 2 ? 70 : z < 3.5 ? 55 : 40),
-      iconCreateFunction: clusterIcon,
+      iconCreateFunction: (c: L.MarkerCluster) => clusterIcon(c, childOf),
     })
     cluster.on('click', (e: L.LeafletEvent) => {
       const layer = (e as L.LeafletMouseEvent & { layer: L.Layer }).layer
@@ -483,9 +516,20 @@ export function useMapLeaflet(input: MapLeafletInput) {
     icons.clear()
   })
 
-  /** Marker bookkeeping, for tests and debugging. */
+  /**
+   * Marker bookkeeping, for tests and debugging. `drawn`: shown markers that are on the map right
+   * now, as themselves or inside a cluster or stack (not the ones outside the view).
+   */
   function stats() {
-    return { built: entries.size, shown: shown.size, inCluster: cluster?.getLayers().length ?? 0, questPins: questLayer?.getLayers().length ?? 0 }
+    let drawn = 0
+    if (cluster) for (const m of shown.values()) if (cluster.getVisibleParent(m)) drawn++
+    return {
+      built: entries.size,
+      shown: shown.size,
+      inCluster: cluster?.getLayers().length ?? 0,
+      drawn,
+      questPins: questLayer?.getLayers().length ?? 0,
+    }
   }
 
   return { map, onScreen, zoom, minZoom, maxZoom: MAX_ZOOM, cursor, center, flyTo, fitLand, zoomIn, zoomOut, invalidateSize, stats }

@@ -110,8 +110,8 @@
 }
 
 /*
- * Hit areas. Clusters and quest pins get the full 44px (they never crowd each other: clusters
- * keep 40px or more apart, quest pins are few). Point markers grow only 4px on each side, to
+ * Hit areas. Clusters, stacks and quest pins get the full 44px (they never crowd each other:
+ * clusters keep 40px or more apart, quest pins are few). Point markers grow only 4px on each side, to
  * about 32/36px: from zoom 5 on clustering is off and nodes can sit closer than 44px, where a
  * bigger area would steal clicks from the neighbouring marker. Leaflet positions the marker
  * elements absolutely, so they hold the pseudo-elements.
@@ -124,6 +124,7 @@
 }
 
 .leaflet-marker-icon.ash-cluster::before,
+.leaflet-marker-icon.ash-stack::before,
 .leaflet-marker-icon.ash-quest-pin::before {
   content: '';
   position: absolute;
@@ -148,6 +149,7 @@
 
 .ash-marker:focus-visible,
 .ash-cluster:focus-visible,
+.ash-stack:focus-visible,
 .ash-quest-pin:focus-visible {
   outline: 2px solid #efe2c4;
   outline-offset: 2px;
@@ -181,6 +183,46 @@
 }
 
 .ash-cluster:hover {
+  border-color: #d8b35d;
+  color: #ecd08a;
+}
+
+/* ---------------- stacks: a cluster of one kind, its own sprite with a count ---------------- */
+
+/* Doubled class beats leaflet.css, as for the markers. */
+.leaflet-marker-icon.ash-stack {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+}
+
+.ash-stack > .ash-marker {
+  width: 28px;
+  height: 28px;
+}
+
+/* Cinzel is too thin at this size: the interface font, with even numbers. */
+.ash-stack__count {
+  position: absolute;
+  top: -7px;
+  left: calc(50% + 6px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  border: 1px solid rgba(201, 162, 74, 0.85);
+  background: #211c16;
+  color: #d8b35d;
+  font: 700 11px/16px 'Alegreya Sans', system-ui, sans-serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.ash-stack:hover .ash-stack__count {
   border-color: #d8b35d;
   color: #ecd08a;
 }
