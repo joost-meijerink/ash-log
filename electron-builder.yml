@@ -1,0 +1,64 @@
+# Packaging of the desktop app (npm run desktop:build for an unpacked app, npm run desktop:dist for
+# installers). Unsigned for now: macOS builds are ad-hoc signed, Windows builds are not signed.
+appId: nl.ashenfall.ashlog
+productName: Ash Log
+copyright: Copyright 2026 Joost Meijerink
+directories:
+  output: release
+  buildResources: electron/resources
+# Only the bundled main process and sync go into the app archive; the front end and the wiki
+# seed go into Resources/app-files (server/paths.ts desktopPaths).
+files:
+  - build/electron/**/*
+  - '!build/electron/*.map'
+  - package.json
+  - '!node_modules/**/*'
+extraResources:
+  - from: dist
+    to: app-files/dist
+  - from: public
+    to: app-files/public
+  - from: data/wiki
+    to: app-files/data/wiki
+    filter:
+      - '*.json'
+  - from: LICENSE
+    to: LICENSE.txt
+asar: true
+npmRebuild: false
+mac:
+  category: public.app-category.games
+  icon: electron/resources/icon.icns
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+  # Ad-hoc signature: enough for Apple Silicon to run it after "Open Anyway"; no notarization.
+  identity: '-'
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  minimumSystemVersion: '12.0'
+  extendInfo:
+    NSLocalNetworkUsageDescription: Ash Log uses your local network for Live on Wi-Fi, so your phone can reach it.
+dmg:
+  title: Ash Log
+  artifactName: Ash-Log-${version}-mac-${arch}.dmg
+win:
+  icon: electron/resources/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: true
+  perMachine: false
+  shortcutName: Ash Log
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  artifactName: Ash-Log-${version}-windows-setup.exe
+linux:
+  target:
+    - AppImage
+  category: Game
+publish: null

@@ -22,8 +22,9 @@ import { fetchVaultSources, parseVaults } from './domains/vaults'
 import { loadEnvFile } from './env'
 import { PartialWriteError, readJson, writeJsonAtomic, writeJsonFilesAtomic } from './files'
 import { isEntryPoint } from './node-command'
-import { OVERRIDES_FILE, PROGRESS_FILE, ROOT, WIKI_FILES } from './paths'
-import { WikiClient } from './wiki'
+import { pathsFromEnv, projectPaths, type AshLogPaths } from '../../server/paths'
+import { rawCacheRoots, reconcileSeed, wikiFilesIn, wikiReadDir } from '../../server/wiki-source'
+import { WikiClient, wikiUserAgent } from './wiki'
 
 const ALL_DOMAINS: SyncDomain[] = ['map', 'quests', 'vaults', 'rewards']
 const DOMAIN_NAME: Record<SyncDomain, string> = { map: 'map', quests: 'quests', vaults: 'vaults', rewards: 'rewards' }
@@ -33,10 +34,23 @@ export interface SyncOptions {
   full?: boolean
   tiles?: boolean
   log?: (message: string) => void
+  /** Where to read and write (server/paths.ts). Default: the project layout. */
+  paths?: AshLogPaths
+  /** WIKI_USER_AGENT and ASH_LOG_APP_VERSION (wiki.ts wikiUserAgent). Default: process.env. */
+  env?: NodeJS.ProcessEnv
 }
 
 export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
   const log = options.log ?? ((m: string) => console.log(m))
+  const paths = options.paths ?? projectPaths()
+  // The installed app: an app update with newer data than the user's copy wins (moved aside,
+  // never deleted). Then read the newest copy, the user's or the seed, and write the user's.
+  await reconcileSeed(paths, log)
+  const readDir = await wikiReadDir(paths)
+  const prevFiles = wikiFilesIn(readDir)
+  const outFiles = wikiFilesIn(paths.wikiDir)
+  /** Starting from the seed: write every file, so the user's copy is complete on its own. */
+  const fromSeed = readDir !== paths.wikiDir
   const started = Date.now()
   const syncedAt = new Date(started).toISOString()
   const warnings: SyncWarning[] = []
@@ -53,12 +67,12 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     }
   }
   const prev: WikiSnapshot = {
-    map: await readPrev<MapData>(WIKI_FILES.map, 'map'),
-    quests: await readPrev<Quest[]>(WIKI_FILES.quests, 'quests'),
-    vaults: await readPrev<Vault[]>(WIKI_FILES.vaults, 'vaults'),
-    rewards: await readPrev<Reward[]>(WIKI_FILES.rewards, 'rewards'),
+    map: await readPrev<MapData>(prevFiles.map, 'map'),
+    quests: await readPrev<Quest[]>(prevFiles.quests, 'quests'),
+    vaults: await readPrev<Vault[]>(prevFiles.vaults, 'vaults'),
+    rewards: await readPrev<Reward[]>(prevFiles.rewards, 'rewards'),
   }
-  const prevMeta = await readPrev<SyncMeta>(WIKI_FILES.meta)
+  const prevMeta = await readPrev<SyncMeta>(prevFiles.meta)
 
   const requested = options.only?.length ? options.only : ALL_DOMAINS
   const domains = expandDomains(requested, prev, rebuild)
@@ -67,9 +81,9 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
   if (extra.length) log(`Also updating, since they depend on it: ${extra.map((d) => DOMAIN_NAME[d]).join(', ')}`)
 
   try {
-    const userAgent = process.env.WIKI_USER_AGENT ?? ''
-    const wiki = new WikiClient({ userAgent, log: (m) => log(`  ${m}`) })
-    const ctx = createContext(wiki, log, !!options.full)
+    // WIKI_USER_AGENT, or the installed app's default (wiki.ts wikiUserAgent).
+    const wiki = new WikiClient({ userAgent: wikiUserAgent(options.env ?? process.env), log: (m) => log(`  ${m}`) })
+    const ctx = createContext(wiki, log, !!options.full, rawCacheRoots(paths))
 
     let map = prev.map
     let icons: string[] = []
@@ -104,7 +118,9 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
 
     if (domains.has('map')) {
       log('Images: checking icons and map tiles')
-      const assets = await syncAssets(ctx, { icons, tiles: options.tiles !== false }, warnCollector(warnings, 'assets'))
+      const imgDirs = (dir: string) => ({ icons: join(dir, 'icons'), tiles: join(dir, 'tiles') })
+      const assetOptions = { icons, tiles: options.tiles !== false, dirs: imgDirs(paths.imgDir), ...(paths.seedImgDir ? { seed: imgDirs(paths.seedImgDir) } : {}) }
+      const assets = await syncAssets(ctx, assetOptions, warnCollector(warnings, 'assets'))
       log(`Images: downloaded ${plural(assets.iconsDownloaded, 'new icon', 'new icons')} and ${plural(assets.tilesDownloaded, 'new tile', 'new tiles')}`)
     }
 
@@ -116,8 +132,8 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     let progress = emptyProgress()
     let overrides = emptyOverrides()
     try {
-      progress = normalizeProgress(await readJson(PROGRESS_FILE, {}))
-      overrides = normalizeOverrides(await readJson(OVERRIDES_FILE, {}))
+      progress = normalizeProgress(await readJson(paths.progressFile, {}))
+      overrides = normalizeOverrides(await readJson(paths.overridesFile, {}))
     } catch (err) {
       progress = emptyProgress()
       overrides = emptyOverrides()
@@ -147,11 +163,12 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
     // /public/wiki-img (images, see assets.ts). All files are staged first and renamed
     // together, so a full disk cannot leave a new map.json next to an old quests.json.
     const files: [string, unknown][] = []
-    if (domains.has('map') && map) files.push([WIKI_FILES.map, map])
-    if (domains.has('quests') && quests) files.push([WIKI_FILES.quests, quests])
-    if (domains.has('vaults') && vaults) files.push([WIKI_FILES.vaults, vaults])
-    if (domains.has('rewards') && rewards) files.push([WIKI_FILES.rewards, rewards])
-    files.push([WIKI_FILES.meta, meta], [WIKI_FILES.report, report])
+    const write = (domain: SyncDomain) => domains.has(domain) || fromSeed
+    if (write('map') && map) files.push([outFiles.map, map])
+    if (write('quests') && quests) files.push([outFiles.quests, quests])
+    if (write('vaults') && vaults) files.push([outFiles.vaults, vaults])
+    if (write('rewards') && rewards) files.push([outFiles.rewards, rewards])
+    files.push([outFiles.meta, meta], [outFiles.report, report])
     await writeJsonFilesAtomic(files)
     log(`Done in ${Math.round(meta.durationMs / 1000)} s, ${wiki.requestCount} requests to the wiki`)
     return report
@@ -165,7 +182,7 @@ export async function runSync(options: SyncOptions = {}): Promise<DiffReport> {
       warnings,
     }
     // Keep the original error if even the failure report cannot be written.
-    await writeJsonAtomic(WIKI_FILES.report, report).catch((e) => log(`report.json not written: ${(e as Error).message}`))
+    await writeJsonAtomic(outFiles.report, report).catch((e) => log(`report.json not written: ${(e as Error).message}`))
     throw err
   }
 }
@@ -209,14 +226,25 @@ function parseArgs(argv: string[]): SyncOptions {
   return opts
 }
 
-if (isEntryPoint(import.meta.url, process.argv[1])) {
-  loadEnvFile(join(ROOT, '.env'))
+/**
+ * The sync as a program: the paths from ASH_LOG_USER_DATA and ASH_LOG_RESOURCES (else the
+ * project), their .env, then a run with these arguments. Returns the exit code. The installed
+ * app's bundled sync calls this too.
+ */
+export async function syncMain(argv: string[], env: NodeJS.ProcessEnv = process.env): Promise<number> {
   try {
-    const report = await runSync(parseArgs(process.argv.slice(2)))
+    const paths = pathsFromEnv(env)
+    loadEnvFile(paths.envFile, env)
+    const report = await runSync({ ...parseArgs(argv), paths, env })
     console.log('\n' + formatReport(report))
+    return 0
   } catch (err) {
     const written = err instanceof PartialWriteError ? '' : ', nothing was written'
     console.error(`\nSync failed${written}: ${(err as Error).message}`)
-    process.exitCode = 1
+    return 1
   }
+}
+
+if (isEntryPoint(import.meta.url, process.argv[1])) {
+  process.exitCode = await syncMain(process.argv.slice(2))
 }

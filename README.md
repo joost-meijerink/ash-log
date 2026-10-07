@@ -1,119 +1,63 @@
 # Ash Log
 
-Ash Log is a free, unofficial progress tracker for *RuneScape: Dragonwilds*. Tick off quest steps, find chests, ores and lore on a map, and keep track of which unique unlocks (like the patterns of armour sets) you already have. All game content comes from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) through its API.
+Ash Log is a free, unofficial progress tracker for *RuneScape: Dragonwilds*. Tick off quest steps, find chests, ores and lore on a map, and keep track of which unique unlocks (like the patterns of armour sets) you already have. All game content comes from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki).
 
-Ash Log runs on your own computer, Windows or Mac. There's no account and no cloud: your progress lives in a file on your computer. Turn on **Live on Wi-Fi** and you can use it on your phone too, as long as it's on the same Wi-Fi.
+Ash Log is an app for your computer, Windows or Mac. There's no account and no cloud: your progress lives on your computer. Turn on **Live on Wi-Fi** and you can use it on your phone too, as long as it's on the same Wi-Fi.
 
 ## Contents
 
-- [What you need](#what-you-need)
-- [Installing](#installing)
-- [On Windows](#on-windows)
-- [On a Mac](#on-a-mac)
+- [Download](#download)
+- [Install on macOS](#install-on-macos)
+- [Install on Windows](#install-on-windows)
+- [First start](#first-start)
 - [On your phone](#on-your-phone)
 - [Updating](#updating)
 - [Your data](#your-data)
 - [Troubleshooting](#troubleshooting)
-- [Development](#development)
+- [Run from source](#run-from-source)
 - [Source and license](#source-and-license)
 
-## What you need
+## Download
 
-- **Windows 10 or 11**, or **macOS 13 or later**.
-- **Node.js 22.12 or later.** Get the LTS version from [nodejs.org](https://nodejs.org). npm comes with it.
-- **On Windows:** Microsoft Edge (built into Windows) or Google Chrome, for Ash Log's own window.
-- **On a Mac:** the Xcode Command Line Tools, for the Mac app. Install them with `xcode-select --install` in Terminal.
-- **Git** makes updating easier later, but you don't need it: you can also download the project as a ZIP.
-- **For your phone:** an iPhone with Safari or an Android phone with Chrome, on the same Wi-Fi as your computer.
+Get the latest version from the [Releases page](https://github.com/joost-meijerink/ash-log/releases/latest):
 
-## Installing
+| Your computer | File |
+|---|---|
+| Mac with Apple silicon (M1 or newer) | `Ash-Log-<version>-mac-arm64.dmg` |
+| Mac with an Intel processor | `Ash-Log-<version>-mac-x64.dmg` |
+| Windows 10 or 11 | `Ash-Log-<version>-windows-setup.exe` |
 
-These steps are the same on Windows and Mac. After that, each system has its own section on starting Ash Log from its own icon.
+Not sure which Mac you have? Open the Apple menu > **About This Mac**: it says "Chip Apple M…" or "Processor Intel".
 
-### 1. Download the project
+Ash Log isn't signed with a paid Apple or Microsoft certificate yet. That's why your computer warns you the first time you open it. The steps below show how to open it anyway; you only have to do this once.
 
-With Git:
+## Install on macOS
 
-```
-git clone https://github.com/joost-meijerink/ash-log.git
-cd ash-log
-```
+1. Open the `.dmg` and drag **Ash Log** onto **Applications**.
+2. Open Ash Log from Applications. macOS says it can't verify the app. Click **Done** (not Move to Trash).
+3. Open **System Settings > Privacy & Security**, scroll down to the message about Ash Log and click **Open Anyway**. Confirm with your password or Touch ID.
+4. Open Ash Log again. From now on it just opens.
 
-Without Git: on GitHub, choose **Code > Download ZIP**, unzip it to a place where it can stay (your Documents folder, for example) and open that folder in a terminal.
+On macOS 12 to 14 you can also right-click Ash Log in Applications, choose **Open**, and then **Open** again.
 
-To open a terminal in the project folder:
+Closing the window keeps Ash Log running, so your phone can still reach it. Quit it with **Cmd+Q** or by right-clicking the icon in the Dock.
 
-- **Windows 11:** right-click inside the folder in File Explorer and choose **Open in Terminal**.
-- **Windows 10:** click the address bar of File Explorer, type `cmd` and press Enter.
-- **Mac:** open Terminal, type `cd ` (with a space), drag the folder into the window and press Enter.
+## Install on Windows
 
-### 2. Install
+1. Run `Ash-Log-<version>-windows-setup.exe`.
+2. Windows shows "Windows protected your PC". Click **More info**, then **Run anyway**.
+3. Ash Log installs for your user only (no administrator needed) and puts **Ash Log** in the Start menu and on your desktop.
 
-```
-npm install
-```
+Does Windows block it completely, without a Run anyway button? Then **Smart App Control** is on, and it doesn't allow unsigned apps. You can check this under Windows Security > App & browser control > Smart App Control.
 
-Does PowerShell tell you that running scripts is disabled on this system? Then type `npm.cmd install`, or use Command Prompt (`cmd`) instead of PowerShell. The same goes for the other `npm` commands below.
+Closing the window quits Ash Log. If Live on Wi-Fi is on, it asks first whether to keep running for your phone; it then keeps running in the background, with an icon in the corner of the taskbar to open or quit it.
 
-### 3. Your contact details for the wiki
+To remove Ash Log: Settings > Apps > Installed apps > Ash Log > Uninstall. Your progress stays (see [Your data](#your-data)).
 
-Ash Log fetches the game content through the wiki's API. The wiki wants to know who's doing that, so its admins can reach you if something goes wrong. For that, you create a file called `.env`:
+## First start
 
-- **Windows:** `copy .env.example .env`, then `notepad .env`
-- **Mac:** `cp .env.example .env`, then `open -e .env`
+The map, quests and collections work right away: the game content from the wiki comes with the app. Click **Update from wiki** (top right) now and then to fetch the latest content. The first time, that takes a few minutes.
 
-On the `WIKI_USER_AGENT` line, replace the example address with your own e-mail address, or with a URL where you can be reached (like your GitHub page). The sync refuses the example address. `.env` stays on your own computer.
-
-### 4. The first sync
-
-The quests, map points and rewards already come with the project. Ash Log fetches the map tiles and icons (about 45 MB) from the wiki itself, once. There are two ways to do that:
-
-- Start Ash Log (see below) and click **Update from wiki** at the top right (the button with the arrows).
-- Or in the terminal: `npm run sync`
-
-The first time takes a few minutes, because Ash Log politely asks the wiki for one file at a time. After that, a sync is much faster: only what changed on the wiki comes in again.
-
-## On Windows
-
-```
-npm run app:install
-```
-
-This puts **Ash Log** and **Stop Ash Log** in your Start menu, with the Ash Log icon. Want an icon on your desktop too? Use `npm run app:install -- --desktop`. You don't need admin rights.
-
-- **Start:** click Ash Log. The first time, Ash Log builds the app first, which takes a moment. Then it opens in its own window (Edge or Chrome in app mode, separate from your normal browser).
-- **Stop:** close the window. If Live on Wi-Fi is on, Ash Log first asks whether it should keep running for your phone. You can also pick **Stop Ash Log** in the Start menu.
-- **Remove:** `npm run app:uninstall`. Your progress stays.
-
-Moved the project folder or installed another version of Node? Run `npm run app:install` again.
-
-More about the window, the firewall and problems on Windows: [scripts/windows/README.md](scripts/windows/README.md).
-
-## On a Mac
-
-```
-npm run app:install
-```
-
-This builds **Ash Log.app** and puts it in the Applications folder in your home folder (`~/Applications`). Find it with Spotlight or drag it to your Dock.
-
-- **Start:** click the icon. The app starts the server and shows Ash Log in its own window.
-- **Close the window** (Cmd+W): the server keeps running, so your phone can still reach it.
-- **Quit:** Cmd+Q, or right-click the icon in the Dock and choose Quit.
-
-macOS asks for permission a few times: for your Documents folder (if the project is there), for incoming connections to node (with Live on Wi-Fi) and for devices on your local network. Choose Allow each time.
-
-More about the Mac app, the icon and problems: [scripts/desktop/README.md](scripts/desktop/README.md).
-
-### Without an app icon
-
-On both systems (and on Linux) you can also run it from the terminal:
-
-```
-npm run app
-```
-
-Then open `http://localhost:5199` in your browser. Ctrl+C in the terminal stops Ash Log.
 
 ## On your phone
 
@@ -128,8 +72,8 @@ With **Live on Wi-Fi** you can use Ash Log on your phone: tick things off and lo
 
 ### Once per phone
 
-1. Start Ash Log on your computer, click **Live** at the top right and turn on **Live on Wi-Fi**.
-2. The first time, your computer asks whether node (Node.js) may accept connections. On Windows, tick only private networks and allow it. On a Mac, choose Allow.
+1. In Ash Log on your computer, click **Live** at the top right and turn on **Live on Wi-Fi**.
+2. The first time, your computer asks whether Ash Log may accept connections. On Windows, tick only private networks and allow it. On a Mac, choose **Allow**, and allow Ash Log to find devices on your local network if macOS asks.
 3. In the same window, under **Which phone?**, pick iPhone or Android.
 4. **Install the certificate.** Your phone talks to your computer over a secure connection. For that, you install Ash Log's certificate once. Ash Log makes that certificate itself, and it only covers addresses on your own network, never real websites.
    - **iPhone:** scan the QR code with the camera, tap **Download Profile** on the page that opens and then **Allow**. Open Settings, tap **Profile Downloaded** and install it; the red "Not Signed" warning is expected. Then turn on Ash Log under Settings > General > About > **Certificate Trust Settings**.
@@ -153,60 +97,68 @@ Then open Quests, Map and Collections once while your computer can be reached. T
 
 If your router gives your computer a different address, the icon on your home screen stops working. Pair your phone again then (steps 5 and 6; the certificate can stay). You can prevent this by giving your computer a fixed address in your router (often called "DHCP reservation" or "static IP address").
 
-Want to choose yourself? Put the line `LIVE_ADDRESS=name` in `.env` (always your computer's name, `.local`) or `LIVE_ADDRESS=ip` (always the address). The name only works if your phone knows `.local` names: iPhones do, Android phones from version 12.
+Want to choose yourself? Put the line `LIVE_ADDRESS=name` (always your computer's name, `.local`) or `LIVE_ADDRESS=ip` (always the address) in a file called `.env` in [your data folder](#your-data). The name only works if your phone knows `.local` names: iPhones do, Android phones from version 12.
 
 ## Updating
 
-With Git:
-
-```
-git pull
-npm install
-npm run app:install
-```
-
-Stop Ash Log first. Then click **Update from wiki** in Ash Log to fetch the latest game content from the wiki.
-
-Without Git: download the new ZIP and unzip it to a new folder. Copy `.env`, `data/progress.json`, `data/overrides.json` and the `.local` folder (your paired phones and the certificate) from your old folder to the new one. Run `npm install` and `npm run app:install` there.
+Ash Log tells you when a new version is out (it checks GitHub at most once a day). Download it from the [Releases page](https://github.com/joost-meijerink/ash-log/releases/latest) and install it over the old one, the same way as the first time. Your progress, paired phones and certificate stay.
 
 ## Your data
 
-Everything stays on your own computer:
+Everything stays on your own computer, in Ash Log's data folder:
 
-| File | What's in it |
+- **macOS:** `~/Library/Application Support/Ash Log` (in Finder: Go > Go to Folder, and paste that)
+- **Windows:** `%APPDATA%\Ash Log` (paste that into the address bar of File Explorer)
+
+| In that folder | What's in it |
 |---|---|
 | `data/progress.json` | your ticks: quest steps, map points, unlocks and vaults |
 | `data/overrides.json` | your own corrections, like a quest location you put on the map yourself |
-| `.env` | your contact details for the wiki, and maybe a different port |
-| `.local/` | paired phones, Ash Log's certificate and the log file |
+| `data/wiki`, `wiki-img` | game content you fetched with Update from wiki |
+| `server/` | paired phones, Ash Log's certificate and the log file (`server.log`) |
+| `.env` | optional settings, like `APP_PORT=5200` or `LIVE_ADDRESS=ip` |
 
-These files aren't in Git, so they never end up on GitHub. Make a copy of `data/progress.json` now and then: that's your progress.
+Make a copy of `data/progress.json` now and then: that's your progress. Uninstalling Ash Log leaves this folder alone.
 
 ## Troubleshooting
 
-- **What is the server doing?** It's all in `.local/server.log` (on Windows `.local\server.log`).
-- **Port in use:** another program uses port 5199. Close it, or set a different port in `.env`, for example `APP_PORT=5200`. On a Mac, run `npm run app:install` again after that.
-- **The sync refuses to run:** put your own e-mail address or URL in `WIKI_USER_AGENT` in `.env` (see [step 3](#3-your-contact-details-for-the-wiki)).
-- **Your phone can't reach it:** is Live on Wi-Fi on (the Live button then has a gold dot)? Are both on the same Wi-Fi, and isn't that a guest network? On Windows: is your Wi-Fi set to Private network, and is Node.js allowed through the firewall? Check Windows Security > Firewall & network protection > Allow an app through firewall. On a Mac: System Settings > Network > Firewall > Options.
+- **What is Ash Log doing?** It's all in `server/server.log` in your data folder. On a Mac: Help > Open Server Log.
+- **Port in use:** another program uses port 5199 (maybe Ash Log started from source). Close it, or put another port in `.env` in your data folder, for example `APP_PORT=5200`.
+- **Your phone can't reach it:** is Live on Wi-Fi on (the Live button then has a gold dot)? Are both on the same Wi-Fi, and isn't that a guest network? On Windows: is your Wi-Fi set to Private network, and is Ash Log allowed through the firewall? Check Windows Security > Firewall & network protection > Allow an app through firewall. On a Mac: System Settings > Network > Firewall > Options, and System Settings > Privacy & Security > Local Network.
 - **"This Connection Is Not Private" (Safari) or "Your connection is not private" (Chrome) on your phone:** the certificate isn't (fully) installed. Do step 4 of [On your phone](#on-your-phone) again. On an iPhone, the last step is easy to miss: Certificate Trust Settings.
 - **The icon on your home screen stopped working:** your computer probably got a different address. See [Your phone's address](#your-phones-address).
-- **npm gives an error about scripts in PowerShell:** use `npm.cmd` instead of `npm`, or Command Prompt.
 
-## Development
+## Run from source
+
+For developers, and for Linux (there's no Linux app yet). You need Node.js 22.12 or newer and Git.
 
 ```
-npm run dev         dev server with hot reload on http://localhost:5173
-npm test            all tests (against saved samples, never against the live wiki)
-npm run typecheck   check TypeScript
-npm run sync        fetch the game content; also --only=quests,rewards, --full and --no-tiles
+git clone https://github.com/joost-meijerink/ash-log.git
+cd ash-log
+npm install
 ```
 
-Built with Vite, Vue 3, TypeScript, Pinia, Tailwind CSS and Leaflet.
+To fetch content from the wiki yourself, copy `.env.example` to `.env` and put your own e-mail address or URL in `WIKI_USER_AGENT`: the wiki wants to know who uses its API. In this setup your data lives in the project folder (`data/` and `.local/`), not in the app's data folder.
+
+```
+npm run app            build and start Ash Log on http://localhost:5199 (Ctrl+C stops it)
+npm run dev            dev server with hot reload on http://localhost:5173
+npm run sync           fetch the game content; also --only=quests,rewards, --full and --no-tiles
+npm test               all tests (against saved samples, never against the live wiki)
+npm run typecheck      check TypeScript
+npm run desktop:dev    run the desktop app from source (its data stays in .local/desktop-dev)
+npm run desktop:build  package the desktop app for this computer, unpacked
+npm run desktop:dist   build the macOS and Windows installers into release/
+```
+
+The older ways to start Ash Log from source still work: a Mac app built from the project (`npm run app:install`, see [scripts/desktop/README.md](scripts/desktop/README.md)) and Start menu shortcuts on Windows (see [scripts/windows/README.md](scripts/windows/README.md)).
+
+Built with Vite, Vue 3, TypeScript, Pinia, Tailwind CSS, Leaflet and Electron.
 
 Contributions are welcome. Be kind to the wiki: send your own User-Agent with contact details, make requests one at a time, and use only the API.
 
 ## Source and license
 
 - **Code:** MIT license, see [LICENSE](LICENSE).
-- **Game content:** the quests, map points, rewards, images and map tiles come from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) and fall under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). That also goes for `data/wiki`, the sea textures in `src/assets/sea` (made from the map tiles) and the Ash Logs sprite in the icon. So use those only non-commercially, with attribution and under the same license.
+- **Game content:** the quests, map points, rewards, images and map tiles come from the [RuneScape: Dragonwilds Wiki](https://dragonwilds.runescape.wiki) and fall under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). That also goes for `data/wiki`, the content that ships inside the app, the sea textures in `src/assets/sea` (made from the map tiles) and the Ash Logs sprite in the icon. So use those only non-commercially, with attribution and under the same license.
 - *RuneScape* and *RuneScape: Dragonwilds* belong to Jagex. Ash Log is an unofficial fan tool and isn't affiliated with or endorsed by Jagex or the wiki.

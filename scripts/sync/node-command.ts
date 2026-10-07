@@ -54,6 +54,9 @@ function realpathOrSelf(path: string): string {
  */
 export function isEntryPoint(moduleUrl: string, argv1: string | undefined, opts: EntryPointOptions = {}): boolean {
   if (!argv1) return false
+  // Electron's main process bundles every module into one file, so each would look like the
+  // entry point there. Only a plain Node process (or ELECTRON_RUN_AS_NODE) runs a script's main.
+  if ((process as { type?: string }).type === 'browser') return false
   const platform = opts.platform ?? process.platform
   const windows = platform === 'win32'
   const realpath = opts.realpath ?? realpathOrSelf

@@ -18,8 +18,13 @@ export interface AssetOptions {
   icons: string[]
   /** Download missing map tiles (zoom 0 to 4). */
   tiles: boolean
-  /** Target directories, for tests. Defaults to ICONS_DIR and TILES_DIR. */
+  /** Target directories. Defaults to ICONS_DIR and TILES_DIR. */
   dirs?: { icons: string; tiles: string }
+  /**
+   * Images that ship with the installed app (server/paths.ts seedImgDir). A file there counts
+   * as present, so it is never downloaded again; new files still go to `dirs`.
+   */
+  seed?: { icons: string; tiles: string }
 }
 
 export interface AssetResult {
@@ -59,8 +64,8 @@ export async function syncAssets(ctx: SyncContext, opts: AssetOptions, warn: War
     tilesNotFound: 0,
     failed: 0,
   }
-  await syncIcons(ctx, opts.icons, dirs.icons, warn, result)
-  if (opts.tiles) await syncTiles(ctx, dirs.tiles, warn, result)
+  await syncIcons(ctx, opts.icons, [dirs.icons, ...(opts.seed ? [opts.seed.icons] : [])], warn, result)
+  if (opts.tiles) await syncTiles(ctx, [dirs.tiles, ...(opts.seed ? [opts.seed.tiles] : [])], warn, result)
   return result
 }
 
@@ -69,7 +74,9 @@ export function upstreamTileUrl(z: number, x: number, y: number): string {
   return UPSTREAM_TILE_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y))
 }
 
-async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: Warn, result: AssetResult): Promise<void> {
+/** `dirs`: the target first, then folders whose files count as present (the seed). */
+async function syncIcons(ctx: SyncContext, names: string[], dirs: string[], warn: Warn, result: AssetResult): Promise<void> {
+  const dir = dirs[0]!
   const wanted = new Set<string>()
   const invalid: string[] = []
   for (const name of names) {
@@ -82,7 +89,7 @@ async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: W
 
   const todo: string[] = []
   for (const local of [...wanted].sort()) {
-    if (await fileExists(join(dir, local))) result.iconsExisting++
+    if (await existsIn(dirs, local)) result.iconsExisting++
     else todo.push(local)
   }
   if (!todo.length) return
@@ -125,15 +132,16 @@ async function syncIcons(ctx: SyncContext, names: string[], dir: string, warn: W
   reportFailures(warn, ['icon', 'icons'], failures, skipped)
 }
 
-async function syncTiles(ctx: SyncContext, dir: string, warn: Warn, result: AssetResult): Promise<void> {
+async function syncTiles(ctx: SyncContext, dirs: string[], warn: Warn, result: AssetResult): Promise<void> {
+  const dir = dirs[0]!
   const todo: { url: string; dest: string }[] = []
   for (let z = MIN_NATIVE_ZOOM; z <= MAX_NATIVE_ZOOM; z++) {
     const n = tilesPerSide(z)
     for (let x = 0; x < n; x++) {
       for (let y = 0; y < n; y++) {
-        const dest = join(dir, String(z), `${x}_${y}.png`)
-        if (await fileExists(dest)) result.tilesExisting++
-        else todo.push({ url: upstreamTileUrl(z, x, y), dest })
+        const rel = join(String(z), `${x}_${y}.png`)
+        if (await existsIn(dirs, rel)) result.tilesExisting++
+        else todo.push({ url: upstreamTileUrl(z, x, y), dest: join(dir, rel) })
       }
     }
   }
@@ -199,6 +207,11 @@ async function fileExists(path: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+async function existsIn(dirs: readonly string[], rel: string): Promise<boolean> {
+  for (const dir of dirs) if (await fileExists(join(dir, rel))) return true
+  return false
 }
 
 /** Characters Windows does not allow in a file name (':' would even write to a hidden stream). */

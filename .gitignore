@@ -18,3 +18,7 @@ dist
 /CLAUDE.md
 /docs/
 /.claude/
+
+# Desktop app build output
+/build/
+/release/

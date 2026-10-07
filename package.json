@@ -1,7 +1,7 @@
 {
   "name": "ash-log",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
@@ -17,7 +17,11 @@
     "app:install": "tsx scripts/install.ts",
     "app:uninstall": "tsx scripts/install.ts --uninstall",
     "app:figma": "tsx scripts/desktop/make-figma.ts",
-    "app:icons": "tsx scripts/desktop/make-icons.ts"
+    "app:icons": "tsx scripts/desktop/make-icons.ts",
+    "desktop:bundle": "tsx electron/build.ts",
+    "desktop:dev": "vite build && tsx electron/build.ts && electron .",
+    "desktop:build": "vite build && tsx electron/build.ts && tsx electron/dist.ts --dir",
+    "desktop:dist": "vite build && tsx electron/build.ts && tsx electron/dist.ts --mac --win"
   },
   "dependencies": {
     "@fontsource/alegreya": "^5.3.0",
@@ -45,6 +49,8 @@
     "@types/qrcode": "^1.5.6",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vue/test-utils": "^2.5.1",
+    "electron": "44.6.0",
+    "electron-builder": "26.15.3",
     "jsdom": "^30.1.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
@@ -53,5 +59,9 @@
     "vite": "^8.3.1",
     "vitest": "^5.0.2",
     "vue-tsc": "^3.3.11"
-  }
+  },
+  "main": "build/electron/main.mjs",
+  "description": "Unofficial progress tracker for RuneScape: Dragonwilds",
+  "author": "Joost Meijerink",
+  "homepage": "https://github.com/joost-meijerink/ash-log"
 }

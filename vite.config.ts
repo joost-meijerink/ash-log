@@ -4,7 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { dataMiddleware } from './server/middleware.ts'
 
-const TEST_FILES = ['scripts/**/*.test.ts', 'src/**/*.test.ts', 'server/**/*.test.ts']
+const TEST_FILES = ['scripts/**/*.test.ts', 'src/**/*.test.ts', 'server/**/*.test.ts', 'electron/**/*.test.ts']
 const PROCESS_TESTS = [
   'scripts/desktop/build-app.test.ts',
   'scripts/desktop/launcher.test.ts',

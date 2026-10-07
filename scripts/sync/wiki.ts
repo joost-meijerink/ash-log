@@ -4,7 +4,7 @@
 
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { replaceFile } from './files'
+import { replaceFile } from './files.ts'
 
 export const WIKI_ORIGIN = 'https://dragonwilds.runescape.wiki'
 export const API_URL = `${WIKI_ORIGIN}/api.php`
@@ -43,6 +43,28 @@ export function userAgentProblem(userAgent: string): 'missing' | 'example' | nul
   const domains = [...userAgent.matchAll(EMAIL_DOMAINS), ...userAgent.matchAll(URL_HOSTS)].map((m) => m[1]!)
   if (!domains.length) return 'missing'
   return domains.every((domain) => EXAMPLE_DOMAIN.test(domain)) ? 'example' : null
+}
+
+/** The project page: the contact in the desktop app's default User-Agent. */
+export const PROJECT_URL = 'https://github.com/joost-meijerink/ash-log'
+/** Set by the desktop app for the sync it starts, to its own version. Turns on the default User-Agent. */
+export const APP_VERSION_ENV = 'ASH_LOG_APP_VERSION'
+
+/** The desktop app's User-Agent: its version and the project URL, which the wiki accepts as contact. */
+export function defaultUserAgent(version: string): string {
+  return `AshLog/${version.replace(/[^\w.+-]/g, '') || 'unknown'} (${PROJECT_URL})`
+}
+
+/**
+ * The User-Agent for the wiki: WIKI_USER_AGENT when set. Without it only the desktop app (it
+ * sets ASH_LOG_APP_VERSION) gets the default; a sync from the terminal gets '' and refuses to
+ * run until .env has contact details (see userAgentProblem).
+ */
+export function wikiUserAgent(env: NodeJS.ProcessEnv = process.env): string {
+  const own = env.WIKI_USER_AGENT
+  if (own?.trim()) return own
+  const version = env[APP_VERSION_ENV]?.trim()
+  return version ? defaultUserAgent(version) : ''
 }
 
 export class WikiClient {

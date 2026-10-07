@@ -98,3 +98,60 @@ jobs:
             if (Test-Path -LiteralPath (Join-Path $programs "$name.lnk")) { Write-Error "still there: $name"; exit 1 }
           }
           exit 0
+
+  # The desktop app (Electron): package it unpacked for this platform and start it with --smoke,
+  # which starts the app server, checks the app page and the bundled wiki data, and quits. No window.
+  desktop:
+    name: Desktop app, ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build the front end and bundle the main process
+        run: |
+          npx vite build
+          npx tsx electron/build.ts
+
+      - name: Package (unpacked)
+        run: npx tsx electron/dist.ts --dir
+
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        env:
+          ASH_LOG_USER_DATA: ${{ runner.temp }}/ash-log-user
+          ASH_LOG_PORT: '5299'
+        run: |
+          app="$(node -p "require('os').tmpdir()")/ash-log-release/mac-arm64/Ash Log.app"
+          codesign --verify --deep "$app"
+          "$app/Contents/MacOS/Ash Log" --smoke
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          ASH_LOG_USER_DATA: ${{ runner.temp }}\ash-log-user
+          ASH_LOG_PORT: '5299'
+          ELECTRON_ENABLE_LOGGING: '1'
+        run: |
+          $exe = Join-Path ([IO.Path]::GetTempPath()) 'ash-log-release\win-unpacked\Ash Log.exe'
+          $p = Start-Process -FilePath $exe -ArgumentList '--smoke' -Wait -PassThru -NoNewWindow
+          Get-Content (Join-Path $env:ASH_LOG_USER_DATA 'server\server.log') -ErrorAction SilentlyContinue
+          if ($p.ExitCode -ne 0) { Write-Error "smoke test failed with exit code $($p.ExitCode)"; exit 1 }
+          exit 0

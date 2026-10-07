@@ -1,32 +1,28 @@
 // Locations and settings of the app server (server/app.ts).
 
-import { join, resolve } from 'node:path'
 import { loadEnvFile } from '../scripts/sync/env.ts'
-import { ROOT } from '../scripts/sync/paths.ts'
+import { localDir, projectPaths } from './paths.ts'
+
+export { localDir }
+
+// The project layout (npm run app, the Swift app, the Windows launcher). The installed app
+// passes its own paths to createAppServer instead (server/paths.ts).
+const project = projectPaths()
 
 /** The built app (`vite build`). Holds no wiki images: /wiki-img is served live from public/. */
-export const DIST_DIR = join(ROOT, 'dist')
-export const PUBLIC_DIR = join(ROOT, 'public')
+export const DIST_DIR = project.distDir
+export const PUBLIC_DIR = project.publicDir
 /** App icons for the home screen and the manifest, served as /icons/*. */
-export const APP_ICONS_DIR = join(PUBLIC_DIR, 'icons')
-
-/**
- * Where the machine-local server state lives: .local in the project, or ASH_LOG_LOCAL_DIR (for
- * tests and CI only, so a test server never touches the real paired devices or certificate).
- */
-export function localDir(env: NodeJS.ProcessEnv = process.env, root = ROOT): string {
-  const override = env.ASH_LOG_LOCAL_DIR?.trim()
-  return override ? resolve(root, override) : join(root, '.local')
-}
+export const APP_ICONS_DIR = project.appIconsDir
 
 /** Machine-local server state. Not in git, and not in /data (that holds only wiki data, overrides and progress). */
-export const LOCAL_DIR = localDir()
+export const LOCAL_DIR = project.localDir
 /** Paired devices. */
-export const SERVER_STATE_FILE = join(LOCAL_DIR, 'server.json')
+export const SERVER_STATE_FILE = project.serverStateFile
 /** Pid of the running app server; removed when it exits. */
-export const PID_FILE = join(LOCAL_DIR, 'server.pid')
+export const PID_FILE = project.pidFile
 /** The local certificate authority and the server certificate for https on the Wi-Fi (tls.ts). */
-export const TLS_DIR = join(LOCAL_DIR, 'tls')
+export const TLS_DIR = project.tlsDir
 
 export const DEFAULT_APP_PORT = 5199
 
@@ -34,7 +30,7 @@ export const DEFAULT_APP_PORT = 5199
  * Loads .env into process.env (existing variables win). A missing file is fine; a BOM or
  * UTF-16 from a Windows editor is too (see scripts/sync/env.ts).
  */
-export function loadEnv(file = join(ROOT, '.env')): void {
+export function loadEnv(file = project.envFile): void {
   loadEnvFile(file)
 }
 

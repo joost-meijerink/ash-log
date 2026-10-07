@@ -54,11 +54,11 @@ import {
   isCertificatePath,
   sendSecureConnectionPage,
 } from './certificate-page.ts'
-import { APP_ICONS_DIR, DIST_DIR, LOCAL_DIR, PID_FILE, PUBLIC_DIR, SERVER_STATE_FILE, TLS_DIR, loadEnv, parsePort } from './config.ts'
+import { loadEnv, parsePort } from './config.ts'
 import { checkWriteRequest, HttpError, isRecord, readBody, resolveInside, send, sendEmpty, sendError, serveFile } from './http.ts'
 import { Listeners, PortInUseError } from './live.ts'
 import { MANIFEST_PATH, handleManifest, startUrlFor } from './manifest.ts'
-import { handleApi, handleWikiImage, stopSync, syncRunning, whenIdle } from './middleware.ts'
+import { createDataApi, type DataApi } from './middleware.ts'
 import {
   allowedHosts,
   createLanHostname,
@@ -73,6 +73,7 @@ import {
 } from './net.ts'
 import { DEVICE_COOKIE, Pairing, deviceCookie, readCookie } from './pairing.ts'
 import { PAIR_PATH, sendPairingPage } from './pairing-page.ts'
+import { pathsFromEnv, projectPaths, type AshLogPaths } from './paths.ts'
 import { LocalTls, certNames } from './tls.ts'
 
 const IMMUTABLE = 'public, max-age=31536000, immutable'
@@ -109,12 +110,19 @@ const INDEX_HEADERS: Record<string, string> = {
 
 export interface AppOptions {
   port: number
+  /**
+   * Every file location (server/paths.ts). Default: data.paths, else the project layout. The
+   * options below override single locations (tests).
+   */
+  paths?: AshLogPaths
+  /** The data API (/api/*, /wiki-img/*). Default: createDataApi({ paths, log }). */
+  data?: DataApi
   distDir?: string
   publicDir?: string
   iconsDir?: string
-  /** Paired devices (.local/server.json). */
+  /** Paired devices (paths.serverStateFile). */
   stateFile?: string
-  /** The local CA and server certificate (.local/tls). */
+  /** The local CA and server certificate (paths.tlsDir). */
   tlsDir?: string
   /** Replaces the certificate store (tests share one CA between servers). */
   tls?: LocalTls
@@ -136,6 +144,8 @@ export interface AppOptions {
 }
 
 export interface AppServer {
+  readonly paths: AshLogPaths
+  readonly data: DataApi
   readonly listeners: Listeners
   readonly pairing: Pairing
   readonly tls: LocalTls
@@ -180,9 +190,10 @@ function sendText(res: ServerResponse, code: number, text: string) {
 }
 
 export function createAppServer(opts: AppOptions): AppServer {
-  const distDir = opts.distDir ?? DIST_DIR
-  const publicDir = opts.publicDir ?? PUBLIC_DIR
-  const iconsDir = opts.iconsDir ?? APP_ICONS_DIR
+  const paths = opts.paths ?? opts.data?.paths ?? projectPaths()
+  const distDir = opts.distDir ?? paths.distDir
+  const publicDir = opts.publicDir ?? paths.publicDir
+  const iconsDir = opts.iconsDir ?? paths.appIconsDir
   const nodePlatform = opts.platform ?? process.platform
   const platform = serverPlatform(nodePlatform)
   /** 'Mac', 'PC' or 'computer': how texts name this computer. */
@@ -191,7 +202,8 @@ export function createAppServer(opts: AppOptions): AppServer {
   const hostname = opts.hostname ?? createLanHostname({ platform: nodePlatform })
   const lan = opts.lanAddresses ?? lanAddresses
   const log = opts.log ?? (() => {})
-  const pairing = new Pairing({ file: opts.stateFile ?? SERVER_STATE_FILE, now: opts.now, log, platform: nodePlatform })
+  const data = opts.data ?? createDataApi({ paths, log })
+  const pairing = new Pairing({ file: opts.stateFile ?? paths.serverStateFile, now: opts.now, log, platform: nodePlatform })
   const awake = opts.stayAwake ?? new StayAwake({ log })
   const listeners = new Listeners((req, res) => void handle(req, res), {
     port: opts.port,
@@ -200,7 +212,7 @@ export function createAppServer(opts: AppOptions): AppServer {
     liveHosts: opts.hosts?.live,
     platform: nodePlatform,
   })
-  const tls = opts.tls ?? new LocalTls({ dir: opts.tlsDir ?? TLS_DIR, now: opts.now, log })
+  const tls = opts.tls ?? new LocalTls({ dir: opts.tlsDir ?? paths.tlsDir, now: opts.now, log })
   const now = opts.now ?? Date.now
   const liveAddress = opts.liveAddress === undefined ? liveAddressSetting() : opts.liveAddress
   /** The server certificate the https side uses now. */
@@ -358,8 +370,8 @@ export function createAppServer(opts: AppOptions): AppServer {
       return
     }
     if (pathname === '/api/server' || pathname.startsWith('/api/server/')) return serverApi(req, res, pathname, local)
-    if (await handleWikiImage(req, res)) return
-    if (await handleApi(req, res)) return
+    if (await data.handleWikiImage(req, res)) return
+    if (await data.handleApi(req, res)) return
     await serveApp(req, res, pathname)
   }
 
@@ -556,6 +568,8 @@ export function createAppServer(opts: AppOptions): AppServer {
   }
 
   return {
+    paths,
+    data,
     listeners,
     pairing,
     tls,
@@ -563,6 +577,7 @@ export function createAppServer(opts: AppOptions): AppServer {
     handle,
     status,
     async start() {
+      await data.prepare()
       await pairing.load()
       await refreshTls()
       await listeners.start()
@@ -571,11 +586,11 @@ export function createAppServer(opts: AppOptions): AppServer {
       awake.stop()
       // The launcher gives a stop request about ten seconds before it sends SIGTERM.
       await listeners.close(4000)
-      if (syncRunning()) log('A sync is running, waiting for it...')
-      if (!(await whenIdle(4000)) && syncRunning()) {
+      if (data.syncRunning()) log('A sync is running, waiting for it...')
+      if (!(await data.whenIdle(4000)) && data.syncRunning()) {
         log('Sync stopped; start it again later')
-        stopSync()
-        await whenIdle(1500)
+        data.stopSync()
+        await data.whenIdle(1500)
       }
       await pairing.flush().catch((err: Error) => log(`Couldn't save devices: ${err.message}`))
     },
@@ -622,15 +637,15 @@ export function isRunning(port: number, timeoutMs = 1500): Promise<boolean> {
   })
 }
 
-async function readPid(): Promise<number | null> {
-  const text = await readFile(PID_FILE, 'utf8').catch(() => '')
+async function readPid(file: string): Promise<number | null> {
+  const text = await readFile(file, 'utf8').catch(() => '')
   const pid = Number(text.trim())
   return Number.isInteger(pid) && pid > 0 ? pid : null
 }
 
-function removePidSync() {
+function removePidSync(file: string) {
   try {
-    if (Number(readFileSync(PID_FILE, 'utf8').trim()) === process.pid) unlinkSync(PID_FILE)
+    if (Number(readFileSync(file, 'utf8').trim()) === process.pid) unlinkSync(file)
   } catch {
     // Already gone.
   }
@@ -638,16 +653,18 @@ function removePidSync() {
 
 export async function main(): Promise<void> {
   const log = (line: string) => console.log(`[${timestamp()}] ${line}`)
+  // The project layout, unless ASH_LOG_USER_DATA picks the installed app's (server/paths.ts).
+  const paths = pathsFromEnv()
   let port: number
   try {
-    loadEnv()
+    loadEnv(paths.envFile)
     port = parsePort(process.env.APP_PORT)
   } catch (err) {
     fatal((err as Error).message)
   }
 
   if (await isRunning(port)) {
-    const pid = await readPid()
+    const pid = await readPid(paths.pidFile)
     log(`Ash Log is already running on http://localhost:${port}${pid ? ` (pid ${pid})` : ''}`)
     return
   }
@@ -658,7 +675,7 @@ export async function main(): Promise<void> {
     stopping = (async () => {
       log('Ash Log is stopping...')
       await app.close().catch((err: Error) => log(`Error while stopping: ${err.message}`))
-      removePidSync()
+      removePidSync(paths.pidFile)
       log('Stopped')
       process.exit(code)
     })()
@@ -667,6 +684,7 @@ export async function main(): Promise<void> {
 
   const app = createAppServer({
     port,
+    paths,
     log,
     onStop: () => void shutdown(0),
     onFatal: () => void shutdown(1),
@@ -680,9 +698,9 @@ export async function main(): Promise<void> {
     throw err
   }
 
-  await mkdir(LOCAL_DIR, { recursive: true })
-  await writeFile(PID_FILE, `${process.pid}\n`)
-  process.on('exit', removePidSync)
+  await mkdir(paths.localDir, { recursive: true })
+  await writeFile(paths.pidFile, `${process.pid}\n`)
+  process.on('exit', () => removePidSync(paths.pidFile))
   // SIGBREAK: Ctrl+Break in a Windows console. Windows never sends SIGTERM; the launchers stop
   // the server with POST /api/server/stop instead.
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGBREAK'] as const) {

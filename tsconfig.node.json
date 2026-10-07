@@ -18,6 +18,6 @@
     "noEmit": true,
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["vite.config.ts", "server/**/*.ts", "scripts/**/*.ts", "src/lib/**/*.ts"],
+  "include": ["vite.config.ts", "server/**/*.ts", "scripts/**/*.ts", "electron/**/*.ts", "src/lib/**/*.ts"],
   "exclude": ["src/lib/**/*.vue"]
 }

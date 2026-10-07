@@ -27,8 +27,13 @@ export interface SyncContext {
   revisions: Map<string, number>
 }
 
-export function createContext(wiki: WikiClient, log: (message: string) => void, full: boolean): SyncContext {
+/**
+ * `cacheDirs`: where cached raw pages are looked up, in order. New pages are written to the
+ * first (the installed app also reads the revision cache it ships with, see server/wiki-source.ts).
+ */
+export function createContext(wiki: WikiClient, log: (message: string) => void, full: boolean, cacheDirs: readonly string[] = [RAW_CACHE_DIR]): SyncContext {
   const revisions = new Map<string, number>()
+  const writeDir = cacheDirs[0] ?? RAW_CACHE_DIR
 
   async function pages(titles: string[]) {
     const unique = [...new Set(titles)]
@@ -43,8 +48,8 @@ export function createContext(wiki: WikiClient, log: (message: string) => void, 
         missing.push(title)
         continue
       }
-      const cached = full ? undefined : await readCache(title)
-      if (cached && cached.revid === revid) result.set(title, cached)
+      const cached = full ? undefined : await readCache(cacheDirs, title, revid)
+      if (cached) result.set(title, cached)
       else toFetch.push(title)
     }
 
@@ -53,7 +58,7 @@ export function createContext(wiki: WikiClient, log: (message: string) => void, 
       const fetched = await wiki.pages(toFetch)
       for (const [title, page] of fetched.pages) {
         result.set(title, page)
-        await writeJsonAtomic(cachePath(title), page)
+        await writeJsonAtomic(cachePath(writeDir, title), page)
       }
       missing.push(...fetched.missing)
     } else if (unique.length) {
@@ -67,17 +72,21 @@ export function createContext(wiki: WikiClient, log: (message: string) => void, 
   return { wiki, log, full, pages, revisions }
 }
 
-function cachePath(title: string): string {
-  return join(RAW_CACHE_DIR, `${slug(title).slice(0, 60)}-${hash(title)}.json`)
+function cachePath(dir: string, title: string): string {
+  return join(dir, `${slug(title).slice(0, 60)}-${hash(title)}.json`)
 }
 
-async function readCache(title: string): Promise<RawPage | undefined> {
-  try {
-    const page = JSON.parse(await readFile(cachePath(title), 'utf8')) as RawPage
-    return typeof page.revid === 'number' && typeof page.content === 'string' ? page : undefined
-  } catch {
-    return undefined
+/** The cached page with this revision from the first folder that has it. */
+async function readCache(dirs: readonly string[], title: string, revid: number): Promise<RawPage | undefined> {
+  for (const dir of dirs) {
+    try {
+      const page = JSON.parse(await readFile(cachePath(dir, title), 'utf8')) as RawPage
+      if (page.revid === revid && typeof page.content === 'string') return page
+    } catch {
+      // Not in this folder (or unreadable): try the next.
+    }
   }
+  return undefined
 }
 
 export function warnCollector(sink: SyncWarning[], source: SyncWarning['source']): Warn {
